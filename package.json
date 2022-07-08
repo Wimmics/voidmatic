@@ -1,0 +1,23 @@
+{
+  "name": "VoIDMatic",
+  "source": "src/index.html",
+  "scripts": {
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "devDependencies": {
+    "d3": "latest",
+    "dayjs": "^1.10.7",
+    "echarts": "latest",
+    "events": "^3.3.0",
+    "jquery": "latest",
+    "parcel": "^2.3.1"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.5",
+    "bootstrap-icons": "^1.8.1",
+    "buffer": "^6.0.3",
+    "process": "^0.11.10",
+    "rdflib": "^2.2.19"
+  }
+}
