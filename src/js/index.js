@@ -312,7 +312,7 @@ $(() => {
                         return result;
                     },
                     dataCreationFunction: (inputVal, inputId) => {
-                        store.add(exampleDataset, DCT('title'), inputVal);
+                        store.add(exampleDataset, DCT('creator'), inputVal);
                         return store.toNT();
                     }
                 })

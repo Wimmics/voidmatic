@@ -1,0 +1,29 @@
+@prefix :           <http://ns.inria.fr.kg/voidmatic#> .
+@prefix local:      <http://ns.inria.fr.kg/voidmatic/template#> .
+@prefix rdf:	    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:	    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:	    <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:	    <http://www.w3.org/2001/XMLSchema#> .
+@prefix sh:         <http://www.w3.org/ns/shacl#> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+
+local:VoIDmatic a :VoIDDescription ;
+    rdfs:label ""@en ;
+    :category [
+        a :StatementCategory ;
+        rdfs:label "Creator"@en ;
+        rdfs:comment "Represents the different actors involved in the creation of the dataset."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Creator's name or URI" ;
+            :validation :isLiteral ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcterms:creator ;
+                rdf:object :value 
+            ]
+        ]
+    ] .
