@@ -1,0 +1,60 @@
+@prefix :       <http://ns.inria.fr.kg/voidmatic> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:	<http://www.w3.org/2002/07/owl#> .
+@prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
+
+:VoIDDescription a owl:Class ;
+    rdf:label "Represents the description of a dataset." .
+
+:Metadata a owl:Class ;
+    rdf:label "Represent any metadata element in a dataset description." .
+
+:StatementCategory a owl:Class ;
+    rdfs:subClassOf :Metadata ;
+    rdf:label "Represents a partition of the statements describing a dataset." .
+
+:DescriptionStatement a owl:Class ;
+    rdfs:subClassOf :Metadata ;
+    rdf:label "Represents a statement or a group of statement that must be handled together, idependantly to the other statements of a category." .
+
+:GroupedStatements a owl:Class ;
+    rdf:label "Represents a group of statements that must be handled together to be validated in a category" ;
+    rdfs:subClassOf :DescriptionStatement .
+
+:Statement a owl:Class ;
+    rdf:label "Represents a statement in a category." ;
+    rdfs:subClassOf :DescriptionStatement .
+
+:ValidationTest a owl:Class .
+
+:validation a owl:ObjectProperty ;
+    rdf:label "Links a metadata elements with its validation test." ;
+    rdfs:domain :Metadata ;
+    rdfs:range :ValidationTest .
+
+:statement a owl:ObjectProperty ;
+    rdfs:domain :StatementCategory ;
+    rdfs:range :DescriptionStatement .
+
+:minArity a owl:DatatypeProperty ;
+    rdfs:range xsd:integer ;
+    rdfs:domain :Metdata .
+:maxArity a owl:DatatypeProperty ;
+    rdfs:range xsd:integer ;
+    rdfs:domain :Metdata .
+
+:recommended a owl:DatatypeProperty ;
+    rdfs:domain :Metadata ;
+    rdfs:range xsd:boolean .
+
+:priority a owl:DatatypeProperty ;
+    rdfs:domain :StatementCategory ;
+    rdfs:range xsd:integer .
+
+# Pre-defined tests
+:isIRI a :ValidationTest .
+:isNamedNode a :ValidationTest .
+:isDateTime a :ValidationTest .
+:isDuration a :ValidationTest .
+:isLiteral a :ValidationTest .
