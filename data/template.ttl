@@ -18,7 +18,7 @@ local:VoIDmatic a :VoIDDescription ;
         :statement [
             a :Statement ;
             rdfs:comment "Creator's name or URI" ;
-            :validation :isLiteral ;
+            :validation :isNamedNode ;
             :generation [
                 a :GenerationProcess ;
                 rdf:subject :root ;
