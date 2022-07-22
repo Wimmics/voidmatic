@@ -280,7 +280,7 @@ $(() => {
         }
     }
 
-    function isValidLiteral(value) {
+    function isLiteral(value) {
         try {
             return value != undefined && value.length > 0 && $rdf.isLiteral($rdf.lit(value));
         } catch (e) {
@@ -288,13 +288,38 @@ $(() => {
         }
     }
 
-    function isValidURI(value) {
+    function isURI(value) {
         try {
             return value != undefined && value.length > 0 && $rdf.isNamedNode($rdf.sym(value));
         } catch (e) {
             return false;
         }
     }
+
+    function isNotBlank(value) {
+        try {
+            return isURI(value) || isLiteral(value) ;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function isDatetime(value) {
+        try {
+            return isLiteral(value);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function isDuration(value) {
+        try {
+            return isLiteral(value);
+        } catch (e) {
+            return false;
+        }
+    }
+
 
     var inputMetadata = [
         {

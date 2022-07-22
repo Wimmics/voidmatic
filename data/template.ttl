@@ -15,6 +15,7 @@ local:VoIDmatic a :VoIDDescription ;
         rdfs:comment "Represents the different actors involved in the creation of the dataset."@en ;
         :minArity 1 ;
         :maxArity -1 ;
+        :priority 2 ;
         :statement [
             a :Statement ;
             rdfs:comment "Creator's name or URI" ;
@@ -23,6 +24,132 @@ local:VoIDmatic a :VoIDDescription ;
                 a :GenerationProcess ;
                 rdf:subject :root ;
                 rdf:predicate dcterms:creator ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Endpoint URL"@en ;
+        rdfs:comment "URL of the SPARQL endpoint."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :priority 1 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Endpoint's URL" ;
+            :validation :isIRI ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate void:sparqlEndpoint ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Title"@en ;
+        rdfs:comment "Short title for the knowledge base and its content."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :priority 1 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Short title for the knowledge base" ;
+            :validation :isLiteral ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcterms:title ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Description"@en ;
+        rdfs:comment "Long description of the knowledge base and its content."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :priority 1 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Long description of the knowledge base" ;
+            :validation :isLiteral ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcterms:description ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Publication date"@en ;
+        rdfs:comment "Publication date of the knowledge base."@en ;
+        :minArity 1 ;
+        :maxArity 1 ;
+        :priority 2 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Publication date of the knowledge base" ;
+            :validation :isLiteral ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcterms:issued ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Vocabularies"@en ;
+        rdfs:comment "URIs of the vocabularies used in the knowledge base."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :priority 3 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Vocabularies used in the knowledge base" ;
+            :validation :isIRI ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate void:vocabulary ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Keywords"@en ;
+        rdfs:comment "Keywords describing the content of the knowledge base."@en ;
+        :minArity 1 ;
+        :maxArity -1 ;
+        :priority 3 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Keyworks used to describe the knowledge base" ;
+            :validation :isNamedNode ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcat:keyword ;
+                rdf:object :value 
+            ]
+        ]
+    ] , [
+        a :StatementCategory ;
+        rdfs:label "Version"@en ;
+        rdfs:comment "Current version number of the knowledge base."@en ;
+        :minArity 1 ;
+        :maxArity 1 ;
+        :priority 3 ;
+        :statement [
+            a :Statement ;
+            rdfs:comment "Current version of the knowledge base" ;
+            :validation :isNamedNode ;
+            :generation [
+                a :GenerationProcess ;
+                rdf:subject :root ;
+                rdf:predicate dcat:version ;
                 rdf:object :value 
             ]
         ]

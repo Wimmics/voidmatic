@@ -65,6 +65,11 @@
     rdfs:domain :Metadata ;
     rdfs:range xsd:boolean .
 
+:suggestion a owl:DatatypeProperty ;
+    rdfs:label "Links to the suggestions for the value of a statement"@en ;
+    rdfs:domain :Statement ;
+    rdfs:range :SuggestionProcess .
+
 :priority a owl:DatatypeProperty ;
     rdfs:domain :StatementCategory ;
     rdfs:range xsd:integer .
@@ -75,8 +80,8 @@
 
 # Pre-defined tests
 :isIRI a :ValidationTest .
-:isNamedNode a :ValidationTest .
-:isDateTime a :ValidationTest .
+:isNotBlank a :ValidationTest .
+:isDatetime a :ValidationTest .
 :isDuration a :ValidationTest .
 :isLiteral a :ValidationTest .
 
