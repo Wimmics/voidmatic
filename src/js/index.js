@@ -324,6 +324,26 @@ $(() => {
     var inputMetadata = [
         {
             recommended: true,
+            categoryTitle: "Title",
+            legend: "Short title for the knowledge base and its content.",
+            idPrefix: "title",
+            minArity: 1,
+            maxArity: Infinity,
+            fields: [
+                new FieldCore({
+                    placeholder: "Short title for the knowledge base",
+                    dataCreationFunction: (inputVal) => {
+                        store.add(exampleDataset, DCT('title'), $rdf.lit(inputVal));
+                        return store.toNT();
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
+                    }
+                })
+            ]
+        },
+        {
+            recommended: true,
             categoryTitle: "Creator",
             legend: "Represents the different actors involved in the creation of the dataset.",
             idPrefix: "creator",
@@ -333,7 +353,7 @@ $(() => {
                 new FieldCore({
                     placeholder: "Creator's name or URI",
                     dataValidationFunction: (inputVal, inputId) => {
-                        var result = isValidLiteral(inputVal);
+                        var result = isLiteral(inputVal);
                         return result;
                     },
                     dataCreationFunction: (inputVal, inputId) => {
@@ -354,31 +374,11 @@ $(() => {
                 {
                     placeholder: "Endpoint's URL",
                     dataValidationFunction: (inputVal) => {
-                        return isValidURI(inputVal);
+                        return isURI(inputVal);
                     },
                     dataCreationFunction: (inputVal) => {
                         store.add(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal));
                         return store.toNT();
-                    }
-                }
-            ]
-        },
-        {
-            recommended: true,
-            categoryTitle: "Title",
-            legend: "Short title for the knowledge base and its content.",
-            idPrefix: "title",
-            minArity: 1,
-            maxArity: Infinity,
-            fields: [
-                {
-                    placeholder: "Short title for the knowledge base",
-                    dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, DCT('title'), $rdf.lit(inputVal));
-                        return store.toNT();
-                    },
-                    dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal);
                     }
                 }
             ]
@@ -398,7 +398,17 @@ $(() => {
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal);
+                        return isLiteral(inputVal);
+                    }
+                },
+                {
+                    placeholder: "Language tag of the description",
+                    dataCreationFunction: (inputVal) => {
+                        store.add(exampleDataset, DCT('description'), $rdf.lit(inputVal));
+                        return store.toNT();
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
                     }
                 }
             ]
@@ -418,7 +428,7 @@ $(() => {
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal);
+                        return isLiteral(inputVal);
                     }
                 }
             ]
@@ -438,7 +448,7 @@ $(() => {
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidURI(inputVal);
+                        return isURI(inputVal);
                     }
                 }
             ]
@@ -458,7 +468,7 @@ $(() => {
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal);
+                        return isLiteral(inputVal);
                     }
                 }
             ]
@@ -474,17 +484,17 @@ $(() => {
                 {
                     placeholder: "Keyworks used to describe the knowledge base",
                     dataCreationFunction: (inputVal) => {
-                        console.log(isValidLiteral(inputVal) + " " + isValidURI(inputVal));
-                        if (isValidLiteral(inputVal)) {
+                        console.log(isLiteral(inputVal) + " " + isURI(inputVal));
+                        if (isLiteral(inputVal)) {
                             store.add(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal));
                         }
-                        if (isValidURI(inputVal)) {
+                        if (isURI(inputVal)) {
                             store.add(exampleDataset, DCAT('theme'), $rdf.sym(inputVal));
                         }
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal) || isValidURI(inputVal);
+                        return isLiteral(inputVal) || isURI(inputVal);
                     }
                 }
             ]
@@ -504,7 +514,7 @@ $(() => {
                         return store.toNT();
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isValidLiteral(inputVal);
+                        return isLiteral(inputVal);
                     }
                 }
             ]
