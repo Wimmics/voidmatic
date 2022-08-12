@@ -325,7 +325,6 @@ $(() => {
         }
 
         setValidationState = valid => {
-            console.log("setValidationState", valid, this.inputIdField)
             setButtonValidatedState(this.inputIdButton, valid);
             var field = $('#'+this.inputIdField);
             if(valid) {
@@ -397,6 +396,20 @@ $(() => {
             this.inputIdButton = this.inputId + "Button";
         }
 
+        setValidationState = valid => {
+            setButtonValidatedState(this.inputIdButton, valid);
+            this.inputIdFields.forEach(id => {
+                var field = $('#'+id);
+                if(valid) {
+                    field.removeClass("border-danger");
+                    field.addClass("border-success")
+                } else {
+                    field.addClass("border-danger");
+                    field.removeClass("border-success")
+                }
+            })
+        }
+
         generateJQueryContent = () => {
             var lineDiv = $(document.createElement('div'));
 
@@ -444,7 +457,7 @@ $(() => {
                 this.updateContent(fields.map(field => field.val()));
             });
             
-            if(this.fieldValue.length > 0) {
+            if(fields.map(field => (field.val().length > 0)).reduce( (previous, current) => previous || current , false)) {
                 this.fieldValue = fields.map(field => field.val());
                 this.validateContent();
             }
@@ -465,11 +478,6 @@ $(() => {
             $('#' + inputId).removeClass("btn-warning")
             $('#' + inputId).addClass("btn-danger")
             $('#' + inputId).removeClass("btn-success")
-        }
-        if (message != undefined) {
-            console.log("Popover " + inputId)
-            console.log(inputId)
-            var popover = new bootstrap.Popover($('#' + inputId), { content: message, trigger: "click" })
         }
     }
 
@@ -771,7 +779,7 @@ $(() => {
                         this.store.remove(statement);
                         this.refreshStore();
                     }
-                })
+                });
             })
         }
 
