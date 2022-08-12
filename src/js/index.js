@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import { Statement } from 'rdflib';
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
 
@@ -20,15 +21,12 @@ var MOD = $rdf.Namespace("https://w3id.org/mod#");
 const exampleDataset = $rdf.sym('https://e.g/dataset');
 
 $(() => {
-    var store = $rdf.graph();
     var dataCol = $('#dataCol');
     var navCol = $('#navCol');
-    var contentDisplay = $("#displayTextArea");
     var uniqueIdCounter = 0;
 
-    class CategoryCore extends EventEmitter {
+    class CategoryCore {
         constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, fields: [] }) {
-            super();
             this.recommended = config.recommended;
             this.categoryTitle = config.categoryTitle;
             this.legend = config.legend;
@@ -43,13 +41,14 @@ $(() => {
 
         addNewField(fieldConfig) {
             fieldConfig.parentCategory = this;
-            this.fields.push(new FieldCore(fieldConfig));
+            this.fields.push(fieldConfig);
         }
     }
 
-    class CategoryView {
+    class CategoryView extends EventEmitter {
 
         constructor(config = { category: null }) {
+            super();
             this.categoryCore = config.category;
             this.lines = [];
 
@@ -73,17 +72,23 @@ $(() => {
                 if(this.lines.length < this.categoryCore.maxArity) {
                     var fieldLine = null;
                     if(field instanceof SingleFieldCore) {
-                        fieldLine = new SingleFieldInput({ core: field });
+                        fieldLine = new SingleFieldView({ core: field });
+                    } else if(field instanceof MultipleFieldCore) {
+                        fieldLine = new MultipleFieldView({ core: field });
                     } else {
-                        fieldLine = new MultipleFieldInput({ core: field });
+                        console.error(field)
+                        throw new Error("Unknown line type ")
                     }
                     this.lines.push(fieldLine);
+                
+                    fieldLine.on("add", (statement, source) => {
+                        this.emit("add", statement, source);
+                    })
                 }
             })
         }
 
         refresh() {
-            console.log(this.jQueryContent)
             this.jQueryContent.empty();
             this.jQueryContent = this.generateCategoryFields();
 
@@ -149,10 +154,6 @@ $(() => {
             this.jQueryContent.append(catFieldRow);
             catFieldRow.append(catFieldCol);
 
-            this.lines.forEach(field => {
-                catFieldCol.append(field.generateJQueryContent());
-            });
-
             this.refreshLines = () => {
                 catFieldCol.empty();
                 this.lines.forEach(field => {
@@ -160,9 +161,10 @@ $(() => {
                 });
             }
 
+            this.refreshLines();
+
             catAddLineButton.on("click", () => {
                 console.log("ADD")
-                console.log(this.categoryCore)
                 this.addLine();
                 this.refreshLines();
             });
@@ -170,6 +172,9 @@ $(() => {
             catRemoveLineButton.on("click", () => {
                 console.log("REMOVE")
                 if (this.categoryCore.minArity < this.lines.length) {
+                    if(this.lines.at(-1).getData() != undefined) {
+                        this.emit("remove", this.lines.at(-1).getData(), this.lines.at(-1));
+                    }
                     this.lines.pop();
                 }
                 this.refreshLines();
@@ -177,9 +182,8 @@ $(() => {
         }
     }
 
-    class FieldCore extends EventEmitter {
-        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => { }, parentCategory: null }) {
-            super();
+    class FieldCore {
+        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null }) {
             this.placeholder = config.placeholder;
             this.dataValidationFunction = (inputVal) => {
                 var result = false;
@@ -205,6 +209,7 @@ $(() => {
                 }
             }
             this.parentCategory = config.parentCategory;
+            this.defaultValue = config.defaultValue;
         }
     }
 
@@ -213,10 +218,11 @@ $(() => {
     }
 
     class MultipleFieldCore extends FieldCore {
-        constructor(config = { placeholder: [], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => { }, parentCategory: null }) {
+        constructor(config = { placeholder: [], bootstrapFieldColWidth:[], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue:[] }) {
             super();
             this.placeholder = config.placeholder;
-            this.dataValidationFunction = (inputVal) => {
+            this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
+            this.dataValidationFunction = inputValArray => {
                 var result = inputValArray.map(value => false );
                 try {
                     result = config.dataValidationFunction(inputValArray);
@@ -244,17 +250,22 @@ $(() => {
 
     } 
 
-    class FieldInput {
+    class FieldView extends EventEmitter {
         constructor(config = { core: null }) {
+            super();
             this.fieldCore = config.core;
             this.index = uniqueIdCounter++;
             this.metadataFieldIdPrefix = this.fieldCore.parentCategory.idPrefix + "Field";
-            this.fieldValue = "";
-
-            this.fieldCore.addListener("error", error => {
-                console.log(error);
-            });
+            this.fieldValue = this.fieldCore.defaultValue;
             this.inputId = this.metadataFieldIdPrefix + this.index;
+        }
+
+        getValue() {
+            return this.fieldValue;
+        }
+
+        getData() {
+            return this.validateContent();
         }
 
         dataValidationFunction = (inputVal) => {
@@ -266,19 +277,18 @@ $(() => {
             return result;
         } 
 
-        dataCreationFunction = (inputVal) => {
-            if (this.dataValidationFunction(inputVal)) {
-                return this.fieldCore.dataCreationFunction(inputVal);
-            }
-            return store.toNT();
-        }
-
         dataExtractionFunction = () => {
             return this.fieldCore.dataExtractionFunction();
         }
 
         validateContent = () => {
-            contentDisplay.val(this.dataCreationFunction(this.fieldValue));
+            var validated = this.dataValidationFunction(this.fieldValue);
+            if(validated) {
+                var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
+                this.emit("add", statement, this);
+                console.log("EMITION ", statement.toNT())
+                return statement;
+            }
         }
 
         generateJQueryContent = () => {
@@ -286,10 +296,9 @@ $(() => {
 
     }
 
-    class SingleFieldInput extends FieldInput {
+    class SingleFieldView extends FieldView {
         constructor(config = { core: null }) {
             super(config)
-            this.fieldValue = "";
             
             this.inputIdField = this.inputId + "Textfield";
             this.inputIdButton = this.inputId + "Button";
@@ -342,28 +351,24 @@ $(() => {
         }
     }
 
-    class MultipleFieldInput extends FieldInput {
+    class MultipleFieldView extends FieldView {
         constructor(config = { core: null }) {
             super(config)
-            this.fieldValue = "";
             
-            this.inputIdField = this.inputId + "Textfield";
+            this.numberOfFields = this.fieldCore.placeholder.length;
+            this.bootstrapFieldColWidth = config.core.bootstrapFieldColWidth;
+            this.fieldValue = this.fieldCore.placeholder.map(field => "");
+
+            this.inputIdFields = [];
+            for(var i = 0; i < this.numberOfFields; i++) {
+                this.inputIdFields.push(this.inputId + "Textfield" + i);
+            }
             this.inputIdButton = this.inputId + "Button";
         }
 
         generateJQueryContent = () => {
             var lineDiv = $(document.createElement('div'));
-            var textInput = $(document.createElement('input'))
-            var lineLabel = $(document.createElement('label'));
-            textInput.attr('type', 'text');
-            textInput.addClass('form-control');
-            textInput.attr('id', this.inputIdField);
-            textInput.val(this.fieldValue);
-            lineLabel.attr('for', this.inputIdField)
-            lineLabel.text(this.fieldCore.placeholder);
 
-            var lineFieldCol = $(document.createElement('div'));
-            lineFieldCol.addClass('col-11');
             var lineValidButtonCol = $(document.createElement('div'));
             lineValidButtonCol.addClass('col-1');
             var lineValidButton = $(document.createElement('button'));
@@ -374,23 +379,44 @@ $(() => {
             lineValidButton.text("Validate");
             lineValidButtonCol.append(lineValidButton);
 
+            var fields = [];
+
+            for(var i = 0; i < this.numberOfFields; i++) {
+                var lineFieldCol = $(document.createElement('div'));
+                lineFieldCol.addClass('col-' + this.bootstrapFieldColWidth[i]);
+                
+                var textInput = $(document.createElement('input'))
+                var lineLabel = $(document.createElement('label'));
+                textInput.attr('type', 'text');
+                textInput.addClass('form-control');
+                textInput.attr('id', this.inputIdFields[i]);
+                textInput.val(this.fieldValue[i]);
+                lineLabel.attr('for', this.inputIdFields[i])
+                lineLabel.text(this.fieldCore.placeholder[i]);
+
+                fields.push(textInput);
+                textInput.on("change", () => {
+                    this.fieldValue = fields.map(field => field.val());
+                    this.validateContent();
+                })
+                
+                lineFieldCol.addClass('form-floating');
+                lineFieldCol.append(textInput);
+                lineFieldCol.append(lineLabel);
+    
+                lineDiv.append(lineFieldCol);
+            }
+
             lineDiv.addClass('row');
-            lineDiv.append(lineFieldCol);
             lineDiv.append(lineValidButtonCol);
-            lineFieldCol.addClass('form-floating');
-            lineFieldCol.append(textInput);
-            lineFieldCol.append(lineLabel);
-            textInput.on("change", () => {
-                this.fieldValue = textInput.val();
-                this.validateContent();
-            })
 
             lineValidButton.on("click", () => {
-                this.fieldValue = textInput.val();
+                this.fieldValue = fields.map(field => field.val());
                 this.validateContent();
             });
             
             if(this.fieldValue.length > 0) {
+                this.fieldValue = fields.map(field => field.val());
                 this.validateContent();
             }
 
@@ -415,7 +441,6 @@ $(() => {
             console.log("Popover " + inputId)
             console.log(inputId)
             var popover = new bootstrap.Popover($('#' + inputId), { content: message, trigger: "click" })
-
         }
     }
 
@@ -470,17 +495,23 @@ $(() => {
             maxArity: Infinity,
             fields: [
                 new MultipleFieldCore({
-                    placeholder: ["Short title for the knowledge base", "Language tag of the title"],
-                    dataCreationFunction: (inputVal, inputTag) => {
+                    placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
+                    defaultValue: ["", "en"],
+                    bootstrapFieldColWidth : [8, 3],
+                    dataCreationFunction: argArray => {
+                        var inputVal = argArray[0];
+                        var inputTag = argArray[1];
                         if(inputTag.length > 0) {
-                            store.add(exampleDataset, DCT('title'), $rdf.lit(inputVal, inputTag));
+                            return new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal, inputTag));
                         } else {
-                            store.add(exampleDataset, DCT('title'), $rdf.lit(inputVal));
+                            return new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal));
                         }
-                        return store.toNT();
                     },
-                    dataValidationFunction: (inputVal, inputTag) => {
-                        return isLiteral(inputVal);
+                    dataValidationFunction: valuesArray => {
+                        var inputVal = valuesArray[0];
+                        var inputTag = valuesArray[1];
+                        var result = isLiteral(inputVal) && (isLiteral(inputTag) || inputTag.length == 0);
+                        return result;
                     }
                 })
             ]
@@ -495,13 +526,13 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Creator's name or URI",
+                    defaultValue: "",
                     dataValidationFunction: (inputVal) => {
                         var result = isLiteral(inputVal);
                         return result;
                     },
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, DCT('creator'), inputVal);
-                        return store.toNT();
+                        return new Statement(exampleDataset, DCT('creator'), inputVal);
                     }
                 })
             ]
@@ -516,12 +547,12 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Endpoint's URL",
+                    defaultValue: "",
                     dataValidationFunction: (inputVal) => {
                         return isURI(inputVal);
                     },
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal));
-                        return store.toNT();
+                        return new Statement(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal));
                     }
                 })
             ]
@@ -535,17 +566,23 @@ $(() => {
             maxArity: Infinity,
             fields: [
                 new MultipleFieldCore({
-                    placeholder: ["Long description of the knowledge base", "Language tag for the description (optional)"],
-                    dataCreationFunction: (inputVal, inputLang) => {
+                    placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
+                    defaultValue: ["", "en"],
+                    bootstrapFieldColWidth : [8, 3],
+                    dataCreationFunction: argArray => {
+                        var inputVal = argArray[0];
+                        var inputLang = argArray[1];
                         if(inputLang.length > 0) {
-                            store.add(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang));
+                            return new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang));
                         } else {
-                            store.add(exampleDataset, DCT('description'), $rdf.lit(inputVal));
+                            return new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal));
                         }
-                        return store.toNT();
                     },
-                    dataValidationFunction: (inputVal, inputLang) => {
-                        return isLiteral(inputVal);
+                    dataValidationFunction: valuesArray => {
+                        var inputVal = valuesArray[0];
+                        var inputTag = valuesArray[1];
+                        var result = isLiteral(inputVal) && (isLiteral(inputTag) || inputTag.length == 0);
+                        return result;
                     }
                 })
             ]
@@ -560,9 +597,9 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Publication date of the knowledge base",
+                    defaultValue: "",
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, DCT('issued'), $rdf.lit(inputVal));
-                        return store.toNT();
+                        return new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal));
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
@@ -580,9 +617,9 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Vocabularies used in the knowledge base",
+                    defaultValue: "",
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, VOID('vocabulary'), $rdf.sym(inputVal));
-                        return store.toNT();
+                        return new Statement(exampleDataset, VOID('vocabulary'), $rdf.sym(inputVal));
                     },
                     dataValidationFunction: (inputVal) => {
                         return isURI(inputVal);
@@ -600,9 +637,9 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Language tags used in the literals of the knowledge base",
+                    defaultValue: "",
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, DCT('language'), $rdf.lit(inputVal));
-                        return store.toNT();
+                        return new Statement(exampleDataset, DCT('language'), $rdf.lit(inputVal));
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
@@ -620,15 +657,15 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Keyworks used to describe the knowledge base",
+                    defaultValue: "",
                     dataCreationFunction: (inputVal) => {
-                        console.log(isLiteral(inputVal) + " " + isURI(inputVal));
                         if (isLiteral(inputVal)) {
-                            store.add(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal));
+                            return new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal));
                         }
                         if (isURI(inputVal)) {
-                            store.add(exampleDataset, DCAT('theme'), $rdf.sym(inputVal));
+                            return new Statement(exampleDataset, DCAT('theme'), $rdf.sym(inputVal));
                         }
-                        return store.toNT();
+                        return null;
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal) || isURI(inputVal);
@@ -646,9 +683,9 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Current version of the knowledge base",
+                    defaultValue: "1.0",
                     dataCreationFunction: (inputVal) => {
-                        store.add(exampleDataset, DCAT('version'), $rdf.lit(inputVal));
-                        return store.toNT();
+                        return new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal));
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
@@ -658,13 +695,46 @@ $(() => {
         }
     ];
 
-    function generateFields() {
-        inputMetadata.forEach(catMetadata => {
-            var catMetadataView = new CategoryView({ category: new CategoryCore(catMetadata) })
-            dataCol.append(catMetadataView.jQueryContent)
-            navCol.append(catMetadataView.navItem);
-        })
-    }
+    let controlInstance;
 
-    generateFields()
+    class Control {
+        constructor() {
+            if(controlInstance) {
+                throw new Error("Control already instanced")
+            }
+            controlInstance = this;
+
+            this.store = $rdf.graph();
+            this.contentDisplay = $("#displayTextArea");
+            this.categoryViews = [];
+
+            this.generateFields()
+        }
+
+        generateFields() {
+            inputMetadata.forEach(catMetadata => {
+                var catMetadataView = new CategoryView({ category: new CategoryCore(catMetadata) })
+                this.categoryViews.push(catMetadataView);
+                dataCol.append(catMetadataView.jQueryContent)
+                navCol.append(catMetadataView.navItem);
+
+                catMetadataView.on("add", (statement, source) => {
+                    this.store.add(statement);
+                    this.refreshStore();
+                });
+
+                catMetadataView.on("remove", (statement, source) => {
+                    this.store.remove(statement);
+                    this.refreshStore();
+                })
+            })
+        }
+
+        refreshStore() {
+            this.categoryViews.forEach(view => {
+                this.contentDisplay.val(this.store.toNT());
+            })
+        }
+    }
+    new Control();
 });
