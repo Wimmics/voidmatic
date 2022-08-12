@@ -3,6 +3,7 @@ import { Statement } from 'rdflib';
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
 
+var RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 var RDFS = $rdf.Namespace("http://www.w3.org/2000/01/rdf-schema#");
 var OWL = $rdf.Namespace("http://www.w3.org/2002/07/owl#");
 var XSD = $rdf.Namespace("http://www.w3.org/2001/XMLSchema#");
@@ -275,12 +276,15 @@ $(() => {
 
         dataValidationFunction = (inputVal) => {
             var result = this.fieldCore.dataValidationFunction(inputVal);
-            setButtonValidatedState(this.inputIdButton, result);
+            this.setValidationState(result);
             if(result) {
                 this.fieldValue = inputVal;
             }
             return result;
-        } 
+        }
+
+        setValidationState = valid => {
+        }
 
         dataExtractionFunction = () => {
             return this.fieldCore.dataExtractionFunction();
@@ -299,7 +303,6 @@ $(() => {
 
         updateContent = newValue => {
             var oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
-            console.log("Oldvalue ", this.fieldValue, oldValueValidated)
             if(oldValueValidated) {
                 var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
                 this.emit("remove", statement, this);
@@ -319,6 +322,19 @@ $(() => {
             
             this.inputIdField = this.inputId + "Textfield";
             this.inputIdButton = this.inputId + "Button";
+        }
+
+        setValidationState = valid => {
+            console.log("setValidationState", valid, this.inputIdField)
+            setButtonValidatedState(this.inputIdButton, valid);
+            var field = $('#'+this.inputIdField);
+            if(valid) {
+                field.removeClass("border-danger");
+                field.addClass("border-success")
+            } else {
+                field.addClass("border-danger");
+                field.removeClass("border-success")
+            }
         }
 
         generateJQueryContent = () => {
@@ -411,8 +427,7 @@ $(() => {
 
                 fields.push(textInput);
                 textInput.on("change", () => {
-                    this.fieldValue = fields.map(field => field.val());
-                    this.validateContent();
+                    this.updateContent(fields.map(field => field.val()));
                 })
                 
                 lineFieldCol.addClass('form-floating');
@@ -426,7 +441,7 @@ $(() => {
             lineDiv.append(lineValidButtonCol);
 
             lineValidButton.on("click", () => {
-                this.updateContent(textInput.val());
+                this.updateContent(fields.map(field => field.val()));
             });
             
             if(this.fieldValue.length > 0) {
@@ -730,9 +745,11 @@ $(() => {
             this.contentDisplay = $("#displayTextArea");
             this.categoryViews = [];
 
+            this.store.add(exampleDataset, RDF("type"), DCAT("Dataset"));
+
             this.generateFields();
 
-            this.store.add(exampleDataset, RDF("type"), DCAT("Dataset"));
+            this.refreshStore();
         }
 
         generateFields() {
