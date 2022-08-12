@@ -84,6 +84,10 @@ $(() => {
                     fieldLine.on("add", (statement, source) => {
                         this.emit("add", statement, source);
                     })
+                
+                    fieldLine.on("remove", (statement, source) => {
+                        this.emit("remove", statement, source);
+                    })
                 }
             })
         }
@@ -183,7 +187,7 @@ $(() => {
     }
 
     class FieldCore {
-        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null }) {
+        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null, advice:"" }) {
             this.placeholder = config.placeholder;
             this.dataValidationFunction = (inputVal) => {
                 var result = false;
@@ -198,7 +202,6 @@ $(() => {
                 if (this.dataValidationFunction(inputVal)) {
                     return config.dataCreationFunction(inputVal);
                 }
-                return store.toNT();
             };
             this.dataExtractionFunction = () => {
                 try {
@@ -210,6 +213,7 @@ $(() => {
             }
             this.parentCategory = config.parentCategory;
             this.defaultValue = config.defaultValue;
+            this.advice = config.advice;
         }
     }
 
@@ -245,6 +249,7 @@ $(() => {
                     return [];
                 }
             }
+            this.defaultValue = config.defaultValue;
             this.parentCategory = config.parentCategory;
         }
 
@@ -286,9 +291,21 @@ $(() => {
             if(validated) {
                 var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
                 this.emit("add", statement, this);
-                console.log("EMITION ", statement.toNT())
                 return statement;
+            } else {
+                this.emit("incorrectValue", this.fieldCore.advice, this);
             }
+        }
+
+        updateContent = newValue => {
+            var oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
+            console.log("Oldvalue ", this.fieldValue, oldValueValidated)
+            if(oldValueValidated) {
+                var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
+                this.emit("remove", statement, this);
+            }
+            this.fieldValue = newValue;
+            this.validateContent();
         }
 
         generateJQueryContent = () => {
@@ -334,13 +351,11 @@ $(() => {
             lineFieldCol.append(textInput);
             lineFieldCol.append(lineLabel);
             textInput.on("change", () => {
-                this.fieldValue = textInput.val();
-                this.validateContent();
+                this.updateContent(textInput.val());
             })
 
             lineValidButton.on("click", () => {
-                this.fieldValue = textInput.val();
-                this.validateContent();
+                this.updateContent(textInput.val());
             });
             
             if(this.fieldValue.length > 0) {
@@ -357,7 +372,7 @@ $(() => {
             
             this.numberOfFields = this.fieldCore.placeholder.length;
             this.bootstrapFieldColWidth = config.core.bootstrapFieldColWidth;
-            this.fieldValue = this.fieldCore.placeholder.map(field => "");
+            this.fieldValue = this.fieldCore.defaultValue;
 
             this.inputIdFields = [];
             for(var i = 0; i < this.numberOfFields; i++) {
@@ -411,8 +426,7 @@ $(() => {
             lineDiv.append(lineValidButtonCol);
 
             lineValidButton.on("click", () => {
-                this.fieldValue = fields.map(field => field.val());
-                this.validateContent();
+                this.updateContent(textInput.val());
             });
             
             if(this.fieldValue.length > 0) {
@@ -496,6 +510,7 @@ $(() => {
             fields: [
                 new MultipleFieldCore({
                     placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
+                    advice: "The short title must be non-empty",
                     defaultValue: ["", "en"],
                     bootstrapFieldColWidth : [8, 3],
                     dataCreationFunction: argArray => {
@@ -527,6 +542,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Creator's name or URI",
                     defaultValue: "",
+                    advice: "The creator must be non-empty",
                     dataValidationFunction: (inputVal) => {
                         var result = isLiteral(inputVal);
                         return result;
@@ -568,6 +584,7 @@ $(() => {
                 new MultipleFieldCore({
                     placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
                     defaultValue: ["", "en"],
+                    advice: "The description must be non-empty",
                     bootstrapFieldColWidth : [8, 3],
                     dataCreationFunction: argArray => {
                         var inputVal = argArray[0];
@@ -598,6 +615,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Publication date of the knowledge base",
                     defaultValue: "",
+                    advice: "The date must be non-empty and in the correct format",
                     dataCreationFunction: (inputVal) => {
                         return new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal));
                     },
@@ -618,6 +636,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Vocabularies used in the knowledge base",
                     defaultValue: "",
+                    advice: "The vocabulary must be an URI",
                     dataCreationFunction: (inputVal) => {
                         return new Statement(exampleDataset, VOID('vocabulary'), $rdf.sym(inputVal));
                     },
@@ -638,6 +657,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Language tags used in the literals of the knowledge base",
                     defaultValue: "",
+                    advice: "The vocabulary must be non empty",
                     dataCreationFunction: (inputVal) => {
                         return new Statement(exampleDataset, DCT('language'), $rdf.lit(inputVal));
                     },
@@ -658,6 +678,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Keyworks used to describe the knowledge base",
                     defaultValue: "",
+                    advice: "The keyword must be non empty",
                     dataCreationFunction: (inputVal) => {
                         if (isLiteral(inputVal)) {
                             return new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal));
@@ -684,6 +705,7 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Current version of the knowledge base",
                     defaultValue: "1.0",
+                    advice: "The version must be non empty",
                     dataCreationFunction: (inputVal) => {
                         return new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal));
                     },
@@ -708,7 +730,9 @@ $(() => {
             this.contentDisplay = $("#displayTextArea");
             this.categoryViews = [];
 
-            this.generateFields()
+            this.generateFields();
+
+            this.store.add(exampleDataset, RDF("type"), DCAT("Dataset"));
         }
 
         generateFields() {
@@ -719,13 +743,17 @@ $(() => {
                 navCol.append(catMetadataView.navItem);
 
                 catMetadataView.on("add", (statement, source) => {
+                    console.log("add " , statement)
                     this.store.add(statement);
                     this.refreshStore();
                 });
 
                 catMetadataView.on("remove", (statement, source) => {
-                    this.store.remove(statement);
-                    this.refreshStore();
+                    console.log("remove " , statement)
+                    if(this.store.holdsStatement(statement)) {
+                        this.store.remove(statement);
+                        this.refreshStore();
+                    }
                 })
             })
         }
