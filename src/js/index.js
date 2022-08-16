@@ -164,6 +164,16 @@ $(() => {
                 this.lines.forEach(field => {
                     catFieldCol.append(field.generateJQueryContent());
                 });
+                if(this.lines.length == this.categoryCore.maxArity) {
+                    catAddLineButton.prop("disabled", true);
+                } else {
+                    catAddLineButton.prop("disabled", false);
+                }
+                if(this.lines.length == this.categoryCore.minArity) {
+                    catRemoveLineButton.prop("disabled", true);
+                } else {
+                    catRemoveLineButton.prop("disabled", false);
+                }
             }
 
             this.refreshLines();
