@@ -1,5 +1,7 @@
 import $ from 'jquery';
 import { Statement } from 'rdflib';
+import * as bootstrap from 'bootstrap'
+
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
 
@@ -285,7 +287,11 @@ $(() => {
             return this.fieldValue;
         }
 
-        getData() {
+        hasValidValue() {
+            return this.fieldCore.dataValidationFunction(this.getValue());
+        }
+
+        getRDFData() {
             return this.validateContent();
         }
 
@@ -749,6 +755,9 @@ $(() => {
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+
                     }
                 })
             ]
