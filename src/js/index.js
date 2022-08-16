@@ -73,9 +73,9 @@ $(() => {
                 if(this.lines.length < this.categoryCore.maxArity) {
                     var fieldLine = null;
                     if(field instanceof SingleFieldCore) {
-                        fieldLine = new SingleFieldView({ core: field });
+                        fieldLine = new SingleFieldView({ core: field, parentCategoryView:this });
                     } else if(field instanceof MultipleFieldCore) {
-                        fieldLine = new MultipleFieldView({ core: field });
+                        fieldLine = new MultipleFieldView({ core: field, parentCategoryView:this });
                     } else {
                         console.error(field)
                         throw new Error("Unknown line type ")
@@ -88,6 +88,10 @@ $(() => {
                 
                     fieldLine.on("remove", (statement, source) => {
                         this.emit("remove", statement, source);
+                    })
+                
+                    fieldLine.on("invalidValue", (statement, source) => {
+                        this.emit("invalidValue", statement, source);
                     })
                 }
             })
@@ -267,9 +271,10 @@ $(() => {
     } 
 
     class FieldView extends EventEmitter {
-        constructor(config = { core: null }) {
+        constructor(config = { core: null, parentCategoryView:null }) {
             super();
             this.fieldCore = config.core;
+            this.parentCategoryView = config.parentCategoryView;
             this.index = uniqueIdCounter++;
             this.metadataFieldIdPrefix = this.fieldCore.parentCategory.idPrefix + "Field";
             this.fieldValue = this.fieldCore.defaultValue;
@@ -307,7 +312,7 @@ $(() => {
                 this.emit("add", statement, this);
                 return statement;
             } else {
-                this.emit("incorrectValue", this.fieldCore.advice, this);
+                this.emit("invalidValue", this.fieldCore.advice, this);
             }
         }
 
