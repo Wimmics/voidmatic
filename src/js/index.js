@@ -97,7 +97,7 @@ $(() => {
                 return finalResult;
             })
             .catch(error => {
-                console.log(error)
+                console.error(error)
                 return finalResult;
             })
             .finally(() => {
@@ -291,7 +291,6 @@ $(() => {
                     if (field.dataExtractionFunction != undefined) {
                         var extractedValuesPromise = field.dataExtractionFunction();
                         extractedValuesPromise.then(extractedValues => {
-                            console.log(extractedValues)
                             extractedValues.forEach(value => {
                                 var statement = field.dataCreationFunction(value);
                                 controlInstance.addStatement(statement);
@@ -308,8 +307,8 @@ $(() => {
 
             catRemoveLineButton.on("click", () => {
                 if (this.categoryCore.minArity < this.lines.length) {
-                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getData() != undefined) {
-                        this.emit("remove", this.lines.at(-1).getData(), this.lines.at(-1));
+                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getRDFData() != undefined) {
+                        this.emit("remove", this.lines.at(-1).getRDFData(), this.lines.at(-1));
                     }
                     this.lines.pop();
                 }
@@ -821,7 +820,6 @@ $(() => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
-                            console.log(endpointNode);
                             var endpointString = endpointNode.value;
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s ?elem ?o . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
@@ -864,7 +862,6 @@ $(() => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
-                            console.log(endpointNode);
                             var endpointString = endpointNode.value;
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
                         });
@@ -875,7 +872,6 @@ $(() => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                console.log(unifiedBindings)
                                 return unifiedBindings.map(binding =>
                                     binding.tag.value
                                 );
@@ -972,7 +968,6 @@ $(() => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                console.log(unifiedBindings)
                                 return unifiedBindings.map(binding =>
                                     binding.graph.value
                                 );
@@ -1013,12 +1008,10 @@ $(() => {
                         return Promise.all(promiseArray)
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
-                                console.log(bindingsArray)
                                 bindingsArray.forEach(bindings => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                console.log(unifiedBindings)
                                 return unifiedBindings.map(binding =>
                                     binding.count.value
                                 );
@@ -1063,7 +1056,6 @@ $(() => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                console.log(unifiedBindings)
                                 return unifiedBindings.map(binding =>
                                     binding.count.value
                                 );
@@ -1108,7 +1100,6 @@ $(() => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                console.log(unifiedBindings)
                                 return unifiedBindings.map(binding =>
                                     binding.count.value
                                 );
@@ -1199,12 +1190,10 @@ $(() => {
                 navCol.append(catMetadataView.navItem);
 
                 catMetadataView.on("add", (statements, source) => {
-                    console.log("add ", statements)
                     this.addAllStatements(statements);
                 });
 
                 catMetadataView.on("remove", (statements, source) => {
-                    console.log("remove ", statements)
                     this.removeAllStatements(statements);
                 });
 
