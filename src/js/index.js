@@ -734,7 +734,7 @@ $(() => {
             fields: [
                 new SingleFieldCore({
                     placeholder: "Endpoint's URL",
-                    defaultValue: "",
+                    defaultValue: "http://prod-dekalog.inria.fr/sparql",
                     dataValidationFunction: (inputVal) => {
                         return isURI(inputVal);
                     },
