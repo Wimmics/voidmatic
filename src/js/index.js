@@ -686,9 +686,9 @@ $(() => {
                         var inputVal = argArray[0];
                         var inputTag = argArray[1];
                         if (inputTag.length > 0) {
-                            return new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal, inputTag));
+                            return [new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal, inputTag))];
                         } else {
-                            return new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal));
+                            return [new Statement(exampleDataset, DCT('title'), $rdf.lit(inputVal))];
                         }
                     },
                     dataValidationFunction: valuesArray => {
