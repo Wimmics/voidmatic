@@ -113,6 +113,7 @@ $(() => {
             this.idPrefix = config.idPrefix;
             this.minArity = config.minArity;
             this.maxArity = config.maxArity;
+            this.computable = config.computable;
             this.fields = [];
             config.fields.forEach(fieldConfig => {
                 this.addNewField(fieldConfig);
@@ -206,13 +207,11 @@ $(() => {
             var catControlRow = $(document.createElement('div'));
             catControlRow.addClass("row")
             var catLegendCol = $(document.createElement('div'));
-            catLegendCol.addClass("col-10")
             var catLegend = $(document.createElement('p'));
             catLegend.text(this.categoryCore.legend);
             catLegendCol.append(catLegend);
             catControlRow.append(catLegendCol);
             var catAddLineCol = $(document.createElement('div'));
-            catAddLineCol.addClass("col-1");
             var catAddLineButton = $(document.createElement('button'));
             catAddLineButton.addClass("btn");
             catAddLineButton.attr('type', "button");
@@ -223,7 +222,6 @@ $(() => {
             catAddLineButtonImage.addClass("bi-file-plus")
             catAddLineButton.append(catAddLineButtonImage);
             var catRemoveLineCol = $(document.createElement('div'));
-            catRemoveLineCol.addClass("col-1");
             var catRemoveLineButton = $(document.createElement('button'));
             catRemoveLineButton.addClass("btn");
             catRemoveLineButton.attr('type', "button");
@@ -233,6 +231,29 @@ $(() => {
             catRemoveLineButtonImage.addClass("bi")
             catRemoveLineButtonImage.addClass("bi-file-minus")
             catRemoveLineButton.append(catRemoveLineButtonImage);
+
+            var catExtractLineCol = $(document.createElement('div'));
+            var lineComputeButton = $(document.createElement('a'));
+            lineComputeButton.attr("type", "button");
+            lineComputeButton.attr("id", this.inputIdButton)
+            lineComputeButton.attr("tabindex", 0);
+            lineComputeButton.addClass("btn");
+            lineComputeButton.addClass("btn-light");
+            lineComputeButton.text("Extract");
+            catExtractLineCol.append(lineComputeButton);
+            if(this.categoryCore.computable) {
+                catLegendCol.addClass("col-9")
+                catExtractLineCol.addClass("col-1")
+                catAddLineCol.addClass("col-1");
+                catRemoveLineCol.addClass("col-1");
+            } else {
+                catLegendCol.addClass("col-10")
+                catAddLineCol.addClass("col-1");
+                catRemoveLineCol.addClass("col-1");
+            }
+            if(this.categoryCore.computable) {
+                catControlRow.append(catExtractLineCol);
+            }
             catControlRow.append(catAddLineCol);
             catControlRow.append(catRemoveLineCol);
 
@@ -265,16 +286,30 @@ $(() => {
 
             this.refreshLines();
 
+            lineComputeButton.on("click", () => {
+                this.categoryCore.fields.forEach(field => {
+                    if(field.dataExtractionFunction != undefined) {
+                        var extractedValuesPromise = field.dataExtractionFunction();
+                        extractedValuesPromise.then(extractedValues => {
+                            console.log(extractedValues)
+                            extractedValues.forEach(value => {
+                                var statement = field.dataCreationFunction(value);
+                                console.log(statement)
+                                controlInstance.addStatement(statement);
+                            })
+                        })
+                    }
+                })
+            })
+
             catAddLineButton.on("click", () => {
-                console.log("ADD")
                 this.addLine();
                 this.refreshLines();
             });
 
             catRemoveLineButton.on("click", () => {
-                console.log("REMOVE")
                 if (this.categoryCore.minArity < this.lines.length) {
-                    if (this.lines.at(-1).getData() != undefined) {
+                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getData() != undefined ) {
                         this.emit("remove", this.lines.at(-1).getData(), this.lines.at(-1));
                     }
                     this.lines.pop();
@@ -455,9 +490,9 @@ $(() => {
             lineLabel.text(this.fieldCore.placeholder);
 
             var lineFieldCol = $(document.createElement('div'));
-            lineFieldCol.addClass('col-11');
             var lineValidButtonCol = $(document.createElement('div'));
-            lineValidButtonCol.addClass('col-1');
+                lineFieldCol.addClass('col-11');
+                lineValidButtonCol.addClass('col-1');
             var lineValidButton = $(document.createElement('a'));
             lineValidButton.attr("type", "button");
             lineValidButton.attr("id", this.inputIdButton)
@@ -479,10 +514,6 @@ $(() => {
 
             lineValidButton.on("click", () => {
                 this.updateContent(textInput.val());
-                if(this.fieldCore.dataExtractionFunction != undefined) {
-                    console.log(this.fieldCore.dataExtractionFunction)
-                    this.dataExtractionFunction();
-                }
             });
 
             if (this.fieldValue.length > 0) {
@@ -645,6 +676,7 @@ $(() => {
             idPrefix: "title",
             minArity: 1,
             maxArity: Infinity,
+            computable:false,
             fields: [
                 new MultipleFieldCore({
                     placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
@@ -676,6 +708,7 @@ $(() => {
             idPrefix: "creator",
             minArity: 1,
             maxArity: Infinity,
+            computable:false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Creator's name or URI",
@@ -698,6 +731,7 @@ $(() => {
             idPrefix: "endpoint",
             minArity: 1,
             maxArity: Infinity,
+            computable:false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Endpoint's URL",
@@ -718,6 +752,7 @@ $(() => {
             idPrefix: "description",
             minArity: 1,
             maxArity: Infinity,
+            computable:false,
             fields: [
                 new MultipleFieldCore({
                     placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
@@ -749,6 +784,7 @@ $(() => {
             idPrefix: "publication",
             minArity: 1,
             maxArity: 1,
+            computable:false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Publication date of the knowledge base",
@@ -770,6 +806,7 @@ $(() => {
             idPrefix: "vocabulary",
             minArity: 1,
             maxArity: Infinity,
+            computable: true,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Vocabularies used in the knowledge base",
@@ -782,7 +819,6 @@ $(() => {
                         return isURI(inputVal);
                     },
                     dataExtractionFunction: () => {
-                        console.log("EXTRACTION START");
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
@@ -797,12 +833,11 @@ $(() => {
                                 bindingsArray.forEach(bindings => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
-                                return unifiedBindings;
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                return unifiedBindings.map(binding => 
+                                    binding.ns.value
+                                );
                             })
-                            .then(results => { 
-                                console.log(results);
-                                console.log("EXTRACTION END");
-                            });
                     }
                 })
             ]
@@ -814,6 +849,7 @@ $(() => {
             idPrefix: "language",
             minArity: 1,
             maxArity: Infinity,
+            computable: true,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Language tags used in the literals of the knowledge base",
@@ -824,6 +860,30 @@ $(() => {
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+                        var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        var promiseArray = [];
+                        endpointArray.forEach(endpointNode => {
+                            console.log(endpointNode);
+                            var endpointString = endpointNode.value;
+                            promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
+                        });
+                        return Promise.all(promiseArray)
+                            .then(bindingsArray => { 
+                                var unifiedBindings = [];
+                                bindingsArray.forEach(bindings => {
+                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                });
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                console.log(unifiedBindings)
+                                return unifiedBindings.map(binding => 
+                                    binding.tag.value
+                                );
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            }) 
                     }
                 })
             ]
@@ -835,6 +895,7 @@ $(() => {
             idPrefix: "keyword",
             minArity: 1,
             maxArity: Infinity,
+            computable: false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Keyworks used to describe the knowledge base",
@@ -862,6 +923,7 @@ $(() => {
             idPrefix: "version",
             minArity: 1,
             maxArity: 1,
+            computable: false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Current version of the knowledge base",
@@ -912,6 +974,25 @@ $(() => {
             return this.store.each(s, p, o);
         }
 
+        addStatement(s, p, o) {
+            this.store.add(s, p, o);
+            this.refreshStore();
+        }
+
+        addStatement(statement) {
+            this.store.add(statement);
+            this.refreshStore();
+        }
+
+        addAllStatements(statements) {
+            this.store.add(statements);
+            this.refreshStore();
+        }
+
+        setDisplay(str) {
+            this.contentDisplay.val(str);
+        }
+
         generateFields() {
             inputMetadata.forEach(catMetadata => {
                 var catMetadataView = new CategoryView({ category: new CategoryCore(catMetadata) })
@@ -943,7 +1024,12 @@ $(() => {
 
         refreshStore() {
             this.categoryViews.forEach(view => {
-                this.contentDisplay.val(this.store.toNT());
+                $rdf.serialize(undefined, this.store, undefined,'text/turtle', function(err, str){
+                    controlInstance.setDisplay(str);
+                    if(err != null) {
+                        console.error(err);
+                    }
+                    });
             })
         }
     }
