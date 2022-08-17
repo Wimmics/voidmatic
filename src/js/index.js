@@ -69,9 +69,9 @@ $(() => {
     function sparqlQueryPromise(endpoint, query) {
         if (query.includes("SELECT") || query.includes("ASK")) {
             return xmlhttpRequestJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json')
-            .catch(error => {
-                console.error(error)
-            });
+                .catch(error => {
+                    console.error(error)
+                });
         }
         else {
             console.error(error)
@@ -241,7 +241,7 @@ $(() => {
             lineComputeButton.addClass("btn-light");
             lineComputeButton.text("Extract");
             catExtractLineCol.append(lineComputeButton);
-            if(this.categoryCore.computable) {
+            if (this.categoryCore.computable) {
                 catLegendCol.addClass("col-9")
                 catExtractLineCol.addClass("col-1")
                 catAddLineCol.addClass("col-1");
@@ -251,7 +251,7 @@ $(() => {
                 catAddLineCol.addClass("col-1");
                 catRemoveLineCol.addClass("col-1");
             }
-            if(this.categoryCore.computable) {
+            if (this.categoryCore.computable) {
                 catControlRow.append(catExtractLineCol);
             }
             catControlRow.append(catAddLineCol);
@@ -288,13 +288,12 @@ $(() => {
 
             lineComputeButton.on("click", () => {
                 this.categoryCore.fields.forEach(field => {
-                    if(field.dataExtractionFunction != undefined) {
+                    if (field.dataExtractionFunction != undefined) {
                         var extractedValuesPromise = field.dataExtractionFunction();
                         extractedValuesPromise.then(extractedValues => {
                             console.log(extractedValues)
                             extractedValues.forEach(value => {
                                 var statement = field.dataCreationFunction(value);
-                                console.log(statement)
                                 controlInstance.addStatement(statement);
                             })
                         })
@@ -309,7 +308,7 @@ $(() => {
 
             catRemoveLineButton.on("click", () => {
                 if (this.categoryCore.minArity < this.lines.length) {
-                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getData() != undefined ) {
+                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getData() != undefined) {
                         this.emit("remove", this.lines.at(-1).getData(), this.lines.at(-1));
                     }
                     this.lines.pop();
@@ -320,7 +319,7 @@ $(() => {
     }
 
     class FieldCore {
-        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { }, dataExtractionFunction: () => {}, parentCategory: null, defaultValue: null, advice: "" }) {
+        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { return []}, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null, advice: "" }) {
             this.placeholder = config.placeholder;
             this.dataValidationFunction = (inputVal) => {
                 var result = false;
@@ -336,7 +335,7 @@ $(() => {
                     return config.dataCreationFunction(inputVal);
                 }
             };
-            if(config.dataExtractionFunction != undefined) {
+            if (config.dataExtractionFunction != undefined) {
                 this.dataExtractionFunction = () => {
                     try {
                         return config.dataExtractionFunction();
@@ -357,7 +356,7 @@ $(() => {
     }
 
     class MultipleFieldCore extends FieldCore {
-        constructor(config = { placeholder: [], bootstrapFieldColWidth: [], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => {}, parentCategory: null, defaultValue: [] }) {
+        constructor(config = { placeholder: [], bootstrapFieldColWidth: [], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
             super();
             this.placeholder = config.placeholder;
             this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
@@ -491,8 +490,8 @@ $(() => {
 
             var lineFieldCol = $(document.createElement('div'));
             var lineValidButtonCol = $(document.createElement('div'));
-                lineFieldCol.addClass('col-11');
-                lineValidButtonCol.addClass('col-1');
+            lineFieldCol.addClass('col-11');
+            lineValidButtonCol.addClass('col-1');
             var lineValidButton = $(document.createElement('a'));
             lineValidButton.attr("type", "button");
             lineValidButton.attr("id", this.inputIdButton)
@@ -676,7 +675,7 @@ $(() => {
             idPrefix: "title",
             minArity: 1,
             maxArity: Infinity,
-            computable:false,
+            computable: false,
             fields: [
                 new MultipleFieldCore({
                     placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
@@ -708,7 +707,7 @@ $(() => {
             idPrefix: "creator",
             minArity: 1,
             maxArity: Infinity,
-            computable:false,
+            computable: false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Creator's name or URI",
@@ -719,7 +718,7 @@ $(() => {
                         return result;
                     },
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, DCT('creator'), inputVal);
+                        return [new Statement(exampleDataset, DCT('creator'), inputVal)];
                     }
                 })
             ]
@@ -731,7 +730,7 @@ $(() => {
             idPrefix: "endpoint",
             minArity: 1,
             maxArity: Infinity,
-            computable:false,
+            computable: false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Endpoint's URL",
@@ -740,7 +739,7 @@ $(() => {
                         return isURI(inputVal);
                     },
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal));
+                        return [new Statement(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal))];
                     }
                 })
             ]
@@ -752,7 +751,7 @@ $(() => {
             idPrefix: "description",
             minArity: 1,
             maxArity: Infinity,
-            computable:false,
+            computable: false,
             fields: [
                 new MultipleFieldCore({
                     placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
@@ -784,14 +783,14 @@ $(() => {
             idPrefix: "publication",
             minArity: 1,
             maxArity: 1,
-            computable:false,
+            computable: false,
             fields: [
                 new SingleFieldCore({
                     placeholder: "Publication date of the knowledge base",
                     defaultValue: "",
                     advice: "The date must be non-empty and in the correct format",
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal));
+                        return [new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal))];
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
@@ -813,7 +812,7 @@ $(() => {
                     defaultValue: "",
                     advice: "The vocabulary must be an URI",
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, VOID('vocabulary'), $rdf.sym(inputVal));
+                        return [new Statement(exampleDataset, VOID('vocabulary'), $rdf.sym(inputVal))];
                     },
                     dataValidationFunction: (inputVal) => {
                         return isURI(inputVal);
@@ -828,13 +827,13 @@ $(() => {
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                         });
                         return Promise.all(promiseArray)
-                            .then(bindingsArray => { 
+                            .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
-                                return unifiedBindings.map(binding => 
+                                return unifiedBindings.map(binding =>
                                     binding.ns.value
                                 );
                             })
@@ -856,7 +855,7 @@ $(() => {
                     defaultValue: "",
                     advice: "The vocabulary must be non empty",
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, DCT('language'), $rdf.lit(inputVal));
+                        return [new Statement(exampleDataset, DCT('language'), $rdf.lit(inputVal))];
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
@@ -870,20 +869,20 @@ $(() => {
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
                         });
                         return Promise.all(promiseArray)
-                            .then(bindingsArray => { 
+                            .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 console.log(unifiedBindings)
-                                return unifiedBindings.map(binding => 
+                                return unifiedBindings.map(binding =>
                                     binding.tag.value
                                 );
                             })
                             .catch(error => {
                                 console.error(error);
-                            }) 
+                            })
                     }
                 })
             ]
@@ -903,10 +902,10 @@ $(() => {
                     advice: "The keyword must be non empty",
                     dataCreationFunction: (inputVal) => {
                         if (isLiteral(inputVal)) {
-                            return new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal));
+                            return [new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal))];
                         }
                         if (isURI(inputVal)) {
-                            return new Statement(exampleDataset, DCAT('theme'), $rdf.sym(inputVal));
+                            return [new Statement(exampleDataset, DCAT('theme'), $rdf.sym(inputVal))];
                         }
                         return null;
                     },
@@ -930,10 +929,193 @@ $(() => {
                     defaultValue: "1.0",
                     advice: "The version must be non empty",
                     dataCreationFunction: (inputVal) => {
-                        return new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal));
+                        return [new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal))];
                     },
                     dataValidationFunction: (inputVal) => {
                         return isLiteral(inputVal);
+                    }
+                })
+            ]
+        },
+        {
+            recommended: false,
+            categoryTitle: "Graph",
+            legend: "Graphs present in the dataset",
+            idPrefix: "graph",
+            minArity: 0,
+            maxArity: Infinity,
+            computable: true,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Uri of the graph",
+                    defaultValue: "",
+                    advice: "The name of the graph must be an URI",
+                    dataCreationFunction: (inputVal) => {
+                        var graphBN = $rdf.blankNode();
+                        return [ new Statement(exampleDataset, SD('namedGraph'), graphBN), new Statement(graphBN, SD('name'), $rdf.sym(inputVal)), new Statement(exampleDataset, RDF("type"), SD("Dataset")), new Statement(graphBN, RDF("type"), SD("NamedGraph")) ];
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isURI(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+                        var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        var promiseArray = [];
+                        endpointArray.forEach(endpointNode => {
+                            console.log(endpointNode);
+                            var endpointString = endpointNode.value;
+                            promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
+                        });
+                        return Promise.all(promiseArray)
+                            .then(bindingsArray => {
+                                var unifiedBindings = [];
+                                bindingsArray.forEach(bindings => {
+                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                });
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                console.log(unifiedBindings)
+                                return unifiedBindings.map(binding =>
+                                    binding.graph.value
+                                );
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            })
+                    }
+                })
+            ]
+        },
+        {
+            recommended: false,
+            categoryTitle: "Triples",
+            legend: "Number of triples present in the dataset",
+            idPrefix: "triples",
+            minArity: 0,
+            maxArity: 1,
+            computable: true,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Number of triples",
+                    defaultValue: "",
+                    advice: "The number of triples must be a literal",
+                    dataCreationFunction: (inputVal) => {
+                        return [new Statement(exampleDataset, VOID('triples'), $rdf.lit(inputVal, XSD("integer")))];
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+                        var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        var promiseArray = [];
+                        endpointArray.forEach(endpointNode => {
+                            var endpointString = endpointNode.value;
+                            promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } }'));
+                        });
+                        return Promise.all(promiseArray)
+                            .then(bindingsArray => {
+                                var unifiedBindings = [];
+                                console.log(bindingsArray)
+                                bindingsArray.forEach(bindings => {
+                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                });
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                console.log(unifiedBindings)
+                                return unifiedBindings.map(binding =>
+                                    binding.count.value
+                                );
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            })
+                    }
+                })
+            ]
+        },
+        {
+            recommended: false,
+            categoryTitle: "Classes",
+            legend: "Number of classes present in the dataset",
+            idPrefix: "classes",
+            minArity: 0,
+            maxArity: 1,
+            computable: true,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Number of classes",
+                    defaultValue: "",
+                    advice: "The number of classes must be a literal",
+                    dataCreationFunction: (inputVal) => {
+                        return [new Statement(exampleDataset, VOID('classes'), $rdf.lit(inputVal, XSD("integer")))];
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+                        var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        var promiseArray = [];
+                        endpointArray.forEach(endpointNode => {
+                            var endpointString = endpointNode.value;
+                            promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?c) AS ?count) WHERE { ?s a ?c . FILTER(isURI(?c)) }'));
+                        });
+                        return Promise.all(promiseArray)
+                            .then(bindingsArray => {
+                                var unifiedBindings = [];
+                                bindingsArray.forEach(bindings => {
+                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                });
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                console.log(unifiedBindings)
+                                return unifiedBindings.map(binding =>
+                                    binding.count.value
+                                );
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            })
+                    }
+                })
+            ]
+        },
+        {
+            recommended: false,
+            categoryTitle: "Properties",
+            legend: "Number of properties present in the dataset",
+            idPrefix: "properties",
+            minArity: 0,
+            maxArity: 1,
+            computable: true,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Number of classes",
+                    defaultValue: "",
+                    advice: "The number of properties must be a literal",
+                    dataCreationFunction: (inputVal) => {
+                        return [new Statement(exampleDataset, VOID('properties'), $rdf.lit(inputVal, XSD("integer")))];
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
+                    },
+                    dataExtractionFunction: () => {
+                        var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        var promiseArray = [];
+                        endpointArray.forEach(endpointNode => {
+                            var endpointString = endpointNode.value;
+                            promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?s ?p ?o . FILTER(isURI(?p)) }'));
+                        });
+                        return Promise.all(promiseArray)
+                            .then(bindingsArray => {
+                                var unifiedBindings = [];
+                                bindingsArray.forEach(bindings => {
+                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                });
+                                unifiedBindings = [...(new Set(unifiedBindings))];
+                                console.log(unifiedBindings)
+                                return unifiedBindings.map(binding =>
+                                    binding.count.value
+                                );
+                            })
+                            .catch(error => {
+                                console.error(error);
+                            })
                     }
                 })
             ]
@@ -989,6 +1171,22 @@ $(() => {
             this.refreshStore();
         }
 
+        removeStatement(statement) {
+            if (this.store.holdsStatement(statement)) {
+                this.store.remove(statement);
+                this.refreshStore();
+            }
+        }
+
+        removeAllStatements(statements) {
+            statements.forEach(statement => {
+                if (this.store.holdsStatement(statement)) {
+                    this.store.remove(statement);
+                }
+                this.refreshStore();
+            })
+        }
+
         setDisplay(str) {
             this.contentDisplay.val(str);
         }
@@ -1000,18 +1198,14 @@ $(() => {
                 dataCol.append(catMetadataView.jQueryContent)
                 navCol.append(catMetadataView.navItem);
 
-                catMetadataView.on("add", (statement, source) => {
-                    console.log("add ", statement)
-                    this.store.add(statement);
-                    this.refreshStore();
+                catMetadataView.on("add", (statements, source) => {
+                    console.log("add ", statements)
+                    this.addAllStatements(statements);
                 });
 
-                catMetadataView.on("remove", (statement, source) => {
-                    console.log("remove ", statement)
-                    if (this.store.holdsStatement(statement)) {
-                        this.store.remove(statement);
-                        this.refreshStore();
-                    }
+                catMetadataView.on("remove", (statements, source) => {
+                    console.log("remove ", statements)
+                    this.removeAllStatements(statements);
                 });
 
                 catMetadataView.on("error", (message, source) => {
@@ -1024,12 +1218,12 @@ $(() => {
 
         refreshStore() {
             this.categoryViews.forEach(view => {
-                $rdf.serialize(undefined, this.store, undefined,'text/turtle', function(err, str){
+                $rdf.serialize(undefined, this.store, undefined, 'text/turtle', function (err, str) {
                     controlInstance.setDisplay(str);
-                    if(err != null) {
+                    if (err != null) {
                         console.error(err);
                     }
-                    });
+                });
             })
         }
     }
