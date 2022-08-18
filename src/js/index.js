@@ -188,20 +188,23 @@ $(() => {
         }
 
         generateNavItem() {
-            var navLink = $(document.createElement("a"));
-            navLink.addClass('nav-link');
-            navLink.addClass('dropdown-item');
-            navLink.text(this.categoryCore.categoryTitle);
-            navLink.attr("href", "#" + this.categoryId);
-            return navLink;
+            return generateNavItem(this.categoryCore.categoryTitle, this.categoryId);
         }
 
         generateCategoryFields() {
             var addButtonId = "add" + this.categoryCore.idPrefix + "Button";
             var removeButtonId = "remove" + this.categoryCore.idPrefix + "Button";
 
+            var catCard = $(document.createElement('div'));
+            catCard.addClass("card")
+            var catCardBody = $(document.createElement('div'));
+            catCardBody.addClass("card-body")
+            catCardBody.addClass("col-12")
+
             var catTitle = $(document.createElement('h3'));
+            catTitle.addClass('card-title')
             catTitle.addClass("text-center");
+            catTitle.addClass('display-6');
             catTitle.text(this.categoryCore.categoryTitle);
 
             var catControlRow = $(document.createElement('div'));
@@ -260,7 +263,7 @@ $(() => {
             var catFieldRow = $(document.createElement('div'));
             catFieldRow.addClass("row")
             var catFieldCol = $(document.createElement('div'));
-            catFieldCol.addClass("col")
+            catFieldCol.addClass("col-12")
             catFieldRow.append(catFieldCol);
 
             var catErrorDisplayRow = $(document.createElement('div'));
@@ -286,10 +289,12 @@ $(() => {
                 catErrorDisplayCol.addClass("collapse.show");
             }
 
-            this.jQueryContent.append(catTitle);
-            this.jQueryContent.append(catControlRow);
-            this.jQueryContent.append(catErrorDisplayRow)
-            this.jQueryContent.append(catFieldRow);
+            this.jQueryContent.append(catCard);
+            catCard.append(catTitle);
+            catCard.append(catCardBody);
+            catCardBody.append(catControlRow);
+            catCardBody.append(catErrorDisplayRow)
+            catCardBody.append(catFieldRow);
 
             this.refreshLines = () => {
                 catFieldCol.empty();
@@ -313,25 +318,29 @@ $(() => {
             lineComputeButton.on("click", () => {
                 this.categoryCore.fields.forEach(field => {
                     if (field.dataExtractionFunction != undefined) {
-                        var extractedValuesPromise = field.dataExtractionFunction();
-                        lineComputeButton.removeClass("btn-light");
-                        lineComputeButton.addClass("btn-warning");
-                        lineComputeButton.addClass("disabled");
-                        extractedValuesPromise.then(extractedValues => {
-                            extractedValues.forEach(value => {
-                                var statement = field.dataCreationFunction(value);
-                                controlInstance.addStatement(statement);
+                        try {
+                            var extractedValuesPromise = field.dataExtractionFunction();
+                            lineComputeButton.removeClass("btn-light");
+                            lineComputeButton.addClass("btn-warning");
+                            lineComputeButton.addClass("disabled");
+                            extractedValuesPromise.then(extractedValues => {
+                                extractedValues.forEach(value => {
+                                    var statement = field.dataCreationFunction(value);
+                                    controlInstance.addStatement(statement);
+                                })
+                                lineComputeButton.removeClass("btn-warning");
+                                lineComputeButton.addClass("btn-success");
+                                lineComputeButton.removeClass("disabled");
                             })
-                            lineComputeButton.removeClass("btn-warning");
-                            lineComputeButton.addClass("btn-success");
-                            lineComputeButton.removeClass("disabled");
-                        })
-                        .catch(e => {
-                            lineComputeButton.removeClass("btn-warning");
-                            lineComputeButton.addClass("btn-danger");
-                            lineComputeButton.removeClass("disabled");
+                            .catch(e => {
+                                lineComputeButton.removeClass("btn-warning");
+                                lineComputeButton.addClass("btn-danger");
+                                lineComputeButton.removeClass("disabled");
+                                this.showError(e);
+                            });
+                        } catch(e) {
                             this.showError(e);
-                        });
+                        }
                     }
                 })
             })
@@ -360,10 +369,10 @@ $(() => {
                 var result = false;
                 try {
                     result = config.dataValidationFunction(inputVal);
-                    return result;
                 } catch (e) {
-                    return result;
+                    throw e;
                 }
+                return result;
             }
             this.dataCreationFunction = (inputVal) => {
                 if (this.dataValidationFunction(inputVal)) {
@@ -375,8 +384,7 @@ $(() => {
                     try {
                         return config.dataExtractionFunction();
                     } catch (e) {
-                        console.error(e)
-                        this.emit("error", e);
+                        throw e;
                     }
                 }
             }
@@ -415,11 +423,20 @@ $(() => {
         }
 
         hasValidValue() {
-            return this.fieldCore.dataValidationFunction(this.getValue());
+            try {
+                return this.fieldCore.dataValidationFunction(this.getValue());
+            } catch(e) {
+                return false;
+            }
         }
 
         getRDFData() {
-            var validated = this.dataValidationFunction(this.fieldValue);
+            var validated = false;
+            try {
+                validated = this.dataValidationFunction(this.fieldValue);
+            } catch(e) {
+                this.emit("error", e, this);
+            }
             if (validated) {
                 var statements = this.fieldCore.dataCreationFunction(this.fieldValue);
                 return statements;
@@ -430,7 +447,12 @@ $(() => {
 
         dataValidationFunction = (inputVal) => {
             try {
-                var result = this.fieldCore.dataValidationFunction(inputVal);
+                var result = false;
+                try {
+                    result = this.fieldCore.dataValidationFunction(inputVal);
+                } catch(e) {
+                    this.emit("error", e, this);
+                }
                 this.setValidationState(result);
                 if (result) {
                     this.fieldValue = inputVal;
@@ -445,11 +467,13 @@ $(() => {
         }
 
         dataExtractionFunction = () => {
+            var result = [];
             try {
-                return this.fieldCore.dataExtractionFunction();
+                result = this.fieldCore.dataExtractionFunction();
             } catch(e) {
                 this.emit("error", e);
             }
+            return result;
         }
 
         validateContent = () => {
@@ -464,7 +488,12 @@ $(() => {
         }
 
         updateContent = newValue => {
-            var oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
+            var oldValueValidated = false;
+            try {
+                oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
+            } catch(e) {
+                this.emit("error", e, this);
+            }
             if (oldValueValidated) {
                 var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
                 this.emit("remove", statement, this);
@@ -519,6 +548,7 @@ $(() => {
             lineValidButton.attr("tabindex", 0);
             lineValidButton.addClass("btn");
             lineValidButton.addClass("btn-light");
+            lineValidButton.addClass("text-truncate");
             lineValidButton.text("Validate");
             lineValidButtonCol.append(lineValidButton);
 
@@ -679,6 +709,17 @@ $(() => {
         }
     }
 
+    function generateNavItem(text, id) {
+        var navListItem = $(document.createElement("li"));
+        var navLink = $(document.createElement("a"));
+        navLink.addClass('navbar-link');
+        navLink.addClass('btn');
+        navLink.text(text);
+        navLink.attr("href", "#" + id);
+        navListItem.addClass('navbar-item')
+        navListItem.append(navLink)
+        return navListItem;
+    }
 
     var inputMetadata = [
         {
@@ -877,6 +918,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -972,6 +1016,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -1016,6 +1063,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -1062,6 +1112,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -1106,6 +1159,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -1148,6 +1204,8 @@ $(() => {
             this.store.add(exampleDataset, RDF("type"), DCAT("Dataset"));
 
             this.generateFields();
+
+            navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
 
             this.refreshStore();
         }
