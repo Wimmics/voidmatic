@@ -170,13 +170,14 @@ $(() => {
                         this.emit("remove", statement, source);
                     });
 
-                    fieldLine.on("invalidValue", (statement, source) => {
-                        this.emit("invalidValue", statement, source);
-                    });
-
                     fieldLine.on("suggestion", (statement, source) => {
                         this.emit("suggestion", statement, source);
                     });
+
+                    fieldLine.on("error", (message, source) => {
+                        // this.emit("error", message, source);
+                        this.showError(message);
+                    })
                 }
             })
         }
@@ -184,7 +185,6 @@ $(() => {
         refresh() {
             this.jQueryContent.empty();
             this.jQueryContent = this.generateCategoryFields();
-
         }
 
         generateNavItem() {
@@ -261,11 +261,35 @@ $(() => {
             catFieldRow.addClass("row")
             var catFieldCol = $(document.createElement('div'));
             catFieldCol.addClass("col")
+            catFieldRow.append(catFieldCol);
+
+            var catErrorDisplayRow = $(document.createElement('div'));
+            catErrorDisplayRow.addClass("row")
+            var catErrorDisplayCol = $(document.createElement('div'));
+            catErrorDisplayCol.addClass("col");
+            var catErrorDisplayP = $(document.createElement('p'));
+            catErrorDisplayP.addClass("text-bg-danger");
+            catErrorDisplayP.addClass("rounded");
+            catErrorDisplayRow.append(catErrorDisplayCol);
+            catErrorDisplayCol.append(catErrorDisplayP);
+
+            catErrorDisplayCol.on("click", () => {
+                if(catErrorDisplayCol.hasClass("collapse.show")) {
+                    catErrorDisplayCol.removeClass("collapse.show");
+                    catErrorDisplayCol.addClass("collapse");
+                    catErrorDisplayP.text("");
+                }
+            });
+            this.showError = message => {
+                catErrorDisplayP.text(message);
+                catErrorDisplayCol.removeClass("collapse");
+                catErrorDisplayCol.addClass("collapse.show");
+            }
 
             this.jQueryContent.append(catTitle);
             this.jQueryContent.append(catControlRow);
+            this.jQueryContent.append(catErrorDisplayRow)
             this.jQueryContent.append(catFieldRow);
-            catFieldRow.append(catFieldCol);
 
             this.refreshLines = () => {
                 catFieldCol.empty();
@@ -290,12 +314,21 @@ $(() => {
                 this.categoryCore.fields.forEach(field => {
                     if (field.dataExtractionFunction != undefined) {
                         var extractedValuesPromise = field.dataExtractionFunction();
+                        lineComputeButton.removeClass("btn-light");
+                        lineComputeButton.addClass("btn-warning");
                         extractedValuesPromise.then(extractedValues => {
                             extractedValues.forEach(value => {
                                 var statement = field.dataCreationFunction(value);
                                 controlInstance.addStatement(statement);
                             })
+                            lineComputeButton.removeClass("btn-warning");
+                            lineComputeButton.addClass("btn-success");
                         })
+                        .catch(e => {
+                            lineComputeButton.removeClass("btn-warning");
+                            lineComputeButton.addClass("btn-danger");
+                            this.showError(e);
+                        });
                     }
                 })
             })
@@ -355,34 +388,9 @@ $(() => {
     }
 
     class MultipleFieldCore extends FieldCore {
-        constructor(config = { placeholder: [], bootstrapFieldColWidth: [], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
-            super();
-            this.placeholder = config.placeholder;
+        constructor(config = { placeholder: [], bootstrapFieldColWidth: [11,1], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
+            super(config);
             this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
-            this.dataValidationFunction = inputValArray => {
-                var result = inputValArray.map(value => false);
-                try {
-                    result = config.dataValidationFunction(inputValArray);
-                    return result;
-                } catch (e) {
-                    return result;
-                }
-            }
-            this.dataCreationFunction = (inputVal) => {
-                if (this.dataValidationFunction(inputVal)) {
-                    return config.dataCreationFunction(inputVal);
-                }
-                return store.toNT();
-            };
-            this.dataExtractionFunction = () => {
-                try {
-                    return config.dataExtractionFunction();
-                } catch (e) {
-                    this.emit("error", e);
-                }
-            }
-            this.defaultValue = config.defaultValue;
-            this.parentCategory = config.parentCategory;
         }
 
     }
@@ -408,33 +416,47 @@ $(() => {
         }
 
         getRDFData() {
-            return this.validateContent();
+            var validated = this.dataValidationFunction(this.fieldValue);
+            if (validated) {
+                var statements = this.fieldCore.dataCreationFunction(this.fieldValue);
+                return statements;
+            } else {
+                return [];
+            }
         }
 
         dataValidationFunction = (inputVal) => {
-            var result = this.fieldCore.dataValidationFunction(inputVal);
-            this.setValidationState(result);
-            if (result) {
-                this.fieldValue = inputVal;
+            try {
+                var result = this.fieldCore.dataValidationFunction(inputVal);
+                this.setValidationState(result);
+                if (result) {
+                    this.fieldValue = inputVal;
+                }
+                return result;
+            } catch(e) {
+                this.emit("error", e, this);
             }
-            return result;
         }
 
         setValidationState = valid => {
         }
 
         dataExtractionFunction = () => {
-            return this.fieldCore.dataExtractionFunction();
+            try {
+                return this.fieldCore.dataExtractionFunction();
+            } catch(e) {
+                this.emit("error", e);
+            }
         }
 
         validateContent = () => {
             var validated = this.dataValidationFunction(this.fieldValue);
             if (validated) {
-                var statement = this.fieldCore.dataCreationFunction(this.fieldValue);
-                this.emit("add", statement, this);
-                return statement;
+                var statements = this.fieldCore.dataCreationFunction(this.fieldValue);
+                this.emit("add", statements, this);
+                return statements;
             } else {
-                this.emit("invalidValue", this.fieldCore.advice, this);
+                this.emit("error", this.fieldCore.advice, this);
             }
         }
 
@@ -470,9 +492,6 @@ $(() => {
             } else {
                 field.addClass("border-danger");
                 field.removeClass("border-success")
-                if (this.fieldCore.advice != undefined) {
-                    // this.tooltip.show();
-                }
             }
         }
 
@@ -517,9 +536,6 @@ $(() => {
             if (this.fieldValue.length > 0) {
                 this.validateContent();
             }
-
-            //this.tooltip = new bootstrap.Tooltip('#' + this.inputIdButton);
-            //this.tooltip.setContent( this.fieldCore.advice);
 
             return lineDiv;
         }
@@ -600,11 +616,6 @@ $(() => {
             lineValidButton.on("click", () => {
                 this.updateContent(fields.map(field => field.val()));
             });
-
-            if (fields.map(field => (field.val().length > 0)).reduce((previous, current) => previous || current, false)) {
-                this.fieldValue = fields.map(field => field.val());
-                this.validateContent();
-            }
 
             return lineDiv;
         }
@@ -761,9 +772,9 @@ $(() => {
                         var inputVal = argArray[0];
                         var inputLang = argArray[1];
                         if (inputLang.length > 0) {
-                            return new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang));
+                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang))];
                         } else {
-                            return new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal));
+                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal))];
                         }
                     },
                     dataValidationFunction: valuesArray => {
@@ -818,6 +829,9 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
+                        if(endpointArray.length == 0) {
+                            throw new Error("No endpoint found.")
+                        }
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
@@ -957,7 +971,6 @@ $(() => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
-                            console.log(endpointNode);
                             var endpointString = endpointNode.value;
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
                         });
