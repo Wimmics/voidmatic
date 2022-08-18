@@ -316,6 +316,7 @@ $(() => {
                         var extractedValuesPromise = field.dataExtractionFunction();
                         lineComputeButton.removeClass("btn-light");
                         lineComputeButton.addClass("btn-warning");
+                        lineComputeButton.addClass("disabled");
                         extractedValuesPromise.then(extractedValues => {
                             extractedValues.forEach(value => {
                                 var statement = field.dataCreationFunction(value);
@@ -323,10 +324,12 @@ $(() => {
                             })
                             lineComputeButton.removeClass("btn-warning");
                             lineComputeButton.addClass("btn-success");
+                            lineComputeButton.removeClass("disabled");
                         })
                         .catch(e => {
                             lineComputeButton.removeClass("btn-warning");
                             lineComputeButton.addClass("btn-danger");
+                            lineComputeButton.removeClass("disabled");
                             this.showError(e);
                         });
                     }
@@ -712,23 +715,32 @@ $(() => {
         },
         {
             recommended: true,
-            categoryTitle: "Creator",
-            legend: "Represents the different actors involved in the creation of the dataset.",
-            idPrefix: "creator",
+            categoryTitle: "Description",
+            legend: "Long description of the knowledge base and its content.",
+            idPrefix: "description",
             minArity: 1,
             maxArity: Infinity,
             computable: false,
             fields: [
-                new SingleFieldCore({
-                    placeholder: "Creator's name or URI",
-                    defaultValue: "",
-                    advice: "The creator must be non-empty",
-                    dataValidationFunction: (inputVal) => {
-                        var result = isLiteral(inputVal);
-                        return result;
+                new MultipleFieldCore({
+                    placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
+                    defaultValue: ["", "en"],
+                    advice: "The description must be non-empty",
+                    bootstrapFieldColWidth: [8, 3],
+                    dataCreationFunction: argArray => {
+                        var inputVal = argArray[0];
+                        var inputLang = argArray[1];
+                        if (inputLang.length > 0) {
+                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang))];
+                        } else {
+                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal))];
+                        }
                     },
-                    dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, DCT('creator'), inputVal)];
+                    dataValidationFunction: valuesArray => {
+                        var inputVal = valuesArray[0];
+                        var inputTag = valuesArray[1];
+                        var result = isLiteral(inputVal) && (isLiteral(inputTag) || inputTag.length == 0);
+                        return result;
                     }
                 })
             ]
@@ -756,32 +768,23 @@ $(() => {
         },
         {
             recommended: true,
-            categoryTitle: "Description",
-            legend: "Long description of the knowledge base and its content.",
-            idPrefix: "description",
+            categoryTitle: "Creator",
+            legend: "Represents the different actors involved in the creation of the dataset.",
+            idPrefix: "creator",
             minArity: 1,
             maxArity: Infinity,
             computable: false,
             fields: [
-                new MultipleFieldCore({
-                    placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
-                    defaultValue: ["", "en"],
-                    advice: "The description must be non-empty",
-                    bootstrapFieldColWidth: [8, 3],
-                    dataCreationFunction: argArray => {
-                        var inputVal = argArray[0];
-                        var inputLang = argArray[1];
-                        if (inputLang.length > 0) {
-                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal, inputLang))];
-                        } else {
-                            return [new Statement(exampleDataset, DCT('description'), $rdf.lit(inputVal))];
-                        }
-                    },
-                    dataValidationFunction: valuesArray => {
-                        var inputVal = valuesArray[0];
-                        var inputTag = valuesArray[1];
-                        var result = isLiteral(inputVal) && (isLiteral(inputTag) || inputTag.length == 0);
+                new SingleFieldCore({
+                    placeholder: "Creator's name or URI",
+                    defaultValue: "",
+                    advice: "The creator must be non-empty",
+                    dataValidationFunction: (inputVal) => {
+                        var result = isLiteral(inputVal);
                         return result;
+                    },
+                    dataCreationFunction: (inputVal) => {
+                        return [new Statement(exampleDataset, DCT('creator'), inputVal)];
                     }
                 })
             ]
@@ -1022,7 +1025,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
@@ -1192,7 +1197,7 @@ $(() => {
         }
 
         setDisplay(str) {
-            this.contentDisplay.val(str);
+            this.contentDisplay.text(str);
         }
 
         generateFields() {
