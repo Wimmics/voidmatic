@@ -196,14 +196,17 @@ $(() => {
             var removeButtonId = "remove" + this.categoryCore.idPrefix + "Button";
 
             var catCard = $(document.createElement('div'));
-            catCard.addClass("card")
+            catCard.addClass("card");
+            catCard.addClass("mb-4");
+            catCard.addClass("border-secondary");
             var catCardBody = $(document.createElement('div'));
             catCardBody.addClass("card-body")
             catCardBody.addClass("col-12")
 
             var catTitle = $(document.createElement('h3'));
-            catTitle.addClass('card-title')
+            catTitle.addClass('card-title');
             catTitle.addClass("text-center");
+            catTitle.addClass("gx-0");
             catTitle.addClass('display-6');
             catTitle.text(this.categoryCore.categoryTitle);
 
@@ -802,7 +805,9 @@ $(() => {
                         return isURI(inputVal);
                     },
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal))];
+                        return [
+                            new Statement(exampleDataset, VOID('sparqlEndpoint'), $rdf.sym(inputVal))
+                        ];
                     }
                 })
             ]
@@ -1009,7 +1014,12 @@ $(() => {
                     advice: "The name of the graph must be an URI",
                     dataCreationFunction: (inputVal) => {
                         var graphBN = $rdf.blankNode();
-                        return [ new Statement(exampleDataset, SD('namedGraph'), graphBN), new Statement(graphBN, SD('name'), $rdf.sym(inputVal)), new Statement(exampleDataset, RDF("type"), SD("Dataset")), new Statement(graphBN, RDF("type"), SD("NamedGraph")) ];
+                        return [ 
+                            new Statement(exampleDataset, SD('namedGraph'), graphBN), 
+                            new Statement(graphBN, SD('name'), $rdf.sym(inputVal)), 
+                            new Statement(exampleDataset, RDF("type"), SD("Dataset")), 
+                            new Statement(graphBN, RDF("type"), SD("NamedGraph")) 
+                        ];
                     },
                     dataValidationFunction: (inputVal) => {
                         return isURI(inputVal);
@@ -1223,19 +1233,14 @@ $(() => {
             return this.store.each(s, p, o);
         }
 
-        addStatement(s, p, o) {
-            this.store.add(s, p, o);
-            this.refreshStore();
-        }
-
         addStatement(statement) {
-            this.store.add(statement);
-            this.refreshStore();
+            this.addAllStatements([statement])
         }
 
         addAllStatements(statements) {
             this.store.add(statements);
             this.refreshStore();
+            console.log(this.store.namespaces)
         }
 
         removeStatement(statement) {
