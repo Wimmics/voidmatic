@@ -712,6 +712,19 @@ $(() => {
         }
     }
 
+    function serializeStoreToTurtlePromise(store) {
+        store.setPrefixForURI("dcat", "http://www.w3.org/ns/dcat#");
+        store.setPrefixForURI("ex", "http://e.g/#");
+        return new Promise((accept, reject) => {
+            $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(str)
+            }, { namespaces: store.namespaces });
+        })
+    }
+
     function generateNavItem(text, id) {
         var navListItem = $(document.createElement("li"));
         var navLink = $(document.createElement("a"));
@@ -1211,13 +1224,12 @@ $(() => {
             this.categoryViews = [];
             this.metadataCategoryViewMap = new Map();
 
-            this.store.add(exampleDataset, RDF("type"), DCAT("Dataset"));
-
             this.generateFields();
 
             navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
 
-            this.refreshStore();
+            this.addStatement(new Statement(exampleDataset, RDF("type"), DCAT("Dataset")));
+
         }
 
         queryStore(query) {
@@ -1240,7 +1252,6 @@ $(() => {
         addAllStatements(statements) {
             this.store.add(statements);
             this.refreshStore();
-            console.log(this.store.namespaces)
         }
 
         removeStatement(statement) {
@@ -1287,14 +1298,10 @@ $(() => {
         }
 
         refreshStore() {
-            this.categoryViews.forEach(view => {
-                $rdf.serialize(undefined, this.store, undefined, 'text/turtle', function (err, str) {
+            serializeStoreToTurtlePromise(this.store)
+                .then(str => {
                     controlInstance.setDisplay(str);
-                    if (err != null) {
-                        console.error(err);
-                    }
-                });
-            })
+                })
         }
     }
     new Control();
