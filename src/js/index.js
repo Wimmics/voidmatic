@@ -287,6 +287,7 @@ $(() => {
                 }
             });
             this.showError = message => {
+                console.error(message)
                 catErrorDisplayP.text(message);
                 catErrorDisplayCol.removeClass("collapse");
                 catErrorDisplayCol.addClass("collapse.show");
@@ -568,10 +569,6 @@ $(() => {
             lineValidButton.on("click", () => {
                 this.updateContent(textInput.val());
             });
-
-            if (this.fieldValue.length > 0) {
-                this.validateContent();
-            }
 
             return lineDiv;
         }
@@ -1059,7 +1056,7 @@ $(() => {
                                 );
                             })
                             .catch(error => {
-                                console.error(error);
+                                throw error;
                             })
                     }
                 })
