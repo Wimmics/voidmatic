@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import { Statement } from 'rdflib';
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
@@ -30,48 +29,39 @@ $(() => {
     var navCol = $('#navCol');
     var uniqueIdCounter = 0;
 
-    function xmlHTTPRequestGetPromise(url) {
-        return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            xhr.onload = function () {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(xhr.responseText);
-                } else {
-                    reject({
-                        url: decodeURIComponent(url),
-                        encodedUrl: url,
-                        response: xhr.responseText,
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    });
-                }
-            };
-            xhr.onerror = function () {
-                reject({
-                    url: decodeURIComponent(url),
-                    encodedUrl: url,
-                    response: xhr.responseText,
-                    status: xhr.status,
-                    statusText: xhr.statusText
-                });
-            };
-            xhr.send();
+    function fetchPromise(url, header = new Map()) {
+        var myHeaders = new Headers();
+        header.forEach((value, key) => {
+            myHeaders.set(key, value);
+        });
+        var myInit = { 
+            method: 'GET',
+            headers: myHeaders,
+            mode: 'cors',
+            cache: 'no-cache',
+            redirect: 'follow'                 
+        };
+        return fetch(url, myInit)
+            .then(response => {
+            if(response.ok) {
+                return response.blob().then(blob => blob.text())
+            } else {
+                throw response;
+            }
         });
     }
 
-    function xmlhttpRequestJSONPromise(url) {
-        return xmlHTTPRequestGetPromise(url).then(response => {
+    function fetchJSONPromise(url) {
+        var header = new Map();
+        header.set('Content-Type', 'application/json'); 
+        return fetchPromise(url, header).then(response => {
             return JSON.parse(response);
         });
     }
 
     function sparqlQueryPromise(endpoint, query) {
         if (query.includes("SELECT") || query.includes("ASK")) {
-            return xmlhttpRequestJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json')
-                .catch(error => {
-                    console.error(error)
-                });
+            return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=60000')
         }
         else {
             console.error(error)
@@ -217,6 +207,7 @@ $(() => {
             catLegend.text(this.categoryCore.legend);
             catLegendCol.append(catLegend);
             catControlRow.append(catLegendCol);
+
             var catAddLineCol = $(document.createElement('div'));
             var catAddLineButton = $(document.createElement('button'));
             catAddLineButton.addClass("btn");
@@ -226,6 +217,7 @@ $(() => {
             var catAddLineButtonImage = $(document.createElement('i'));
             catAddLineButtonImage.addClass("bi")
             catAddLineButtonImage.addClass("bi-file-plus")
+            catAddLineButtonImage.addClass("fs-4");
             catAddLineButton.append(catAddLineButtonImage);
             var catRemoveLineCol = $(document.createElement('div'));
             var catRemoveLineButton = $(document.createElement('button'));
@@ -236,7 +228,17 @@ $(() => {
             var catRemoveLineButtonImage = $(document.createElement('i'));
             catRemoveLineButtonImage.addClass("bi")
             catRemoveLineButtonImage.addClass("bi-file-minus")
+            catRemoveLineButtonImage.addClass("fs-4");
             catRemoveLineButton.append(catRemoveLineButtonImage);
+            var offsetCol = $(document.createElement('div'));
+            offsetCol.addClass("col-10");
+            catAddLineCol.addClass("col-1");
+            catRemoveLineCol.addClass("col-1");
+            var catLineControlRow = $(document.createElement('div'));
+            catLineControlRow.addClass("row");
+            catLineControlRow.append(offsetCol);
+            catLineControlRow.append(catAddLineCol);
+            catLineControlRow.append(catRemoveLineCol);
 
             var catExtractLineCol = $(document.createElement('div'));
             var lineComputeButton = $(document.createElement('a'));
@@ -248,20 +250,14 @@ $(() => {
             lineComputeButton.text("Extract");
             catExtractLineCol.append(lineComputeButton);
             if (this.categoryCore.computable) {
-                catLegendCol.addClass("col-9")
+                catLegendCol.addClass("col-11")
                 catExtractLineCol.addClass("col-1")
-                catAddLineCol.addClass("col-1");
-                catRemoveLineCol.addClass("col-1");
             } else {
-                catLegendCol.addClass("col-10")
-                catAddLineCol.addClass("col-1");
-                catRemoveLineCol.addClass("col-1");
+                catLegendCol.addClass("col-12")
             }
             if (this.categoryCore.computable) {
                 catControlRow.append(catExtractLineCol);
             }
-            catControlRow.append(catAddLineCol);
-            catControlRow.append(catRemoveLineCol);
 
             var catFieldRow = $(document.createElement('div'));
             catFieldRow.addClass("row")
@@ -287,6 +283,7 @@ $(() => {
                 }
             });
             this.showError = message => {
+                console.error(message)
                 catErrorDisplayP.text(message);
                 catErrorDisplayCol.removeClass("collapse");
                 catErrorDisplayCol.addClass("collapse.show");
@@ -298,6 +295,7 @@ $(() => {
             catCardBody.append(catControlRow);
             catCardBody.append(catErrorDisplayRow)
             catCardBody.append(catFieldRow);
+            catCardBody.append(catLineControlRow);
 
             this.refreshLines = () => {
                 catFieldCol.empty();
@@ -568,10 +566,6 @@ $(() => {
             lineValidButton.on("click", () => {
                 this.updateContent(textInput.val());
             });
-
-            if (this.fieldValue.length > 0) {
-                this.validateContent();
-            }
 
             return lineDiv;
         }
@@ -904,7 +898,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
@@ -948,7 +944,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
@@ -1012,6 +1010,42 @@ $(() => {
                 })
             ]
         },
+        // {
+        //     recommended: false,
+        //     categoryTitle: "Distributions",
+        //     legend: "Means of distribution of the dataset, other than an endpoint",
+        //     idPrefix: "distribution",
+        //     minArity: 0,
+        //     maxArity: Infinity,
+        //     computable: false,
+        //     fields: [
+        //         new MultipleFieldCore({
+        //             placeholder: ["Name", "URL", "Type"],
+        //             defaultValue: ["", "", "text/turtle"],
+        //             bootstrapFieldColWidth: [4, 5, 2],
+        //             advice: "The name of the distribution must be a literal. The URL must be an URI. The type must be a literal, preferably from <a href='https://www.iana.org/assignments/media-types/'>here</a>. None of the fields can be empty.",
+        //             dataCreationFunction: (inputVal) => {
+        //                 var nameVal = inputVal[0];
+        //                 var urlVal = inputVal[1];
+        //                 var typeVal = inputVal[2];
+        //                 var distribBN = $rdf.sym("http://e.g/distribution" + uniqueIdCounter++);
+        //                 return [ 
+        //                     new Statement(exampleDataset, DCAT('distribution'), distribBN), 
+        //                     new Statement(distribBN, RDF("type"), DCAT("Distribution")), 
+        //                     new Statement(distribBN, DCAT('accessURL'), $rdf.sym(urlVal)), 
+        //                     new Statement(distribBN, DCT("title"), $rdf.lit(nameVal)),
+        //                     new Statement(distribBN, DCAT("mediaType"), $rdf.lit(typeVal))  
+        //                 ];
+        //             },
+        //             dataValidationFunction: (inputVal) => {
+        //                 var nameVal = inputVal[0];
+        //                 var urlVal = inputVal[1];
+        //                 var typeVal = inputVal[2];
+        //                 return nameVal != undefined && urlVal != undefined && typeVal != undefined && isLiteral(nameVal) && isURI(urlVal) && isLiteral(typeVal);
+        //             }
+        //         })
+        //     ]
+        // },
         {
             recommended: false,
             categoryTitle: "Graph",
@@ -1051,7 +1085,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
@@ -1059,7 +1095,7 @@ $(() => {
                                 );
                             })
                             .catch(error => {
-                                console.error(error);
+                                throw error;
                             })
                     }
                 })
@@ -1147,7 +1183,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
@@ -1194,7 +1232,9 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    if(bindings != undefined) {
+                                        unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    }
                                 });
                                 unifiedBindings = [...(new Set(unifiedBindings))];
                                 return unifiedBindings.map(binding =>
