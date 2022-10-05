@@ -54,6 +54,7 @@ $(() => {
     function fetchJSONPromise(url) {
         var header = new Map();
         header.set('Content-Type', 'application/json'); 
+        header.set("Accept", "application/sparql-results+json")
         return fetchPromise(url, header).then(response => {
             return JSON.parse(response);
         });
