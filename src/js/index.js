@@ -560,6 +560,15 @@ $(() => {
             lineFieldCol.addClass('form-floating');
             lineFieldCol.append(textInput);
             lineFieldCol.append(lineLabel);
+
+            textInput.on("focusin", event => {
+                lineLabel.addClass("visually-hidden");
+            })
+
+            textInput.on("focusout", event => {
+                lineLabel.removeClass("visually-hidden");
+            })
+
             textInput.on("change", () => {
                 this.updateContent(textInput.val());
             })
@@ -576,15 +585,16 @@ $(() => {
         constructor(config = { core: null }) {
             super(config)
 
-            this.numberOfFields = this.fieldCore.placeholder.length;
+            this.numberOfFields = config.core.bootstrapFieldColWidth.length;
             this.bootstrapFieldColWidth = config.core.bootstrapFieldColWidth;
             this.fieldValue = this.fieldCore.defaultValue;
 
             this.inputIdFields = [];
             for (var i = 0; i < this.numberOfFields; i++) {
-                this.inputIdFields.push(this.inputId + "Textfield" + i);
+                this.inputIdFields.push(this.inputId + "Field" + i);
             }
             this.inputIdButton = this.inputId + "Button";
+
         }
 
         setValidationState = valid => {
@@ -622,23 +632,37 @@ $(() => {
 
                 var textInput = $(document.createElement('input'))
                 var lineLabel = $(document.createElement('label'));
+                var textInputId = this.inputIdFields[i];
+                var lineLabelId = textInputId + "Label";
                 textInput.attr('type', 'text');
                 textInput.addClass('form-control');
-                textInput.attr('id', this.inputIdFields[i]);
+                textInput.attr('id', textInputId);
                 textInput.val(this.fieldValue[i]);
-                lineLabel.attr('for', this.inputIdFields[i])
+                lineLabel.attr('for', textInputId)
                 lineLabel.text(this.fieldCore.placeholder[i]);
+                lineLabel.attr('id', lineLabelId);
 
                 fields.push(textInput);
-                textInput.on("change", () => {
-                    this.updateContent(fields.map(field => field.val()));
-                })
 
                 lineFieldCol.addClass('form-floating');
                 lineFieldCol.append(textInput);
                 lineFieldCol.append(lineLabel);
 
                 lineDiv.append(lineFieldCol);
+
+                textInput.on("change", () => {
+                    this.updateContent(fields.map(field => field.val()));
+                })
+
+                textInput.on("focusin", event => {
+                    var targetLabelId = $(event.target).attr("id") + "Label";
+                    $("#" + targetLabelId).addClass("visually-hidden");
+                })
+
+                textInput.on("focusout", event => {
+                    var targetLabelId = $(event.target).attr("id") + "Label";
+                    $("#" + targetLabelId).removeClass("visually-hidden");
+                })
             }
 
             lineDiv.addClass('row');
@@ -721,15 +745,15 @@ $(() => {
     }
 
     function generateNavItem(text, id) {
-        var navListItem = $(document.createElement("li"));
+        var navItem = $(document.createElement("div"));
         var navLink = $(document.createElement("a"));
         navLink.addClass('navbar-link');
         navLink.addClass('btn');
         navLink.text(text);
         navLink.attr("href", "#" + id);
-        navListItem.addClass('navbar-item')
-        navListItem.append(navLink)
-        return navListItem;
+        navItem.addClass('navbar-item')
+        navItem.append(navLink)
+        return navItem;
     }
 
     var inputMetadata = [
