@@ -133,7 +133,13 @@ $(() => {
 
             var dataDiv = $(document.createElement('div'));
             dataDiv.addClass("row");
-            dataDiv.attr("id", this.categoryId);
+            var catAnchorDiv = $(document.createElement('span'));
+            catAnchorDiv.addClass("category-anchor");
+            catAnchorDiv.attr("id", this.categoryId);
+            var navBarHeight = $("#title-row").height();
+            catAnchorDiv.css("height", navBarHeight + "px")
+            catAnchorDiv.css("margin-top", "-" + navBarHeight + "px")
+            dataDiv.append(catAnchorDiv)
             this.jQueryContent = dataDiv;
             this.generateCategoryFields();
             this.navItem = this.generateNavItem();
