@@ -1,0 +1,8 @@
+.category-anchor {
+    display: block;
+    /* height: 128px;   /* equal to the header height */
+   /* margin-top: -128px;  negative margin equal to the header height */
+    visibility: hidden;
+    content: "";
+    position: relative;
+  }
