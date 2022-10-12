@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import { Statement } from 'rdflib';
-import dayjs from 'dayjs'
+import dayjs from 'dayjs';
+import { saveAs } from 'file-saver';
 
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
@@ -1316,6 +1317,12 @@ $(() => {
             this.generateFields();
 
             navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
+
+            $("#downloadButton").on("click", () => {
+                serializeStoreToTurtlePromise(this.store).then(fileContent => {
+                    saveAs(new Blob([fileContent], {"type": "text/turtle"}), "description.ttl")
+                })
+            });
 
             this.addStatement(new Statement(exampleDataset, RDF("type"), DCAT("Dataset")));
 

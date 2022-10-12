@@ -22,6 +22,7 @@
     "bootstrap-icons": "^1.9.1",
     "buffer": "^6.0.3",
     "fetch": "^1.1.0",
+    "file-saver": "^2.0.5",
     "prismjs": "^1.29.0",
     "process": "^0.11.10",
     "rdflib": "^2.2.19",
