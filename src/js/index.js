@@ -1,5 +1,7 @@
 import $ from 'jquery';
 import { Statement } from 'rdflib';
+import dayjs from 'dayjs';
+import { saveAs } from 'file-saver';
 
 const $rdf = require('rdflib');
 const EventEmitter = require('events');
@@ -211,14 +213,13 @@ $(() => {
             catControlRow.addClass("row")
             var catLegendCol = $(document.createElement('div'));
             var catLegend = $(document.createElement('p'));
-            catLegend.text(this.categoryCore.legend);
+            catLegend.html(this.categoryCore.legend);
             catLegendCol.append(catLegend);
             catControlRow.append(catLegendCol);
 
             var catAddLineCol = $(document.createElement('div'));
-            var catAddLineButton = $(document.createElement('button'));
+            var catAddLineButton = $(document.createElement('a'));
             catAddLineButton.addClass("btn");
-            catAddLineButton.attr('type', "button");
             catAddLineButton.attr("id", addButtonId);
             catAddLineCol.append(catAddLineButton);
             var catAddLineButtonImage = $(document.createElement('i'));
@@ -227,9 +228,8 @@ $(() => {
             catAddLineButtonImage.addClass("fs-4");
             catAddLineButton.append(catAddLineButtonImage);
             var catRemoveLineCol = $(document.createElement('div'));
-            var catRemoveLineButton = $(document.createElement('button'));
+            var catRemoveLineButton = $(document.createElement('a'));
             catRemoveLineButton.addClass("btn");
-            catRemoveLineButton.attr('type', "button");
             catRemoveLineButton.attr("id", removeButtonId);
             catRemoveLineCol.append(catRemoveLineButton);
             var catRemoveLineButtonImage = $(document.createElement('i'));
@@ -310,14 +310,14 @@ $(() => {
                     catFieldCol.append(field.generateJQueryContent());
                 });
                 if (this.lines.length == this.categoryCore.maxArity) {
-                    catAddLineButton.prop("disabled", true);
+                    catAddLineButton.addClass("d-none");
                 } else {
-                    catAddLineButton.prop("disabled", false);
+                    catAddLineButton.removeClass("d-none");
                 }
                 if (this.lines.length == this.categoryCore.minArity) {
-                    catRemoveLineButton.prop("disabled", true);
+                    catRemoveLineButton.addClass("d-none");
                 } else {
-                    catRemoveLineButton.prop("disabled", false);
+                    catRemoveLineButton.removeClass("d-none");
                 }
             }
 
@@ -723,7 +723,7 @@ $(() => {
 
     function isDatetime(value) {
         try {
-            return isLiteral(value);
+            return isLiteral(value) && dayjs(value).isValid();
         } catch (e) {
             return false;
         }
@@ -731,7 +731,23 @@ $(() => {
 
     function isDuration(value) {
         try {
-            return isLiteral(value);
+            return isLiteral(value) && dayjs(inputVal).isValid() && dayjs.isDuration(dayjs(inputVal));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function isInteger(value) {
+        try {
+            return isLiteral(value) && Number.isInteger(Number.parseInt(value));
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function isPositiveInteger(value) {
+        try {
+            return isInteger(value) && (Number.parseInt(value) > 0);
         } catch (e) {
             return false;
         }
@@ -876,21 +892,21 @@ $(() => {
         {
             recommended: true,
             categoryTitle: "Publication date",
-            legend: "Publication date of the knowledge base.",
+            legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM-DDThh:mm:ss ",
             idPrefix: "publication",
             minArity: 1,
             maxArity: 1,
             computable: false,
             fields: [
                 new SingleFieldCore({
-                    placeholder: "Publication date of the knowledge base",
+                    placeholder: "Publication date of the knowledge base.",
                     defaultValue: "",
                     advice: "The date must be non-empty and in the correct format",
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal))];
+                        return [new Statement(exampleDataset, DCT('issued'), $rdf.lit(inputVal, XSD("dateTime")))];
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal);
+                        return isLiteral(inputVal) && isDatetime(inputVal);
                     }
                 })
             ]
@@ -945,14 +961,14 @@ $(() => {
         {
             recommended: true,
             categoryTitle: "Languages",
-            legend: "Language tags used in the literals of the knowledge base.",
+            legend: "Language tags used in the literals of the knowledge base. It is recommended to use the tags used in the language tagged literal, or to follow the <a href='https://www.rfc-editor.org/info/bcp47#section-2.2.9'>RDF1.1 standard</a>.",
             idPrefix: "language",
             minArity: 1,
             maxArity: Infinity,
             computable: true,
             fields: [
                 new SingleFieldCore({
-                    placeholder: "Language tags used in the literals of the knowledge base",
+                    placeholder: "Language tags used in the literals of the knowledge base.",
                     defaultValue: "",
                     advice: "The vocabulary must be non empty",
                     dataCreationFunction: (inputVal) => {
@@ -1144,12 +1160,13 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Number of triples",
                     defaultValue: "",
-                    advice: "The number of triples must be a literal",
+                    advice: "The number of triples must be a positive integer number.",
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, VOID('triples'), $rdf.lit(inputVal, XSD("integer")))];
+                        var parsedIntValue = Number.parseInt(inputVal);
+                        return [new Statement(exampleDataset, VOID('triples'), $rdf.literal(parsedIntValue, XSD("integer")))];
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal);
+                        return isLiteral(inputVal) && isPositiveInteger(inputVal);
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
@@ -1193,12 +1210,13 @@ $(() => {
                 new SingleFieldCore({
                     placeholder: "Number of classes",
                     defaultValue: "",
-                    advice: "The number of classes must be a literal",
+                    advice: "The number of classes must be a positive integer number.",
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, VOID('classes'), $rdf.lit(inputVal, XSD("integer")))];
+                        var parsedIntValue = Number.parseInt(inputVal);
+                        return [new Statement(exampleDataset, VOID('classes'), $rdf.literal(parsedIntValue, XSD("integer")))];
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal);
+                        return isLiteral(inputVal) && isPositiveInteger(inputVal);
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
@@ -1240,14 +1258,15 @@ $(() => {
             computable: true,
             fields: [
                 new SingleFieldCore({
-                    placeholder: "Number of classes",
+                    placeholder: "Number of properties",
                     defaultValue: "",
-                    advice: "The number of properties must be a literal",
+                    advice: "The number of properties must be a positive integer number.",
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, VOID('properties'), $rdf.lit(inputVal, XSD("integer")))];
+                        var parsedIntValue = Number.parseInt(inputVal);
+                        return [new Statement(exampleDataset, VOID('properties'), $rdf.literal(parsedIntValue, XSD("integer")))];
                     },
                     dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal);
+                        return isLiteral(inputVal) && isPositiveInteger(inputVal);
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
@@ -1298,6 +1317,12 @@ $(() => {
             this.generateFields();
 
             navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
+
+            $("#downloadButton").on("click", () => {
+                serializeStoreToTurtlePromise(this.store).then(fileContent => {
+                    saveAs(new Blob([fileContent], {"type": "text/turtle"}), "description.ttl")
+                })
+            });
 
             this.addStatement(new Statement(exampleDataset, RDF("type"), DCAT("Dataset")));
 
