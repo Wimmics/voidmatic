@@ -7,7 +7,7 @@
   },
   "devDependencies": {
     "d3": "latest",
-    "dayjs": "^1.10.7",
+    "dayjs": "^1.11.5",
     "echarts": "latest",
     "events": "^3.3.0",
     "https-browserify": "^1.0.0",
