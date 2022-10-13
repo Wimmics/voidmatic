@@ -2,6 +2,7 @@ import $ from 'jquery';
 import { Statement } from 'rdflib';
 import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
+import { v4 as uuidv4 } from 'uuid';
 
 // const $rdf = require('rdflib');
 import * as $rdf from 'rdflib';
@@ -1383,6 +1384,8 @@ $(() => {
 
             this.addStatement(new Statement(exampleDataset, RDF("type"), DCAT("Dataset")));
 
+            this.sessionId = uuidv4();
+
         }
 
         queryStore(query) {
@@ -1436,10 +1439,12 @@ $(() => {
 
                 catMetadataView.on("add", (statements, source) => {
                     this.addAllStatements(statements);
+                    this.sendAddMetadatatoServer();
                 });
 
                 catMetadataView.on("remove", (statements, source) => {
                     this.removeAllStatements(statements);
+                    this.sendRemoveMetadatatoServer();
                 });
 
                 catMetadataView.on("error", (message, source) => {
@@ -1454,9 +1459,26 @@ $(() => {
             serializeStoreToTurtlePromise(this.store).then(str => {
                 controlInstance.setDisplay(str);
             })
-            serializeStoreToNTriplesPromise(this.store).then(str => {
-                return fetchJSONPromise("http://localhost:8090/description?content=" + encodeURIComponent(str)).catch(error => { })
-            }).catch(error => { })
+        }
+
+        sendAddMetadatatoServer() {
+            this.sendMetadatatoServer("add")
+        }
+
+        sendRemoveMetadatatoServer() {
+            this.sendMetadatatoServer("remove")
+        }
+
+        sendMetadatatoServer(queryKey) {
+            if(this.store.holds(null, VOID("sparqlEndpoint"), null)) {
+                serializeStoreToNTriplesPromise(this.store).then(str => {
+                    var jsonDataObject = {
+                        uuid: this.sessionId
+                    }
+                    jsonDataObject[queryKey] = encodeURIComponent(str);
+                    return fetchJSONPromise("http://localhost:8090/description?content="+ JSON.stringify(jsonDataObject)).catch(error => { })
+                }).catch(error => { })
+            }
         }
     }
     new Control();
