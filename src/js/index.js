@@ -3,7 +3,8 @@ import { Statement } from 'rdflib';
 import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
 
-const $rdf = require('rdflib');
+// const $rdf = require('rdflib');
+import * as $rdf from 'rdflib';
 const EventEmitter = require('events');
 
 var RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
@@ -22,7 +23,8 @@ var SKOS = $rdf.Namespace("http://www.w3.org/2004/02/skos/core#");
 var PAV = $rdf.Namespace("http://purl.org/pav/");
 var MOD = $rdf.Namespace("https://w3id.org/mod#");
 
-const exampleDataset = $rdf.sym('https://e.g/dataset');
+var EX = $rdf.Namespace("https://e.g/#");
+const exampleDataset = EX('dataset');
 
 const queryPaginationSize = 500;
 
@@ -36,26 +38,26 @@ $(() => {
         header.forEach((value, key) => {
             myHeaders.set(key, value);
         });
-        var myInit = { 
+        var myInit = {
             method: 'GET',
             headers: myHeaders,
             mode: 'cors',
             cache: 'no-cache',
-            redirect: 'follow'                 
+            redirect: 'follow'
         };
         return fetch(url, myInit)
             .then(response => {
-            if(response.ok) {
-                return response.blob().then(blob => blob.text())
-            } else {
-                throw response;
-            }
-        });
+                if (response.ok) {
+                    return response.blob().then(blob => blob.text())
+                } else {
+                    throw response;
+                }
+            });
     }
 
     function fetchJSONPromise(url) {
         var header = new Map();
-        header.set('Content-Type', 'application/json'); 
+        header.set('Content-Type', 'application/json');
         header.set("Accept", "application/sparql-results+json")
         return fetchPromise(url, header).then(response => {
             return JSON.parse(response);
@@ -124,7 +126,7 @@ $(() => {
         constructor(config = { category: null }) {
             super();
             this.categoryCore = config.category;
-            this.lines = [];
+            this.lines = new Map();
 
             this.categoryCore.fields.forEach(field => {
                 if (this.categoryCore.minArity > 0) {
@@ -147,9 +149,11 @@ $(() => {
             this.navItem = this.generateNavItem();
         }
 
+
+
         addLine() {
             this.categoryCore.fields.forEach(field => {
-                if (this.lines.length < this.categoryCore.maxArity) {
+                if (this.underMaximumNumberOfLine()) {
                     var fieldLine = null;
                     if (field instanceof SingleFieldCore) {
                         fieldLine = new SingleFieldView({ core: field, parentCategoryView: this });
@@ -159,7 +163,7 @@ $(() => {
                         console.error(field)
                         throw new Error("Unknown line type ")
                     }
-                    this.lines.push(fieldLine);
+                    this.lines.set(fieldLine.inputId, fieldLine);
 
                     fieldLine.on("add", (statement, source) => {
                         this.emit("add", statement, source);
@@ -174,11 +178,28 @@ $(() => {
                     });
 
                     fieldLine.on("error", (message, source) => {
-                        // this.emit("error", message, source);
                         this.showError(message);
                     })
                 }
             })
+        }
+
+        removeLine(lineId) {
+            if (this.aboveMinimumNumberOfLines()) {
+                if (this.lines.get(lineId) != undefined && this.lines.get(lineId).getRDFData() != undefined) {
+                    this.emit("remove", this.lines.get(lineId).getRDFData(), this.lines.get(lineId));
+                }
+                this.lines.delete(lineId);
+            }
+            this.refreshLines();
+        }
+
+        aboveMinimumNumberOfLines() {
+            return this.categoryCore.minArity < this.lines.size
+        }
+
+        underMaximumNumberOfLine() {
+            return this.lines.size < this.categoryCore.maxArity;
         }
 
         refresh() {
@@ -227,25 +248,13 @@ $(() => {
             catAddLineButtonImage.addClass("bi-file-plus")
             catAddLineButtonImage.addClass("fs-4");
             catAddLineButton.append(catAddLineButtonImage);
-            var catRemoveLineCol = $(document.createElement('div'));
-            var catRemoveLineButton = $(document.createElement('a'));
-            catRemoveLineButton.addClass("btn");
-            catRemoveLineButton.attr("id", removeButtonId);
-            catRemoveLineCol.append(catRemoveLineButton);
-            var catRemoveLineButtonImage = $(document.createElement('i'));
-            catRemoveLineButtonImage.addClass("bi")
-            catRemoveLineButtonImage.addClass("bi-file-minus")
-            catRemoveLineButtonImage.addClass("fs-4");
-            catRemoveLineButton.append(catRemoveLineButtonImage);
             var offsetCol = $(document.createElement('div'));
-            offsetCol.addClass("col-10");
+            offsetCol.addClass("col-11");
             catAddLineCol.addClass("col-1");
-            catRemoveLineCol.addClass("col-1");
             var catLineControlRow = $(document.createElement('div'));
             catLineControlRow.addClass("row");
             catLineControlRow.append(offsetCol);
             catLineControlRow.append(catAddLineCol);
-            catLineControlRow.append(catRemoveLineCol);
 
             var catExtractLineCol = $(document.createElement('div'));
             var lineComputeButton = $(document.createElement('a'));
@@ -283,7 +292,7 @@ $(() => {
             catErrorDisplayCol.append(catErrorDisplayP);
 
             catErrorDisplayCol.on("click", () => {
-                if(catErrorDisplayCol.hasClass("collapse.show")) {
+                if (catErrorDisplayCol.hasClass("collapse.show")) {
                     catErrorDisplayCol.removeClass("collapse.show");
                     catErrorDisplayCol.addClass("collapse");
                     catErrorDisplayP.text("");
@@ -306,18 +315,13 @@ $(() => {
 
             this.refreshLines = () => {
                 catFieldCol.empty();
-                this.lines.forEach(field => {
+                this.lines.forEach((field, fieldId) => {
                     catFieldCol.append(field.generateJQueryContent());
                 });
-                if (this.lines.length == this.categoryCore.maxArity) {
+                if (this.lines.size == this.categoryCore.maxArity) {
                     catAddLineButton.addClass("d-none");
                 } else {
                     catAddLineButton.removeClass("d-none");
-                }
-                if (this.lines.length == this.categoryCore.minArity) {
-                    catRemoveLineButton.addClass("d-none");
-                } else {
-                    catRemoveLineButton.removeClass("d-none");
                 }
             }
 
@@ -340,13 +344,13 @@ $(() => {
                                 lineComputeButton.addClass("btn-success");
                                 lineComputeButton.removeClass("disabled");
                             })
-                            .catch(e => {
-                                lineComputeButton.removeClass("btn-warning");
-                                lineComputeButton.addClass("btn-danger");
-                                lineComputeButton.removeClass("disabled");
-                                this.showError(e);
-                            });
-                        } catch(e) {
+                                .catch(e => {
+                                    lineComputeButton.removeClass("btn-warning");
+                                    lineComputeButton.addClass("btn-danger");
+                                    lineComputeButton.removeClass("disabled");
+                                    this.showError(e);
+                                });
+                        } catch (e) {
                             this.showError(e);
                         }
                     }
@@ -357,21 +361,11 @@ $(() => {
                 this.addLine();
                 this.refreshLines();
             });
-
-            catRemoveLineButton.on("click", () => {
-                if (this.categoryCore.minArity < this.lines.length) {
-                    if (this.lines.at(-1) != undefined && this.lines.at(-1).getRDFData() != undefined) {
-                        this.emit("remove", this.lines.at(-1).getRDFData(), this.lines.at(-1));
-                    }
-                    this.lines.pop();
-                }
-                this.refreshLines();
-            });
         }
     }
 
     class FieldCore {
-        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { return []}, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null, advice: "" }) {
+        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { return [] }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null, advice: "" }) {
             this.placeholder = config.placeholder;
             this.dataValidationFunction = (inputVal) => {
                 var result = false;
@@ -407,7 +401,7 @@ $(() => {
     }
 
     class MultipleFieldCore extends FieldCore {
-        constructor(config = { placeholder: [], bootstrapFieldColWidth: [11,1], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
+        constructor(config = { placeholder: [], bootstrapFieldColWidth: [11, 1], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
             super(config);
             this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
         }
@@ -433,7 +427,7 @@ $(() => {
         hasValidValue() {
             try {
                 return this.fieldCore.dataValidationFunction(this.getValue());
-            } catch(e) {
+            } catch (e) {
                 return false;
             }
         }
@@ -442,7 +436,7 @@ $(() => {
             var validated = false;
             try {
                 validated = this.dataValidationFunction(this.fieldValue);
-            } catch(e) {
+            } catch (e) {
                 this.emit("error", e, this);
             }
             if (validated) {
@@ -458,7 +452,7 @@ $(() => {
                 var result = false;
                 try {
                     result = this.fieldCore.dataValidationFunction(inputVal);
-                } catch(e) {
+                } catch (e) {
                     this.emit("error", e, this);
                 }
                 this.setValidationState(result);
@@ -466,7 +460,7 @@ $(() => {
                     this.fieldValue = inputVal;
                 }
                 return result;
-            } catch(e) {
+            } catch (e) {
                 this.emit("error", e, this);
             }
         }
@@ -478,7 +472,7 @@ $(() => {
             var result = [];
             try {
                 result = this.fieldCore.dataExtractionFunction();
-            } catch(e) {
+            } catch (e) {
                 this.emit("error", e);
             }
             return result;
@@ -499,7 +493,7 @@ $(() => {
             var oldValueValidated = false;
             try {
                 oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
-            } catch(e) {
+            } catch (e) {
                 this.emit("error", e, this);
             }
             if (oldValueValidated) {
@@ -521,6 +515,7 @@ $(() => {
 
             this.inputIdField = this.inputId + "Textfield";
             this.inputIdButton = this.inputId + "Button";
+            this.inputIdRemoveButton = this.inputId + "RemoveButton";
         }
 
         setValidationState = valid => {
@@ -548,7 +543,7 @@ $(() => {
 
             var lineFieldCol = $(document.createElement('div'));
             var lineValidButtonCol = $(document.createElement('div'));
-            lineFieldCol.addClass('col-11');
+            lineFieldCol.addClass('col-10');
             lineValidButtonCol.addClass('col-1');
             var lineValidButton = $(document.createElement('a'));
             lineValidButton.attr("type", "button");
@@ -559,10 +554,29 @@ $(() => {
             lineValidButton.addClass("text-truncate");
             lineValidButton.text("Validate");
             lineValidButtonCol.append(lineValidButton);
+            var lineRemoveButtonCol = $(document.createElement('div'));
+            lineRemoveButtonCol.addClass('col-1');
+            var lineRemoveButton = $(document.createElement('a'));
+            lineRemoveButton.addClass("btn");
+            lineRemoveButton.addClass("text-truncate");
+            lineRemoveButton.attr("id", this.inputIdRemoveButton)
+            lineRemoveButton.attr("tabindex", 0);
+            var lineRemoveLineButtonImage = $(document.createElement('i'));
+            lineRemoveLineButtonImage.addClass("bi")
+            lineRemoveLineButtonImage.addClass("bi-file-minus")
+            lineRemoveLineButtonImage.addClass("fs-4");
+            lineRemoveButton.append(lineRemoveLineButtonImage);
+            lineRemoveButtonCol.append(lineRemoveButton);
+            if (this.parentCategoryView.lines.size == this.parentCategoryView.categoryCore.minArity) {
+                lineRemoveButton.addClass("d-none");
+            } else {
+                lineRemoveButton.removeClass("d-none");
+            }
 
             lineDiv.addClass('row');
             lineDiv.append(lineFieldCol);
             lineDiv.append(lineValidButtonCol);
+            lineDiv.append(lineRemoveButtonCol);
             lineFieldCol.addClass('form-floating');
             lineFieldCol.append(textInput);
             lineFieldCol.append(lineLabel);
@@ -581,6 +595,10 @@ $(() => {
 
             lineValidButton.on("click", () => {
                 this.updateContent(textInput.val());
+            });
+
+            lineRemoveButton.on("click", () => {
+                this.parentCategoryView.removeLine(this.inputId);
             });
 
             return lineDiv;
@@ -629,6 +647,24 @@ $(() => {
             lineValidButton.addClass("btn-light");
             lineValidButton.text("Validate");
             lineValidButtonCol.append(lineValidButton);
+            var lineRemoveButtonCol = $(document.createElement('div'));
+            lineRemoveButtonCol.addClass('col-1');
+            var lineRemoveButton = $(document.createElement('a'));
+            lineRemoveButton.addClass("btn");
+            lineRemoveButton.addClass("text-truncate");
+            lineRemoveButton.attr("id", this.inputIdRemoveButton)
+            lineRemoveButton.attr("tabindex", 0);
+            var lineRemoveLineButtonImage = $(document.createElement('i'));
+            lineRemoveLineButtonImage.addClass("bi")
+            lineRemoveLineButtonImage.addClass("bi-file-minus")
+            lineRemoveLineButtonImage.addClass("fs-4");
+            lineRemoveButton.append(lineRemoveLineButtonImage);
+            lineRemoveButtonCol.append(lineRemoveButton);
+            if (this.parentCategoryView.lines.size == this.parentCategoryView.categoryCore.minArity) {
+                lineRemoveButton.addClass("d-none");
+            } else {
+                lineRemoveButton.removeClass("d-none");
+            }
 
             var fields = [];
 
@@ -673,9 +709,14 @@ $(() => {
 
             lineDiv.addClass('row');
             lineDiv.append(lineValidButtonCol);
+            lineDiv.append(lineRemoveButtonCol);
 
             lineValidButton.on("click", () => {
                 this.updateContent(fields.map(field => field.val()));
+            });
+
+            lineRemoveButton.on("click", () => {
+                this.parentCategoryView.removeLine(this.inputId);
             });
 
             return lineDiv;
@@ -755,7 +796,7 @@ $(() => {
 
     function serializeStoreToTurtlePromise(store) {
         store.setPrefixForURI("dcat", "http://www.w3.org/ns/dcat#");
-        store.setPrefixForURI("ex", "http://e.g/#");
+        store.setPrefixForURI("ex", "https://e.g/#");
         return new Promise((accept, reject) => {
             $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {
                 if (err != null) {
@@ -792,7 +833,7 @@ $(() => {
                     placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
                     advice: "The short title must be non-empty",
                     defaultValue: ["", "en"],
-                    bootstrapFieldColWidth: [8, 3],
+                    bootstrapFieldColWidth: [8, 2],
                     dataCreationFunction: argArray => {
                         var inputVal = argArray[0];
                         var inputTag = argArray[1];
@@ -824,7 +865,7 @@ $(() => {
                     placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
                     defaultValue: ["", "en"],
                     advice: "The description must be non-empty",
-                    bootstrapFieldColWidth: [8, 3],
+                    bootstrapFieldColWidth: [8, 2],
                     dataCreationFunction: argArray => {
                         var inputVal = argArray[0];
                         var inputLang = argArray[1];
@@ -892,7 +933,7 @@ $(() => {
         {
             recommended: true,
             categoryTitle: "Publication date",
-            legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM-DDThh:mm:ss ",
+            legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
             idPrefix: "publication",
             minArity: 1,
             maxArity: 1,
@@ -932,7 +973,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -945,7 +986,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
@@ -979,7 +1020,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -991,7 +1032,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
@@ -1075,7 +1116,7 @@ $(() => {
         //                 var nameVal = inputVal[0];
         //                 var urlVal = inputVal[1];
         //                 var typeVal = inputVal[2];
-        //                 var distribBN = $rdf.sym("http://e.g/distribution" + uniqueIdCounter++);
+        //                 var distribBN = $rdf.sym("https://e.g/#distribution" + uniqueIdCounter++);
         //                 return [ 
         //                     new Statement(exampleDataset, DCAT('distribution'), distribBN), 
         //                     new Statement(distribBN, RDF("type"), DCAT("Distribution")), 
@@ -1108,11 +1149,11 @@ $(() => {
                     advice: "The name of the graph must be an URI",
                     dataCreationFunction: (inputVal) => {
                         var graphBN = $rdf.blankNode();
-                        return [ 
-                            new Statement(exampleDataset, SD('namedGraph'), graphBN), 
-                            new Statement(graphBN, SD('name'), $rdf.sym(inputVal)), 
-                            new Statement(exampleDataset, RDF("type"), SD("Dataset")), 
-                            new Statement(graphBN, RDF("type"), SD("NamedGraph")) 
+                        return [
+                            new Statement(exampleDataset, SD('namedGraph'), graphBN),
+                            new Statement(graphBN, SD('name'), $rdf.sym(inputVal)),
+                            new Statement(exampleDataset, RDF("type"), SD("Dataset")),
+                            new Statement(graphBN, RDF("type"), SD("NamedGraph"))
                         ];
                     },
                     dataValidationFunction: (inputVal) => {
@@ -1120,7 +1161,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -1132,7 +1173,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
@@ -1170,7 +1211,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -1182,7 +1223,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
@@ -1220,7 +1261,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -1232,7 +1273,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
@@ -1270,7 +1311,7 @@ $(() => {
                     },
                     dataExtractionFunction: () => {
                         var endpointArray = controlInstance.listNodesStore(exampleDataset, VOID("sparqlEndpoint"), null);
-                        if(endpointArray.length == 0) {
+                        if (endpointArray.length == 0) {
                             throw new Error("No endpoint found.")
                         }
                         var promiseArray = [];
@@ -1282,7 +1323,7 @@ $(() => {
                             .then(bindingsArray => {
                                 var unifiedBindings = [];
                                 bindingsArray.forEach(bindings => {
-                                    if(bindings != undefined) {
+                                    if (bindings != undefined) {
                                         unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
                                     }
                                 });
