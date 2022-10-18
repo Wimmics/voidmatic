@@ -1439,12 +1439,12 @@ $(() => {
 
                 catMetadataView.on("add", (statements, source) => {
                     this.addAllStatements(statements);
-                    this.sendAddMetadatatoServer();
+                    this.sendMetadatatoServer();
                 });
 
                 catMetadataView.on("remove", (statements, source) => {
                     this.removeAllStatements(statements);
-                    this.sendRemoveMetadatatoServer();
+                    this.sendMetadatatoServer();
                 });
 
                 catMetadataView.on("error", (message, source) => {
@@ -1461,22 +1461,11 @@ $(() => {
             })
         }
 
-        sendAddMetadatatoServer() {
-            this.sendMetadatatoServer("add")
-        }
-
-        sendRemoveMetadatatoServer() {
-            this.sendMetadatatoServer("remove")
-        }
-
-        sendMetadatatoServer(queryKey) {
+        sendMetadatatoServer() {
             if(this.store.holds(null, VOID("sparqlEndpoint"), null)) {
                 serializeStoreToNTriplesPromise(this.store).then(str => {
-                    var jsonDataObject = {
-                        uuid: this.sessionId
-                    }
-                    jsonDataObject[queryKey] = encodeURIComponent(str);
-                    return fetchJSONPromise("http://localhost:8090/description?content="+ JSON.stringify(jsonDataObject)).catch(error => { })
+                    const finalUrl = "http://localhost:8090/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+                    return fetchJSONPromise(finalUrl).catch(error => { })
                 }).catch(error => { })
             }
         }
