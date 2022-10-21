@@ -2,6 +2,7 @@ import $ from 'jquery';
 import { Statement } from 'rdflib';
 import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
+import { v4 as uuidv4 } from 'uuid';
 
 // const $rdf = require('rdflib');
 import * as $rdf from 'rdflib';
@@ -264,6 +265,7 @@ $(() => {
             lineComputeButton.addClass("btn");
             lineComputeButton.addClass("btn-light");
             lineComputeButton.text("Extract");
+            lineComputeButton.attr("title", "Metadatamatic will try to extract the information from the SPARQL endpoint.");
             catExtractLineCol.append(lineComputeButton);
             if (this.categoryCore.computable) {
                 catLegendCol.addClass("col-11")
@@ -553,6 +555,7 @@ $(() => {
             lineValidButton.addClass("btn-light");
             lineValidButton.addClass("text-truncate");
             lineValidButton.text("Validate");
+            lineValidButton.attr("title", this.fieldCore.placeholder);
             lineValidButtonCol.append(lineValidButton);
             var lineRemoveButtonCol = $(document.createElement('div'));
             lineRemoveButtonCol.addClass('col-1');
@@ -646,6 +649,7 @@ $(() => {
             lineValidButton.addClass("btn");
             lineValidButton.addClass("btn-light");
             lineValidButton.text("Validate");
+            lineValidButton.attr("title", this.fieldCore.placeholder[0]);
             lineValidButtonCol.append(lineValidButton);
             var lineRemoveButtonCol = $(document.createElement('div'));
             lineRemoveButtonCol.addClass('col-1');
@@ -799,6 +803,19 @@ $(() => {
         store.setPrefixForURI("ex", "https://e.g/#");
         return new Promise((accept, reject) => {
             $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(str)
+            }, { namespaces: store.namespaces });
+        })
+    }
+
+    function serializeStoreToNTriplesPromise(store) {
+        store.setPrefixForURI("dcat", "http://www.w3.org/ns/dcat#");
+        store.setPrefixForURI("ex", "https://e.g/#");
+        return new Promise((accept, reject) => {
+            $rdf.serialize(null, store, undefined, 'application/n-triples', function (err, str) {
                 if (err != null) {
                     reject(err);
                 }
@@ -1361,11 +1378,13 @@ $(() => {
 
             $("#downloadButton").on("click", () => {
                 serializeStoreToTurtlePromise(this.store).then(fileContent => {
-                    saveAs(new Blob([fileContent], {"type": "text/turtle"}), "description.ttl")
+                    saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
                 })
             });
 
             this.addStatement(new Statement(exampleDataset, RDF("type"), DCAT("Dataset")));
+
+            this.sessionId = uuidv4();
 
         }
 
@@ -1420,10 +1439,12 @@ $(() => {
 
                 catMetadataView.on("add", (statements, source) => {
                     this.addAllStatements(statements);
+                    this.sendMetadatatoServer();
                 });
 
                 catMetadataView.on("remove", (statements, source) => {
                     this.removeAllStatements(statements);
+                    this.sendMetadatatoServer();
                 });
 
                 catMetadataView.on("error", (message, source) => {
@@ -1435,10 +1456,18 @@ $(() => {
         }
 
         refreshStore() {
-            serializeStoreToTurtlePromise(this.store)
-                .then(str => {
-                    controlInstance.setDisplay(str);
-                })
+            serializeStoreToTurtlePromise(this.store).then(str => {
+                controlInstance.setDisplay(str);
+            })
+        }
+
+        sendMetadatatoServer() {
+            if(this.store.holds(null, VOID("sparqlEndpoint"), null)) {
+                serializeStoreToNTriplesPromise(this.store).then(str => {
+                    const finalUrl = "http://localhost:8090/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+                    return fetchJSONPromise(finalUrl).catch(error => { })
+                }).catch(error => { })
+            }
         }
     }
     new Control();
