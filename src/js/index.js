@@ -1464,7 +1464,7 @@ $(() => {
         sendMetadatatoServer() {
             if(this.store.holds(null, VOID("sparqlEndpoint"), null)) {
                 serializeStoreToNTriplesPromise(this.store).then(str => {
-                    const finalUrl = "http://prod-dekalog.inria.fr:8090/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+                    const finalUrl = "https://prod-dekalog.inria.fr:8090/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
                     return fetchJSONPromise(finalUrl).catch(error => { })
                 }).catch(error => { })
             }
