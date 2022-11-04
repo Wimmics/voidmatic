@@ -824,6 +824,10 @@ $(() => {
         })
     }
 
+    function standardizeEndpointURL(endpointURL) {
+        return endpointURL.replace("http://", "https://");
+    }
+
     function generateNavItem(text, id) {
         var navItem = $(document.createElement("div"));
         var navLink = $(document.createElement("a"));
@@ -996,6 +1000,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s ?elem ?o . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                         });
@@ -1043,6 +1048,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
                         });
                         return Promise.all(promiseArray)
@@ -1184,6 +1190,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
                         });
                         return Promise.all(promiseArray)
@@ -1234,6 +1241,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } }'));
                         });
                         return Promise.all(promiseArray)
@@ -1284,6 +1292,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?c) AS ?count) WHERE { ?s a ?c . FILTER(isURI(?c)) }'));
                         });
                         return Promise.all(promiseArray)
@@ -1334,6 +1343,7 @@ $(() => {
                         var promiseArray = [];
                         endpointArray.forEach(endpointNode => {
                             var endpointString = endpointNode.value;
+                            endpointString = standardizeEndpointURL(endpointString);
                             promiseArray.push(sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?s ?p ?o . FILTER(isURI(?p)) }'));
                         });
                         return Promise.all(promiseArray)
