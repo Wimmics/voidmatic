@@ -150,7 +150,15 @@ $(() => {
             this.navItem = this.generateNavItem();
         }
 
+        refreshDisplay() {
+            serializeStoreToTurtlePromise(this.displayStore).then(str => {
+                this.setDisplay(str);
+            })
+        }
 
+        setDisplay(content) {
+            this.displayContent.text(content);
+        }
 
         addLine() {
             this.categoryCore.fields.forEach(field => {
@@ -166,16 +174,16 @@ $(() => {
                     }
                     this.lines.set(fieldLine.inputId, fieldLine);
 
-                    fieldLine.on("add", (statement, source) => {
-                        this.emit("add", statement, source);
+                    fieldLine.on("add", (statements, source) => {
+                        this.emit("add", statements, source);
                     });
 
-                    fieldLine.on("remove", (statement, source) => {
-                        this.emit("remove", statement, source);
+                    fieldLine.on("remove", (statements, source) => {
+                        this.emit("remove", statements, source);
                     });
 
-                    fieldLine.on("suggestion", (statement, source) => {
-                        this.emit("suggestion", statement, source);
+                    fieldLine.on("suggestion", (statements, source) => {
+                        this.emit("suggestion", statements, source);
                     });
 
                     fieldLine.on("error", (message, source) => {
@@ -306,6 +314,25 @@ $(() => {
                 catErrorDisplayCol.removeClass("collapse");
                 catErrorDisplayCol.addClass("collapse.show");
             }
+            
+            // Display field
+            this.displayId = this.categoryCore.idPrefix + "Display";
+            this.displayPre = $(document.createElement('pre'));
+            this.displayPre.addClass("language-turtle");
+            this.displayContent = $(document.createElement('code'));
+            this.displayContent.prop("id", this.displayId);
+            this.displayContent.addClass("language-turtle");
+            this.displayContent.attr("title", "Content generated for this category.");
+            this.displayPre.append(this.displayContent);
+            this.displayStore = $rdf.graph();
+            this.on("add", statements => {
+                this.displayStore.addAll(statements);
+                this.refreshDisplay();
+            });
+            this.on("remove", statements => {
+                this.displayStore.removeStatements(statements);
+                this.refreshDisplay();
+            });
 
             this.jQueryContent.append(catCard);
             catCard.append(catTitle);
@@ -314,6 +341,7 @@ $(() => {
             catCardBody.append(catErrorDisplayRow)
             catCardBody.append(catFieldRow);
             catCardBody.append(catLineControlRow);
+            catCardBody.append(this.displayPre);
 
             this.refreshLines = () => {
                 catFieldCol.empty();
