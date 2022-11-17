@@ -2,8 +2,11 @@
   "name": "VoIDMatic",
   "source": "src/index.html",
   "scripts": {
-    "start": "parcel",
-    "build": "parcel build"
+    "predeploy":"rm dist/* ./*.js ./*.js.map ./*.css.map ./html",
+    "deploy": "npx parcel build",
+    "postdeploy": "mv dist/* .",
+    "dev": "npx parcel serve --https",
+    "predev": "rm dist/*"
   },
   "devDependencies": {
     "d3": "latest",
