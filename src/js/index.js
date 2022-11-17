@@ -378,10 +378,13 @@ $(() => {
                                     lineComputeButton.removeClass("btn-warning");
                                     lineComputeButton.addClass("btn-danger");
                                     lineComputeButton.removeClass("disabled");
-                                    this.showError(e);
+
+                                    this.showError(new Error("Could not retrieve the data. Have you tried to force the endpoint url into HTTPS ?"));
+                                    console.error(e);
                                 });
                         } catch (e) {
-                            this.showError(e);
+                            this.showError(new Error("Error during data retrieval."));
+                            console.error(e);
                         }
                     }
                 })
