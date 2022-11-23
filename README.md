@@ -4,3 +4,10 @@
 
 This project is an effort to create a website to make possible for people not familiar with dataset metadata to easily create the description of their dataset in RDF, using the proper vocabularies.
 
+#### Commands
+
+Deploying:
+`npm run deploy`
+
+Developing:
+`npm run dev`
