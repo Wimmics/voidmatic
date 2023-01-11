@@ -23,6 +23,7 @@ var DCT = $rdf.Namespace("http://purl.org/dc/terms/");
 var SKOS = $rdf.Namespace("http://www.w3.org/2004/02/skos/core#");
 var PAV = $rdf.Namespace("http://purl.org/pav/");
 var MOD = $rdf.Namespace("https://w3id.org/mod#");
+var DCMITYPE = $rdf.Namespace("http://purl.org/dc/dcmitype/");
 
 var EX = $rdf.Namespace("https://e.g/#");
 const exampleDataset = EX('dataset');
@@ -53,6 +54,9 @@ $(() => {
                 } else {
                     throw response;
                 }
+            }).catch(error => {
+                console.log(error)
+                throw error;
             });
     }
 
@@ -330,7 +334,11 @@ $(() => {
                 this.refreshDisplay();
             });
             this.on("remove", statements => {
-                this.displayStore.removeStatements(statements);
+                statements.forEach(statement => {
+                    if(this.displayStore.holdsStatement(statement)) {
+                        this.displayStore.removeStatement(statement);
+                    }
+                })
                 this.refreshDisplay();
             });
 
@@ -1420,6 +1428,12 @@ $(() => {
                 })
             });
 
+            $("#saturationButton").on("click", () => {
+                const equivalences = this.generateEquivalenceTriples();
+                this.store.addAll(equivalences);
+                this.refreshStore()
+            });
+
             $('#forceHTTPScheckbox').on("change", () => {
                 var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
                 this.forceHTTPSFlag = checkboxValue;
@@ -1437,6 +1451,92 @@ $(() => {
             } else {
                 return endpointURL;
             }
+        }
+
+        /**
+         * Generates triples in known vocabularies according to IndeGx equivalences.
+         * TODO: Make it using SPARQL or defined in each field.
+         */
+        generateEquivalenceTriples() {
+            var result = [];
+            
+            const dcatDatasetInstanceStatement = this.store.anyStatementMatching(null, RDF("type"), DCAT("Dataset"));
+            if(dcatDatasetInstanceStatement != undefined) {
+                const subject = dcatDatasetInstanceStatement.subject;
+                result.push(new Statement(subject, RDF("type"), SCHEMA("Dataset")))
+                result.push(new Statement(subject, RDF("type"), DCMITYPE("Dataset")))
+                result.push(new Statement(subject, RDF("type"), VOID("Dataset")))
+                result.push(new Statement(subject, RDF("type"), SD("Dataset")))
+                result.push(new Statement(subject, RDF("type"), PROV("Entity")))
+                result.push(new Statement(subject, RDF("type"), SKOS("Concept")))
+            }
+
+            const dctTitleStatement = this.store.anyStatementMatching(null, DCT("title"), null);
+            if(dctTitleStatement != undefined) {
+                const subject = dctTitleStatement.subject;
+                const object = dctTitleStatement.object;
+                result.push(new Statement(subject, SCHEMA("name"), object))
+                result.push(new Statement(subject, RDFS("label"), object))
+            }
+
+            const dctDescriptionStatement = this.store.anyStatementMatching(null, DCT("description"), null);
+            if(dctDescriptionStatement != undefined) {
+                const subject = dctDescriptionStatement.subject;
+                const object = dctDescriptionStatement.object;
+                result.push(new Statement(subject, SCHEMA("description"), object))
+                result.push(new Statement(subject, OWL("comment"), object))
+                result.push(new Statement(subject, SKOS("note"), object))
+            }
+            
+            const dctCreatorStatement = this.store.anyStatementMatching(null, DCT("creator"), null);
+            if(dctCreatorStatement != undefined) {
+                const subject = dctCreatorStatement.subject;
+                const object = dctCreatorStatement.object;
+                result.push(new Statement(subject, SCHEMA("creator"), object))
+                result.push(new Statement(subject, PROV("wasAttributedTo"), object))
+                result.push(new Statement(subject, PAV("authoredBy"), object))
+                result.push(new Statement(subject, PAV("createdBy"), object))
+            }
+            
+            const dctPublicationStatement = this.store.anyStatementMatching(null, DCT("issued"), null);
+            if(dctPublicationStatement != undefined) {
+                const subject = dctPublicationStatement.subject;
+                const object = dctPublicationStatement.object;
+                result.push(new Statement(subject, SCHEMA("datePublished"), object))
+            }
+            
+            const voidVocabularyStatement = this.store.anyStatementMatching(null, VOID("vocabulary"), null);
+            if(voidVocabularyStatement != undefined) {
+                const subject = voidVocabularyStatement.subject;
+                const object = voidVocabularyStatement.object;
+                result.push(new Statement(subject, DCT("conformsTo"), object))
+            }
+            
+            const voidSparqlEndpointStatement = this.store.anyStatementMatching(null, VOID("sparqlEndpoint"), null);
+            if(voidSparqlEndpointStatement != undefined) {
+                const subject = voidSparqlEndpointStatement.subject;
+                const object = voidSparqlEndpointStatement.object;
+                result.push(new Statement(subject, SCHEMA("contentURL"), object))
+                result.push(new Statement(subject, DCAT("endpointURL"), object))
+            }
+            
+            const dcatVersionStatement = this.store.anyStatementMatching(null, DCAT("version"), null);
+            if(dcatVersionStatement != undefined) {
+                const subject = dcatVersionStatement.subject;
+                const object = dcatVersionStatement.object;
+                result.push(new Statement(subject, SCHEMA("version"), object))
+                result.push(new Statement(subject, DCT("hasVersion"), object))
+                result.push(new Statement(subject, PAV("version"), object))
+            }
+            
+            const dctLanguageStatement = this.store.anyStatementMatching(null, DCT("language"), null);
+            if(dctLanguageStatement != undefined) {
+                const subject = dctLanguageStatement.subject;
+                const object = dctLanguageStatement.object;
+                result.push(new Statement(subject, SCHEMA("inLanguage"), object))
+            }
+
+            return result;
         }
 
         queryStore(query) {
