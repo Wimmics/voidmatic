@@ -77,11 +77,20 @@
             </div>
             <div class='row'>
                 <div class='col-12 my-3' id='displayCol'>
-                    <a class="btn btn-light" id="downloadButton">Download</a>
-                    <pre class="language-turtle">
-<code id="displayTextArea" title="Created RDF content" class="language-turtle" >
-</code>
-                    </pre>
+                    <div class="row">
+                        <div class="col-6">
+                            <a class="btn btn-light" id="downloadButton">Download</a>
+                        </div>
+                        <div class="col-6">
+                            <a class="btn btn-light" id="saturationButton" title="This will add equivalent classes and properties to the one already given">Apply equivalences</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <pre class="language-turtle">
+    <code id="displayTextArea" title="Created RDF content" class="language-turtle" >
+    </code>
+                        </pre>
+                    </div>
                 </div>
             </div>
             <div class="row" vocab="https://schema.org/">
