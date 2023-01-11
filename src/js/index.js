@@ -334,7 +334,11 @@ $(() => {
                 this.refreshDisplay();
             });
             this.on("remove", statements => {
-                this.displayStore.removeStatements(statements);
+                statements.forEach(statement => {
+                    if(this.displayStore.holdsStatement(statement)) {
+                        this.displayStore.removeStatement(statement);
+                    }
+                })
                 this.refreshDisplay();
             });
 
