@@ -6,6 +6,12 @@ This project is an effort to create a website to make possible for people not fa
 
 #### Commands
 
+##### Installation
+
+Requires NodeJS >= 18.13.0 and npm >= 8.19.2
+
+##### Developpement
+
 Deploying:
 `npm run deploy`
 
