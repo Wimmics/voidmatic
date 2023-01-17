@@ -2,7 +2,7 @@
   "name": "VoIDMatic",
   "source": "src/index.html",
   "scripts": {
-    "predeploy":"rm dist/* ./*.js ./*.js.map ./*.css.map ./*.css || true",
+    "predeploy": "rm dist/* ./*.js ./*.js.map ./*.css.map ./*.css || true",
     "deploy": "npx parcel build",
     "postdeploy": "sed 's/\\/index\\./\\.\\/index\\./g' dist/index.html > index.html && rm dist/index.html || true && mv dist/* .",
     "dev": "npx parcel serve --https",
@@ -23,6 +23,7 @@
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.0",
     "bootstrap-icons": "^1.9.1",
+    "bootstrap5-autocomplete": "^1.1.1",
     "buffer": "^6.0.3",
     "fetch": "^1.1.0",
     "file-saver": "^2.0.5",
