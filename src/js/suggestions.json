@@ -1,0 +1,1542 @@
+{
+  "lang": [
+    {
+      "label": "English",
+      "value": "en"
+    },
+    {
+      "label": "Chinese",
+      "value": "zh"
+    },
+    {
+      "label": "Hindi",
+      "value": "hi"
+    },
+    {
+      "label": "Spanish",
+      "value": "es"
+    },
+    {
+      "label": "French",
+      "value": "fr"
+    },
+    {
+      "label": "Arabic",
+      "value": "ar"
+    },
+    {
+      "label": "Bengali (Bangla)",
+      "value": "bn"
+    },
+    {
+      "label": "Portuguese",
+      "value": "pt"
+    },
+    {
+      "label": "Russian",
+      "value": "ru"
+    },
+    {
+      "label": "Japanese",
+      "value": "ja"
+    },
+    {
+      "label": "Indonesian",
+      "value": "id, in"
+    },
+    {
+      "label": "Abkhazian",
+      "value": "ab"
+    },
+    {
+      "label": "Afar",
+      "value": "aa"
+    },
+    {
+      "label": "Afrikaans",
+      "value": "af"
+    },
+    {
+      "label": "Akan",
+      "value": "ak"
+    },
+    {
+      "label": "Albanian",
+      "value": "sq"
+    },
+    {
+      "label": "Amharic",
+      "value": "am"
+    },
+    {
+      "label": "Aragonese",
+      "value": "an"
+    },
+    {
+      "label": "Armenian",
+      "value": "hy"
+    },
+    {
+      "label": "Assamese",
+      "value": "as"
+    },
+    {
+      "label": "Avaric",
+      "value": "av"
+    },
+    {
+      "label": "Avestan",
+      "value": "ae"
+    },
+    {
+      "label": "Aymara",
+      "value": "ay"
+    },
+    {
+      "label": "Azerbaijani",
+      "value": "az"
+    },
+    {
+      "label": "Bambara",
+      "value": "bm"
+    },
+    {
+      "label": "Bashkir",
+      "value": "ba"
+    },
+    {
+      "label": "Basque",
+      "value": "eu"
+    },
+    {
+      "label": "Belarusian",
+      "value": "be"
+    },
+    {
+      "label": "Bihari",
+      "value": "bh"
+    },
+    {
+      "label": "Bislama",
+      "value": "bi"
+    },
+    {
+      "label": "Bosnian",
+      "value": "bs"
+    },
+    {
+      "label": "Breton",
+      "value": "br"
+    },
+    {
+      "label": "Bulgarian",
+      "value": "bg"
+    },
+    {
+      "label": "Burmese",
+      "value": "my"
+    },
+    {
+      "label": "Catalan",
+      "value": "ca"
+    },
+    {
+      "label": "Chamorro",
+      "value": "ch"
+    },
+    {
+      "label": "Chechen",
+      "value": "ce"
+    },
+    {
+      "label": "Chichewa, Chewa, Nyanja",
+      "value": "ny"
+    },
+    {
+      "label": "Chinese (Simplified)",
+      "value": "zh-Hans"
+    },
+    {
+      "label": "Chinese (Traditional)",
+      "value": "zh-Hant"
+    },
+    {
+      "label": "Chuvash",
+      "value": "cv"
+    },
+    {
+      "label": "Cornish",
+      "value": "kw"
+    },
+    {
+      "label": "Corsican",
+      "value": "co"
+    },
+    {
+      "label": "Cree",
+      "value": "cr"
+    },
+    {
+      "label": "Croatian",
+      "value": "hr"
+    },
+    {
+      "label": "Czech",
+      "value": "cs"
+    },
+    {
+      "label": "Danish",
+      "value": "da"
+    },
+    {
+      "label": "Divehi, Dhivehi, Maldivian",
+      "value": "dv"
+    },
+    {
+      "label": "Dutch",
+      "value": "nl"
+    },
+    {
+      "label": "Dzongkha",
+      "value": "dz"
+    },
+    {
+      "label": "Esperanto",
+      "value": "eo"
+    },
+    {
+      "label": "Estonian",
+      "value": "et"
+    },
+    {
+      "label": "Ewe",
+      "value": "ee"
+    },
+    {
+      "label": "Faroese",
+      "value": "fo"
+    },
+    {
+      "label": "Fijian",
+      "value": "fj"
+    },
+    {
+      "label": "Finnish",
+      "value": "fi"
+    },
+    {
+      "label": "Fula, Fulah, Pulaar, Pular",
+      "value": "ff"
+    },
+    {
+      "label": "Galician",
+      "value": "gl"
+    },
+    {
+      "label": "Gaelic (Scottish)",
+      "value": "gd"
+    },
+    {
+      "label": "Gaelic (Manx)",
+      "value": "gv"
+    },
+    {
+      "label": "Georgian",
+      "value": "ka"
+    },
+    {
+      "label": "German",
+      "value": "de"
+    },
+    {
+      "label": "Greek",
+      "value": "el"
+    },
+    {
+      "label": "Greenlandic",
+      "value": "kl"
+    },
+    {
+      "label": "Guarani",
+      "value": "gn"
+    },
+    {
+      "label": "Gujarati",
+      "value": "gu"
+    },
+    {
+      "label": "Haitian Creole",
+      "value": "ht"
+    },
+    {
+      "label": "Hausa",
+      "value": "ha"
+    },
+    {
+      "label": "Hebrew",
+      "value": "he"
+    },
+    {
+      "label": "Herero",
+      "value": "hz"
+    },
+    {
+      "label": "Hiri Motu",
+      "value": "ho"
+    },
+    {
+      "label": "Hungarian",
+      "value": "hu"
+    },
+    {
+      "label": "Icelandic",
+      "value": "is"
+    },
+    {
+      "label": "Ido",
+      "value": "io"
+    },
+    {
+      "label": "Igbo",
+      "value": "ig"
+    },
+    {
+      "label": "Interlingua",
+      "value": "ia"
+    },
+    {
+      "label": "Interlingue",
+      "value": "ie"
+    },
+    {
+      "label": "Inuktitut",
+      "value": "iu"
+    },
+    {
+      "label": "Inupiak",
+      "value": "ik"
+    },
+    {
+      "label": "Irish",
+      "value": "ga"
+    },
+    {
+      "label": "Italian",
+      "value": "it"
+    },
+    {
+      "label": "Javanese",
+      "value": "jv"
+    },
+    {
+      "label": "Kalaallisut, Greenlandic",
+      "value": "kl"
+    },
+    {
+      "label": "Kannada",
+      "value": "kn"
+    },
+    {
+      "label": "Kanuri",
+      "value": "kr"
+    },
+    {
+      "label": "Kashmiri",
+      "value": "ks"
+    },
+    {
+      "label": "Kazakh",
+      "value": "kk"
+    },
+    {
+      "label": "Khmer",
+      "value": "km"
+    },
+    {
+      "label": "Kikuyu",
+      "value": "ki"
+    },
+    {
+      "label": "Kinyarwanda (Rwanda)",
+      "value": "rw"
+    },
+    {
+      "label": "Kirundi",
+      "value": "rn"
+    },
+    {
+      "label": "Kyrgyz",
+      "value": "ky"
+    },
+    {
+      "label": "Komi",
+      "value": "kv"
+    },
+    {
+      "label": "Kongo",
+      "value": "kg"
+    },
+    {
+      "label": "Korean",
+      "value": "ko"
+    },
+    {
+      "label": "Kurdish",
+      "value": "ku"
+    },
+    {
+      "label": "Kwanyama",
+      "value": "kj"
+    },
+    {
+      "label": "Lao",
+      "value": "lo"
+    },
+    {
+      "label": "Latin",
+      "value": "la"
+    },
+    {
+      "label": "Latvian (Lettish)",
+      "value": "lv"
+    },
+    {
+      "label": "Limburgish ( Limburger)",
+      "value": "li"
+    },
+    {
+      "label": "Lingala",
+      "value": "ln"
+    },
+    {
+      "label": "Lithuanian",
+      "value": "lt"
+    },
+    {
+      "label": "Luga-Katanga",
+      "value": "lu"
+    },
+    {
+      "label": "Luganda, Ganda",
+      "value": "lg"
+    },
+    {
+      "label": "Luxembourgish",
+      "value": "lb"
+    },
+    {
+      "label": "Manx",
+      "value": "gv"
+    },
+    {
+      "label": "Macedonian",
+      "value": "mk"
+    },
+    {
+      "label": "Malagasy",
+      "value": "mg"
+    },
+    {
+      "label": "Malay",
+      "value": "ms"
+    },
+    {
+      "label": "Malayalam",
+      "value": "ml"
+    },
+    {
+      "label": "Maltese",
+      "value": "mt"
+    },
+    {
+      "label": "Maori",
+      "value": "mi"
+    },
+    {
+      "label": "Marathi",
+      "value": "mr"
+    },
+    {
+      "label": "Marshallese",
+      "value": "mh"
+    },
+    {
+      "label": "Moldavian",
+      "value": "mo"
+    },
+    {
+      "label": "Mongolian",
+      "value": "mn"
+    },
+    {
+      "label": "Nauru",
+      "value": "na"
+    },
+    {
+      "label": "Navajo",
+      "value": "nv"
+    },
+    {
+      "label": "Ndonga",
+      "value": "ng"
+    },
+    {
+      "label": "Northern Ndebele",
+      "value": "nd"
+    },
+    {
+      "label": "Nepali",
+      "value": "ne"
+    },
+    {
+      "label": "Norwegian",
+      "value": "no"
+    },
+    {
+      "label": "Norwegian bokmål",
+      "value": "nb"
+    },
+    {
+      "label": "Norwegian nynorsk",
+      "value": "nn"
+    },
+    {
+      "label": "Nuosu",
+      "value": "ii"
+    },
+    {
+      "label": "Occitan",
+      "value": "oc"
+    },
+    {
+      "label": "Ojibwe",
+      "value": "oj"
+    },
+    {
+      "label": "Old Church Slavonic, Old Bulgarian",
+      "value": "cu"
+    },
+    {
+      "label": "Oriya",
+      "value": "or"
+    },
+    {
+      "label": "Oromo (Afaan Oromo)",
+      "value": "om"
+    },
+    {
+      "label": "Ossetian",
+      "value": "os"
+    },
+    {
+      "label": "Pāli",
+      "value": "pi"
+    },
+    {
+      "label": "Pashto, Pushto",
+      "value": "ps"
+    },
+    {
+      "label": "Persian (Farsi)",
+      "value": "fa"
+    },
+    {
+      "label": "Polish",
+      "value": "pl"
+    },
+    {
+      "label": "Punjabi (Eastern)",
+      "value": "pa"
+    },
+    {
+      "label": "Quechua",
+      "value": "qu"
+    },
+    {
+      "label": "Romansh",
+      "value": "rm"
+    },
+    {
+      "label": "Romanian",
+      "value": "ro"
+    },
+    {
+      "label": "Sami",
+      "value": "se"
+    },
+    {
+      "label": "Samoan",
+      "value": "sm"
+    },
+    {
+      "label": "Sango",
+      "value": "sg"
+    },
+    {
+      "label": "Sanskrit",
+      "value": "sa"
+    },
+    {
+      "label": "Serbian",
+      "value": "sr"
+    },
+    {
+      "label": "Serbo-Croatian",
+      "value": "sh"
+    },
+    {
+      "label": "Sesotho",
+      "value": "st"
+    },
+    {
+      "label": "Setswana",
+      "value": "tn"
+    },
+    {
+      "label": "Shona",
+      "value": "sn"
+    },
+    {
+      "label": "Sichuan Yi",
+      "value": "ii"
+    },
+    {
+      "label": "Sindhi",
+      "value": "sd"
+    },
+    {
+      "label": "Sinhalese",
+      "value": "si"
+    },
+    {
+      "label": "Siswati",
+      "value": "ss"
+    },
+    {
+      "label": "Slovak",
+      "value": "sk"
+    },
+    {
+      "label": "Slovenian",
+      "value": "sl"
+    },
+    {
+      "label": "Somali",
+      "value": "so"
+    },
+    {
+      "label": "Southern Ndebele",
+      "value": "nr"
+    },
+    {
+      "label": "Sundanese",
+      "value": "su"
+    },
+    {
+      "label": "Swahili (Kiswahili)",
+      "value": "sw"
+    },
+    {
+      "label": "Swati",
+      "value": "ss"
+    },
+    {
+      "label": "Swedish",
+      "value": "sv"
+    },
+    {
+      "label": "Tagalog",
+      "value": "tl"
+    },
+    {
+      "label": "Tahitian",
+      "value": "ty"
+    },
+    {
+      "label": "Tajik",
+      "value": "tg"
+    },
+    {
+      "label": "Tamil",
+      "value": "ta"
+    },
+    {
+      "label": "Tatar",
+      "value": "tt"
+    },
+    {
+      "label": "Telugu",
+      "value": "te"
+    },
+    {
+      "label": "Thai",
+      "value": "th"
+    },
+    {
+      "label": "Tibetan",
+      "value": "bo"
+    },
+    {
+      "label": "Tigrinya",
+      "value": "ti"
+    },
+    {
+      "label": "Tonga",
+      "value": "to"
+    },
+    {
+      "label": "Tsonga",
+      "value": "ts"
+    },
+    {
+      "label": "Turkish",
+      "value": "tr"
+    },
+    {
+      "label": "Turkmen",
+      "value": "tk"
+    },
+    {
+      "label": "Twi",
+      "value": "tw"
+    },
+    {
+      "label": "Uyghur",
+      "value": "ug"
+    },
+    {
+      "label": "Ukrainian",
+      "value": "uk"
+    },
+    {
+      "label": "Urdu",
+      "value": "ur"
+    },
+    {
+      "label": "Uzbek",
+      "value": "uz"
+    },
+    {
+      "label": "Venda",
+      "value": "ve"
+    },
+    {
+      "label": "Vietnamese",
+      "value": "vi"
+    },
+    {
+      "label": "Volapük",
+      "value": "vo"
+    },
+    {
+      "label": "Wallon",
+      "value": "wa"
+    },
+    {
+      "label": "Welsh",
+      "value": "cy"
+    },
+    {
+      "label": "Wolof",
+      "value": "wo"
+    },
+    {
+      "label": "Western Frisian",
+      "value": "fy"
+    },
+    {
+      "label": "Xhosa",
+      "value": "xh"
+    },
+    {
+      "label": "Yiddish",
+      "value": "yi, ji"
+    },
+    {
+      "label": "Yoruba",
+      "value": "yo"
+    },
+    {
+      "label": "Zhuang, Chuang",
+      "value": "za"
+    },
+    {
+      "label": "Zulu",
+      "value": "zu"
+    }
+  ],
+  "license": [
+    {
+      "value": "https://www.mozilla.org/MPL/2.0/",
+      "label": "MPL V2.0"
+    },
+    {
+      "value": "http://www.meta-net.eu/meta-share/meta-share-licenses/META-SHARE%20Commercial%20%20NoRedistribution_v0%207.pdf",
+      "label": "META-SHARE Commercial NoRedistribution For-A-Fee V1.0"
+    },
+    {
+      "value": "http://www.meta-net.eu/meta-share/meta-share-licenses/META-SHARE%20Commercial%20%20NoRedistribution_v0%207.pdf",
+      "label": "META-SHARE Commercial NoRedistribution V1.0"
+    },
+    {
+      "value": "http://wiki.data.gouv.fr/images/0/05/Open_Licence.pdf",
+      "label": "OL V1.0"
+    },
+    {
+      "value": "https://gnu.org/licenses/fdl.html",
+      "label": "GFDL V1.3"
+    },
+    {
+      "value": "https://gnu.org/licenses/fdl.html",
+      "label": "GFDL V1.1"
+    },
+    {
+      "value": "http://artlibre.org/licence/lal/en/",
+      "label": "GFDL V1.3"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "LGPL V2.0"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "LGPL V3.0"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "LGPL V2.1"
+    },
+    {
+      "value": "http://www.gnu.org/licenses/agpl-3.0.html",
+      "label": "GNU Affero General Public License 3.0"
+    },
+    {
+      "value": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "label": "CC0 1.0 Universal (CC0 1.0) Public Domain Dedication"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/4.0/",
+      "label": "Creative Commons - Attribution-ShareAlike 4.0 International - CC BY-SA 4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/4.0/",
+      "label": "Creative Commons - Attribution-NoDerivatives 4.0 International - CC BY-ND 4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "label": "Creative Commons - Attribution-NonCommercial-ShareAlike 4.0 International - CC BY-NC-SA 4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+      "label": "Creative Commons - Attribution-NonCommercial-NoDerivatives 4.0 International - CC BY-NC-ND 4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc/4.0/",
+      "label": "Creative Commons - Attribution-NonCommercial 4.0 International - CC BY-NC 4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/fr",
+      "label": "CC-BY 3.0 France"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/4.0/",
+      "label": "Creative Commons - Attribution 4.0 International - CC BY 4.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/academic.php",
+      "label": "Academic Free License 3.0"
+    },
+    {
+      "value": "http://iss.ndl.go.jp/ndla/use/",
+      "label": "Web NDL Authority License"
+    },
+    {
+      "value": "http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231",
+      "label": "W3C Software Notice and License V1.0"
+    },
+    {
+      "value": "http://www.nationalarchives.gov.uk/doc/non-commercial-government-licence/non-commercial-government-licence.htm",
+      "label": "UK NonCommercial Government License V1.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/SimPL-2.0",
+      "label": "Simple Public License V2.0"
+    },
+    {
+      "value": "http://en.wikipedia.org/wiki/Public_domain",
+      "label": "Public domain"
+    },
+    {
+      "value": "http://creativecommons.org/publicdomain/mark/1.0/",
+      "label": "Public Domain Mark V1.0"
+    },
+    {
+      "value": "http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/oslicense-093458.html",
+      "label": "Oracle Berkely DB License V1.0"
+    },
+    {
+      "value": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/",
+      "label": "Open Government Licence Non-Commercial V2.0"
+    },
+    {
+      "value": "http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "label": "Open Government Licence V3.0"
+    },
+    {
+      "value": "http://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/re-use-and-licensing/ukglf/",
+      "label": "Open Government Licence V1.0"
+    },
+    {
+      "value": "http://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/re-use-and-licensing/ukglf/",
+      "label": "Open Government Licence V2.0"
+    },
+    {
+      "value": "http://www.opengeospatial.org/ogc/document",
+      "label": "Open Geospatial Consortium Document V1.0"
+    },
+    {
+      "value": "http://www.opengeospatial.org/ogc/software",
+      "label": "Open Geospatial Consortium Software V1.0"
+    },
+    {
+      "value": "http://opendatacommons.org/licenses/pddl/",
+      "label": "Open Data Commons Public Domain Dedication and License V1.0"
+    },
+    {
+      "value": "http://opendatacommons.org/licenses/odbl/",
+      "label": "Open Data Commons Open Database License V1.0"
+    },
+    {
+      "value": "http://opendatacommons.org/licenses/odc-by/",
+      "label": "Open Data Commons Attribution License V1.0"
+    },
+    {
+      "value": "http://www.ordnancesurvey.co.uk/business-and-government/licensing/using-creating-data-with-os-products/os-opendata.html",
+      "label": "OS Open Data License V3.0"
+    },
+    {
+      "value": "https://www.mozilla.org/MPL/2.0/",
+      "label": "Mozilla Public License V2.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/MIT",
+      "label": "MIT License V1.0"
+    },
+    {
+      "value": "http://referencevalue.microsoft.com/referencevaluelicensing.aspx",
+      "label": "Microsoft Reference value License"
+    },
+    {
+      "value": "http://wiki.data.gouv.fr/images/0/05/Open_Licence.pdf",
+      "label": "License Ouverte V1.0"
+    },
+    {
+      "value": "http://www.formez.it/iodl/",
+      "label": "Italian Open Data License v1.0 V1.0"
+    },
+    {
+      "value": "https://www.govtrack.us/developers/license",
+      "label": "Govtrack License"
+    },
+    {
+      "value": "http://www.elda.org/media/filer_public/2014/08/01/var_140312.pdf",
+      "label": "LANGUAGE REvalueS VALUE-ADDED-RESELLER AGREEMENT"
+    },
+    {
+      "value": "http://openvalue.org/licenses/IPL-1.0",
+      "label": "IBM Public License V1.0"
+    },
+    {
+      "value": "https://gnu.org/licenses/fdl.html",
+      "label": "GNU Free Documentation License V1.3"
+    },
+    {
+      "value": "https://gnu.org/licenses/fdl.html",
+      "label": "GNU Free Documentation License V1.1"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "GNU Library General Public License V2.0"
+    },
+    {
+      "value": "http://gnu.org/licenses/gpl-3.0.html",
+      "label": "GNU General Public License V3.0"
+    },
+    {
+      "value": "http://gnu.org/licenses/gpl-2.0.html",
+      "label": "GNU General Public License V2.0"
+    },
+    {
+      "value": "http://gnu.org/licenses/gpl-1.0.html",
+      "label": "GNU General Public License V1.0"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "GNU Lesser General Public License V3.0"
+    },
+    {
+      "value": "https://www.gnu.org/licenses/lgpl.html",
+      "label": "GNU Lesser General Public License V2.1"
+    },
+    {
+      "value": "http://www.gnu.org/licenses/agpl-3.0.html",
+      "label": "GNU Affero General Public License V3.0"
+    },
+    {
+      "value": "https://joinup.ec.europa.eu/software/page/eupl/licence-eupl",
+      "label": "European Union Public License V1.1"
+    },
+    {
+      "value": "http://www.freebsd.org/copyright/freebsd-doc-license.html",
+      "label": "Free BSD Documentation License"
+    },
+    {
+      "value": "http://artlibre.org/licence/lal/en/",
+      "label": "Free Art License V1.3"
+    },
+    {
+      "value": "http://cryptix.org/LICENSE.TXT",
+      "label": "Cryptix General License"
+    },
+    {
+      "value": "https://www.eclipse.org/legal/epl-v10.html",
+      "label": "Eclipse Public License V1.0"
+    },
+    {
+      "value": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "label": "Creative Commons CC0 V1.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/ro",
+      "label": "Creative Commons CC-BY-SA Romania V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/pt",
+      "label": "Creative Commons CC-BY-SA Portugal V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/nl",
+      "label": "Creative Commons CC-BY-SA Netherlands V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/ie",
+      "label": "Creative Commons CC-BY-SA Ireland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/4.0/",
+      "label": "Creative Commons CC-BY-SA V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "label": "Creative Commons CC-BY-SA V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/2.0/",
+      "label": "Creative Commons CC-BY-SA V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/ch",
+      "label": "Creative Commons CC-BY-SA 3.0 Switzerland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/ve",
+      "label": "Creative Commons CC-BY-SA Venezuela V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/es",
+      "label": "Creative Commons CC-BY-SA 3.0 Spain V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/it",
+      "label": "Creative Commons CC-BY-SA 3.0 Italy V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/gr",
+      "label": "Creative Commons CC-BY-SA 3.0 Greece V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/cl",
+      "label": "Creative Commons CC-BY-SA 3.0 Chile V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/at",
+      "label": "Creative Commons CC-BY-SA 3.0 Austria V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/de",
+      "label": "Creative Commons CC-BY-SA 3.0 Germany V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/fr",
+      "label": "Creative Commons CC-BY-SA 3.0 France V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/ec",
+      "label": "Creative Commons CC-BY-SA 3.0 Ecuador V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/cn",
+      "label": "Creative Commons CC-BY-SA 3.0 China V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/br",
+      "label": "Creative Commons CC-BY-SA 3.0 Brazil V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-sa/3.0/au",
+      "label": "Creative Commons CC-BY-SA 3.0 Australia V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/ch",
+      "label": "Creative Commons CC-BY-ND Switzerland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/ie",
+      "label": "Creative Commons CC-BY-ND Ireland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/2.5/dk",
+      "label": "Creative Commons CC-BY-ND Denmark V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/cn",
+      "label": "Creative Commons CC-BY-ND China V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/de",
+      "label": "Creative Commons CC-BY-ND Germany V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/cl",
+      "label": "Creative Commons CC-BY-ND Chile V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/ec",
+      "label": "Creative Commons CC-BY-ND Ecuador V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/br",
+      "label": "Creative Commons CC-BY-ND Brazil V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/at",
+      "label": "Creative Commons CC-BY-ND Austria V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/2.0/be",
+      "label": "Creative Commons CC-BY-ND Belgium V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/au",
+      "label": "Creative Commons CC-BY-ND Australia V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/ve",
+      "label": "Creative Commons CC-BY-ND 3.0 Venezuela"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/ro",
+      "label": "Creative Commons CC-BY-ND 3.0 Romania"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/es",
+      "label": "Creative Commons CC-BY-ND 3.0 Spain"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/gr",
+      "label": "Creative Commons CC-BY-ND 3.0 Greece"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/pt",
+      "label": "Creative Commons CC-BY-ND 3.0 Portugal"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/it",
+      "label": "Creative Commons CC-BY-ND 3.0 Italy"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/nl",
+      "label": "Creative Commons CC-BY-ND 3.0 Netherlands"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/3.0/fr",
+      "label": "Creative Commons CC-BY-ND 3.0 France"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nd/4.0/",
+      "label": "Creative Commons CC-BY-ND V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "label": "Creative Commons CC-BY-ND V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/2.0/",
+      "label": "Creative Commons CC-BY-ND V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-sa/3.0/",
+      "label": "Creative Commons CC-BY-NC-SA V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "label": "Creative Commons CC-BY-NC-SA V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-sa/2.0/",
+      "label": "Creative Commons CC-BY-NC-SA V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/ve",
+      "label": "Creative Commons CC-BY-NC-ND Venezuela V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/ch",
+      "label": "Creative Commons CC-BY-NC-ND Switzerland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/es",
+      "label": "Creative Commons CC-BY-NC-ND Spain V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/ro",
+      "label": "Creative Commons CC-BY-NC-ND Romania V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/gr",
+      "label": "Creative Commons CC-BY-NC-ND Greece V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/fr",
+      "label": "Creative Commons CC-BY-NC-ND France V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/cn",
+      "label": "Creative Commons CC-BY-NC-ND China V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/ec",
+      "label": "Creative Commons CC-BY-NC-ND Ecuador V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/cl",
+      "label": "Creative Commons CC-BY-NC-ND Chile V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/pt",
+      "label": "Creative Commons CC-BY-NC-ND Portugal V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/at",
+      "label": "Creative Commons CC-BY-NC-ND Austria V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/au",
+      "label": "Creative Commons CC-BY-NC-ND Australia V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/nl",
+      "label": "Creative Commons CC-BY-NC-ND Netherlands V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/ie",
+      "label": "Creative Commons CC-BY-NC-ND Ireland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/it",
+      "label": "Creative Commons CC-BY-NC-ND Italy V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/3.0/",
+      "label": "Creative Commons CC-BY-NC-ND V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+      "label": "Creative Commons CC-BY-NC-ND V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc-nd/2.0/",
+      "label": "Creative Commons CC-BY-NC-ND V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc/3.0/",
+      "label": "Creative Commons CC-BY-NC V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc/2.0/",
+      "label": "Creative Commons CC-BY-NC V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by-nc/4.0/",
+      "label": "Creative Commons CC-BY-NC V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/ve",
+      "label": "Creative Commons CC-BY Venezuela V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/us",
+      "label": "Creative Commons CC-BY United States V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/ch",
+      "label": "Creative Commons CC-BY Switzerland V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/es",
+      "label": "Creative Commons CC-BY Spain V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/th",
+      "label": "Creative Commons CC-BY Thailand V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/za",
+      "label": "Creative Commons CC-BY South Africa V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/scotland",
+      "label": "Creative Commons CC-BY Scotland V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/lu",
+      "label": "Creative Commons CC-BY Luxemburg V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/pt",
+      "label": "Creative Commons CC-BY Portugal V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/nz",
+      "label": "Creative Commons CC-BY New Zealand V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/nl",
+      "label": "Creative Commons CC-BY Netherlands V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/mx",
+      "label": "Creative Commons CC-BY Mexico V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/jp",
+      "label": "Creative Commons CC-BY Japan V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/kr",
+      "label": "Creative Commons CC-BY Korea V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/it",
+      "label": "Creative Commons CC-BY Italy V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/il",
+      "label": "Creative Commons CC-BY Israel V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/in",
+      "label": "Creative Commons CC-BY India V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/ie",
+      "label": "Creative Commons CC-BY Ireland V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/hu",
+      "label": "Creative Commons CC-BY Hungary V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/gr",
+      "label": "Creative Commons CC-BY Greece V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/uk",
+      "label": "Creative Commons CC-BY England & Wales V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/eg",
+      "label": "Creative Commons CC-BY Egypt V3.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/fr",
+      "label": "Creative Commons CC-BY France V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/de",
+      "label": "Creative Commons CC-BY Germany V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/dk",
+      "label": "Creative Commons CC-BY Denmark V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/dz",
+      "label": "Creative Commons CC-BY Czech Republic V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/dz",
+      "label": "Uveďte původ Česká republika V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/bg",
+      "label": "Creative Commons CC-BY Bulgaria V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/cl",
+      "label": "Creative Commons CC-BY Chile V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/ca",
+      "label": "Creative Commons CC-BY Canada V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/be",
+      "label": "Creative Commons CC-BY Belgium V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/mx",
+      "label": "Creative Commons CC-BY Argentina V2.5"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/ch",
+      "label": "Creative Commons CC-BY 3.0 Switzerland"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/es",
+      "label": "Creative Commons CC-BY 3.0 Spain"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/nl",
+      "label": "Creative Commons CC-BY 3.0 Netherlands"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/ro",
+      "label": "Creative Commons CC-BY 3.0 Romania"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/pl",
+      "label": "Creative Commons CC-BY 3.0 Poland"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/fr",
+      "label": "Creative Commons CC-BY 3.0 France"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/it",
+      "label": "Creative Commons CC-BY 3.0 Italy"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/ec",
+      "label": "Creative Commons CC-BY 3.0 Ecuador"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/de",
+      "label": "Creative Commons CC-BY 3.0 Germany"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/cn",
+      "label": "Creative Commons CC-BY 3.0 China"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/cl",
+      "label": "Creative Commons CC-BY 3.0 Chile"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/pt",
+      "label": "Creative Commons CC-BY 2.5 Portugal"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/br",
+      "label": "Creative Commons CC-BY 3.0 Brazil"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/at",
+      "label": "Creative Commons CC-BY 3.0 Austria"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/se",
+      "label": "Creative Commons CC-BY 2.5 Sweden"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/au",
+      "label": "Creative Commons CC-BY 3.0 Australia"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.5/pe",
+      "label": "Creative Commons CC-BY 2.5 Peru"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/br",
+      "label": "Creative Commons CC-BY 2.0 Brazil"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/at",
+      "label": "Creative Commons CC-BY 2.0 Austria"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/au",
+      "label": "Creative Commons CC-BY 2.0 Australia"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/2.0/",
+      "label": "Creative Commons CC-BY V2.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/1.0/",
+      "label": "Creative Commons CC-BY V1.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/4.0/",
+      "label": "Creative Commons CC-BY V4.0"
+    },
+    {
+      "value": "http://creativecommons.org/licenses/by/3.0/",
+      "label": "Creative Commons CC-BY V3.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/cpl1.0.php",
+      "label": "Common Public License V1.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/CDDL-1.0",
+      "label": "Common Development and Distribution License V1.0"
+    },
+    {
+      "value": "http://www.coloriuris.net/en:avisos_legales#copyright_and_industrial_property",
+      "label": "ColorIURIS Copyright"
+    },
+    {
+      "value": "http://www.linfo.org/bsdlicense.html",
+      "label": "BSD License 4-clause V4.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/BSL-1.0",
+      "label": "BOOST Software License V1.0"
+    },
+    {
+      "value": "http://www.linfo.org/bsdlicense.html",
+      "label": "BSD License 3-clause V4.0"
+    },
+    {
+      "value": "http://www.apache.org/licenses/LICENSE-1.0",
+      "label": "Apache License V1.0"
+    },
+    {
+      "value": "http://www.apache.org/licenses/LICENSE-2.0",
+      "label": "Apache License V2.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/Artistic-2.0",
+      "label": "Artistic License V2.0"
+    },
+    {
+      "value": "http://www.linfo.org/bsdlicense.html",
+      "label": "2-clause BSD License V2.0"
+    },
+    {
+      "value": "http://openvalue.org/licenses/academic.php",
+      "label": "Academic Free License V3.0"
+    }
+  ]
+}

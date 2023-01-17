@@ -4,7 +4,10 @@ import dayjs from 'dayjs';
 import { saveAs } from 'file-saver';
 import { v4 as uuidv4 } from 'uuid';
 
-// const $rdf = require('rdflib');
+import * as suggestions from "./suggestions.json";
+import Autocomplete from "bootstrap5-autocomplete";
+Autocomplete.init();
+
 import * as $rdf from 'rdflib';
 const EventEmitter = require('events');
 
@@ -406,7 +409,7 @@ $(() => {
     }
 
     class FieldCore {
-        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => { return [] }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: null, advice: "" }) {
+        constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => [], dataExtractionFunction: () => { }, dataSuggestionFunction: () => [], parentCategory: null, defaultValue: null, advice: "" }) {
             this.placeholder = config.placeholder;
             this.dataValidationFunction = (inputVal) => {
                 var result = false;
@@ -426,6 +429,15 @@ $(() => {
                 this.dataExtractionFunction = () => {
                     try {
                         return config.dataExtractionFunction();
+                    } catch (e) {
+                        throw e;
+                    }
+                }
+            }
+            if (config.dataSuggestionFunction != undefined) {
+                this.dataSuggestionFunction = () => {
+                    try {
+                        return config.dataSuggestionFunction();
                     } catch (e) {
                         throw e;
                     }
@@ -579,8 +591,9 @@ $(() => {
             textInput.addClass('form-control');
             textInput.attr('id', this.inputIdField);
             textInput.val(this.fieldValue);
-            lineLabel.attr('for', this.inputIdField)
             lineLabel.text(this.fieldCore.placeholder);
+            textInput.attr('autocomplete', "off");
+            lineLabel.attr('for', this.inputIdField)
 
             var lineFieldCol = $(document.createElement('div'));
             var lineValidButtonCol = $(document.createElement('div'));
@@ -622,6 +635,22 @@ $(() => {
             lineFieldCol.addClass('form-floating');
             lineFieldCol.append(textInput);
             lineFieldCol.append(lineLabel);
+            
+            if(this.fieldCore.dataSuggestionFunction != undefined) {
+                var items = this.fieldCore.dataSuggestionFunction();
+                new Autocomplete(textInput.get(0), {
+                    items: items,
+                    labelField: "label",
+                    valueField: "value",
+                    suggestionsThreshold: 1,
+                    onRenderItem: (item, label) => {
+                      return label + ' (' + item.value + ')';
+                    },
+                    onSelectItem(item) {
+                        textInput.val(item.value);
+                    }
+                });
+            }
 
             textInput.on("focusin", event => {
                 lineLabel.addClass("visually-hidden");
@@ -723,6 +752,7 @@ $(() => {
                 textInput.addClass('form-control');
                 textInput.attr('id', textInputId);
                 textInput.val(this.fieldValue[i]);
+                textInput.attr("autocomplete", "off");
                 lineLabel.attr('for', textInputId)
                 lineLabel.text(this.fieldCore.placeholder[i]);
                 lineLabel.attr('id', lineLabelId);
@@ -734,6 +764,24 @@ $(() => {
                 lineFieldCol.append(lineLabel);
 
                 lineDiv.append(lineFieldCol);
+
+                if(this.fieldCore.dataSuggestionFunction != undefined) {
+                    var items = this.fieldCore.dataSuggestionFunction()[i];
+                    if(items.length > 0) {
+                        new Autocomplete(textInput.get(0), {
+                            items: items,
+                            labelField: "label",
+                            valueField: "value",
+                            suggestionsThreshold: 1,
+                            onRenderItem: (item, label) => {
+                              return label + ' (' + item.value + ')';
+                            },
+                            onSelectItem(item) {
+                                textInput.val(item.value);
+                            }
+                        });
+                    }
+                }
 
                 textInput.on("change", () => {
                     this.updateContent(fields.map(field => field.val()));
@@ -1010,6 +1058,87 @@ $(() => {
         },
         {
             recommended: true,
+            categoryTitle: "Keywords",
+            legend: "Keywords describing the content of the knowledge base.",
+            idPrefix: "keyword",
+            minArity: 1,
+            maxArity: Infinity,
+            computable: false,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Keyworks used to describe the knowledge base",
+                    defaultValue: "",
+                    advice: "The keyword must be non empty",
+                    dataCreationFunction: (inputVal) => {
+                        if (isURI(inputVal)) {
+                            return [new Statement(exampleDataset, DCAT('theme'), $rdf.sym(inputVal))];
+                        }
+                        if (isLiteral(inputVal)) {
+                            return [new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal))];
+                        }
+                        return null;
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal) || isURI(inputVal);
+                    }
+                })
+            ]
+        },
+        {
+            recommended: true,
+            categoryTitle: "Version",
+            legend: "Current version number of the knowledge base.",
+            idPrefix: "version",
+            minArity: 1,
+            maxArity: 1,
+            computable: false,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Current version of the knowledge base",
+                    defaultValue: "1.0",
+                    advice: "The version must be non empty",
+                    dataCreationFunction: (inputVal) => {
+                        return [new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal))];
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal);
+                    }
+                })
+            ]
+        },
+        {
+            recommended: true,
+            categoryTitle: "License",
+            legend: "License of the knowledge base. Use an URI to refer to a license, or a literal to describe the license.",
+            idPrefix: "license",
+            minArity: 1,
+            maxArity: Infinity,
+            computable: false,
+            fields: [
+                new SingleFieldCore({
+                    placeholder: "Reference to the license of the knowledge base",
+                    defaultValue: "",
+                    advice: "The license must be non empty",
+                    dataCreationFunction: (inputVal) => {
+                        if (isURI(inputVal)) {
+                            return [new Statement(exampleDataset, DCT('license'), $rdf.sym(inputVal))];
+                        }
+                        if (isLiteral(inputVal)) {
+                            return [new Statement(exampleDataset, DCT('license'), $rdf.lit(inputVal))];
+                        }
+                        return null;
+                    },
+                    dataValidationFunction: (inputVal) => {
+                        return isLiteral(inputVal) || isURI(inputVal);
+                    },
+                    dataSuggestionFunction: (inputVal) => {
+                        return suggestions.license;
+                    }
+                })
+            ]
+        },
+        {
+            recommended: true,
             categoryTitle: "Vocabularies",
             legend: "URIs of the vocabularies used in the knowledge base.",
             idPrefix: "vocabulary",
@@ -1102,56 +1231,9 @@ $(() => {
                             .catch(error => {
                                 console.error(error);
                             })
-                    }
-                })
-            ]
-        },
-        {
-            recommended: true,
-            categoryTitle: "Keywords",
-            legend: "Keywords describing the content of the knowledge base.",
-            idPrefix: "keyword",
-            minArity: 1,
-            maxArity: Infinity,
-            computable: false,
-            fields: [
-                new SingleFieldCore({
-                    placeholder: "Keyworks used to describe the knowledge base",
-                    defaultValue: "",
-                    advice: "The keyword must be non empty",
-                    dataCreationFunction: (inputVal) => {
-                        if (isLiteral(inputVal)) {
-                            return [new Statement(exampleDataset, DCAT('keyword'), $rdf.lit(inputVal))];
-                        }
-                        if (isURI(inputVal)) {
-                            return [new Statement(exampleDataset, DCAT('theme'), $rdf.sym(inputVal))];
-                        }
-                        return null;
                     },
-                    dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal) || isURI(inputVal);
-                    }
-                })
-            ]
-        },
-        {
-            recommended: true,
-            categoryTitle: "Version",
-            legend: "Current version number of the knowledge base.",
-            idPrefix: "version",
-            minArity: 1,
-            maxArity: 1,
-            computable: false,
-            fields: [
-                new SingleFieldCore({
-                    placeholder: "Current version of the knowledge base",
-                    defaultValue: "1.0",
-                    advice: "The version must be non empty",
-                    dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, DCAT('version'), $rdf.lit(inputVal))];
-                    },
-                    dataValidationFunction: (inputVal) => {
-                        return isLiteral(inputVal);
+                    dataSuggestionFunction: (inputVal) => {
+                        return suggestions.lang;
                     }
                 })
             ]
@@ -1443,7 +1525,7 @@ $(() => {
 
             this.sessionId = uuidv4();
 
-        }
+        } 
 
         standardizeEndpointURL(endpointURL) {
             if(this.forceHTTPSFlag) {
