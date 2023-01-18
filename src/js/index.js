@@ -1025,11 +1025,16 @@ $(() => {
                     defaultValue: "",
                     advice: "The creator must be non-empty",
                     dataValidationFunction: (inputVal) => {
-                        var result = isLiteral(inputVal);
-                        return result;
+                        return isLiteral(inputVal) || isURI(inputVal);
                     },
                     dataCreationFunction: (inputVal) => {
-                        return [new Statement(exampleDataset, DCT('creator'), inputVal)];
+                        if (isURI(inputVal)) {
+                            return [new Statement(exampleDataset, DCT('creator'), $rdf.sym(inputVal))];
+                        }
+                        if (isLiteral(inputVal)) {
+                            return [new Statement(exampleDataset, DCT('creator'), $rdf.lit(inputVal))];
+                        }
+                        return null;
                     }
                 })
             ]
