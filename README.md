@@ -17,3 +17,7 @@ Deploying:
 
 Developing:
 `npm run dev`
+
+## Acknowledgments
+
+This project was started as an answer to the results of the [IndeGx framework experimentation](https://hal.science/hal-03946680#) ([GitHub](https://github.com/Wimmics/dekalog)), results displayed on the [KartoGraphI website](http://prod-dekalog.inria.fr/).
