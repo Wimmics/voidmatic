@@ -38,6 +38,40 @@ $(() => {
     var navCol = $('#navCol');
     var uniqueIdCounter = 0;
 
+    function createStore() {
+        var store = $rdf.graph();
+        store.setPrefixForURI("dcat", "http://www.w3.org/ns/dcat#");
+        store.setPrefixForURI("ex", "https://e.g/#");
+        store.setPrefixForURI("kgi", "https://ns.inria.fr/kg/index#");
+        store.setPrefixForURI("sd", "http://www.w3.org/ns/sparql-service-description#");
+        store.setPrefixForURI("wimmics", "https://team.inria.fr/wimmics/");
+        store.setPrefixForURI("culturefr", "https://www.culture.gouv.fr/");
+        store.setPrefixForURI("inria", "https://www.inria.fr/");
+        store.setPrefixForURI("dbfr", "http://fr.dbpedia.org/");
+        store.setPrefixForURI("cc", "http://creativecommons.org/ns#");
+        store.setPrefixForURI("dbo", "http://dbpedia.org/ontology/");
+        store.setPrefixForURI("dbfrp", "http://fr.dbpedia.org/property/");
+        store.setPrefixForURI("openvoc", "http://open.vocab.org/terms/");
+        store.setPrefixForURI("goodrel", "http://purl.org/goodrelations/v1#");
+        store.setPrefixForURI("vann", "http://purl.org/vocab/vann/");
+        store.setPrefixForURI("voaf", "http://purl.org/vocommons/voaf#");
+        store.setPrefixForURI("eclass", "http://www.ebusiness-unibw.org/ontologies/eclass/5.1.4/#");
+        store.setPrefixForURI("georss", "http://www.georss.org/georss/");
+        store.setPrefixForURI("skos", "http://www.w3.org/2004/02/skos/core#");
+        store.setPrefixForURI("powders", "http://www.w3.org/2007/05/powder-s#");
+        store.setPrefixForURI("oa", "http://www.w3.org/ns/oa#");
+        store.setPrefixForURI("wdentity", "http://www.wikidata.org/entity/");
+        store.setPrefixForURI("dbfrg", "http://fr.dbpedia.org/graph/");
+        store.setPrefixForURI("localdav", "http://localhost:8890/DAV/");
+        store.setPrefixForURI("dbspr", "http://dbpedia.org/schema/property_rules#");
+        store.setPrefixForURI("pav", "http://purl.org/pav/");
+        store.setPrefixForURI("dce", "http://purl.org/dc/elements/1.1/");
+        store.setPrefixForURI("mod", "https://w3id.org/mod#");
+        store.setPrefixForURI("dcmitype", "http://purl.org/dc/dcmitype/");
+        store.setPrefixForURI("schema", "http://schema.org/");
+        return store;
+    }
+
     function fetchPromise(url, header = new Map()) {
         var myHeaders = new Headers();
         header.forEach((value, key) => {
@@ -331,7 +365,7 @@ $(() => {
             this.displayContent.addClass("language-turtle");
             this.displayContent.attr("title", "Content generated for this category.");
             this.displayPre.append(this.displayContent);
-            this.displayStore = $rdf.graph();
+            this.displayStore = createStore();
             this.on("add", statements => {
                 this.displayStore.addAll(statements);
                 this.refreshDisplay();
@@ -1499,7 +1533,7 @@ $(() => {
             }
             controlInstance = this;
 
-            this.store = $rdf.graph();
+            this.store = createStore();
             this.contentDisplay = $("#displayTextArea");
             this.categoryViews = [];
             this.metadataCategoryViewMap = new Map();
