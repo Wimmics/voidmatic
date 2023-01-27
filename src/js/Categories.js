@@ -170,13 +170,13 @@ export var inputMetadata = [
         categoryTitle: "Keywords",
         legend: "Keywords describing the content of the knowledge base.",
         idPrefix: "keyword",
-        minArity: 1,
+        minArity: 2,
         maxArity: Infinity,
         computable: false,
         fields: [
             new SingleFieldCore({
                 placeholder: "Keyworks used to describe the knowledge base",
-                defaultValue: "",
+                defaultValue: "keyword",
                 advice: "The keyword must be non empty",
                 dataCreationFunction: (inputVal) => {
                     if (Validation.isURI(inputVal)) {

@@ -17,7 +17,9 @@ export class CategoryView extends EventEmitter {
 
         this.categoryCore.fields.forEach(field => {
             if (this.categoryCore.minArity > 0) {
-                this.addLine()
+                for(var nbLine = 0; nbLine < this.categoryCore.minArity; nbLine++) {
+                    this.addLine()
+                }
             }
         });
         this.categoryId = this.categoryCore.idPrefix + "Category";
