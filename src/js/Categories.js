@@ -10,6 +10,23 @@ import { SingleFieldCore, MultipleFieldCore } from './Model.js';
 import { exampleDataset } from './RDFUtils.js';
 import { controlInstance } from "./Control.js";
 
+const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
+    var result = {
+        value: vocabularyObject.nsp,
+        label: ""
+    }
+    if(vocabularyObject.titles.length > 0) {
+        var foundVocabularyTitle = vocabularyObject.titles.find(titleObject => titleObject.lang == "en");
+        if(foundVocabularyTitle !== undefined) {
+            result.label = foundVocabularyTitle.value;
+        } else {
+            result.label = vocabularyObject.titles[0].value;
+        }
+    }
+    result.label += " [" + vocabularyObject.prefix + "]";
+    return result;
+});
+
 export var inputMetadata = [
     {
         recommended: true,
@@ -234,7 +251,7 @@ export var inputMetadata = [
         categoryTitle: "Vocabularies",
         legend: "URIs of the vocabularies used in the knowledge base.",
         idPrefix: "vocabulary",
-        minArity: 1,
+        minArity: 0,
         maxArity: Infinity,
         computable: true,
         fields: [
@@ -273,6 +290,9 @@ export var inputMetadata = [
                                 binding.ns.value
                             );
                         })
+                },
+                dataSuggestionFunction: () => {
+                    return vocabularySuggestions;
                 }
             })
         ]
@@ -282,7 +302,7 @@ export var inputMetadata = [
         categoryTitle: "Languages",
         legend: "Language tags used in the literals of the knowledge base. It is recommended to use the tags used in the language tagged literal, or to follow the <a href='https://www.rfc-editor.org/info/bcp47#section-2.2.9'>RDF1.1 standard</a>.",
         idPrefix: "language",
-        minArity: 1,
+        minArity: 0,
         maxArity: Infinity,
         computable: true,
         fields: [

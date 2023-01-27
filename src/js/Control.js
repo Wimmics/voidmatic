@@ -18,6 +18,8 @@ export class Control {
         }
         controlInstance = this;
 
+        var navCol = $('#navCol');
+
         this.store = RDFUtils.createStore();
         this.contentDisplay = $("#displayTextArea");
         this.categoryViews = [];
