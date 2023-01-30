@@ -1,5 +1,5 @@
 import * as RDFUtils from "./RDFUtils.js";
-import { SingleFieldCore, MultipleFieldCore } from './Model.js';
+import { SingleFieldCore, MultipleFieldCore, fieldStates } from './Model.js';
 import { controlInstance } from "./Control.js";
 
 const EventEmitter = require('events');
@@ -14,6 +14,7 @@ export class CategoryView extends EventEmitter {
         super();
         this.categoryCore = config.category;
         this.lines = new Map();
+        this.displayStore = RDFUtils.createStore();
 
         this.categoryCore.fields.forEach(field => {
             if (this.categoryCore.minArity > 0) {
@@ -212,7 +213,6 @@ export class CategoryView extends EventEmitter {
         this.displayContent.addClass("language-turtle");
         this.displayContent.attr("title", "Content generated for this category.");
         this.displayPre.append(this.displayContent);
-        this.displayStore = RDFUtils.createStore();
         this.on("add", statements => {
             this.displayStore.addAll(statements);
             this.refreshDisplay();
@@ -260,7 +260,9 @@ export class CategoryView extends EventEmitter {
                         extractedValuesPromise.then(extractedValues => {
                             extractedValues.forEach(value => {
                                 var statement = field.dataCreationFunction(value);
-                                controlInstance.addStatement(statement);
+                                controlInstance.addAllStatements(statement);
+                                this.displayStore.addAll(statement);
+
                             })
                             lineComputeButton.removeClass("btn-warning");
                             lineComputeButton.addClass("btn-success");
@@ -299,6 +301,7 @@ export class FieldView extends EventEmitter {
         this.fieldValue = this.fieldCore.defaultValue;
         this.inputId = this.metadataFieldIdPrefix + this.index;
         this.tooltip = null;
+        this.validationState = { status: fieldStates.None, message:"" };
     }
 
     getValue() {
@@ -337,7 +340,7 @@ export class FieldView extends EventEmitter {
                 this.emit("error", e, this);
             }
             this.setValidationState(result);
-            if (result) {
+            if (result.state === fieldStates.Valid) {
                 this.fieldValue = inputVal;
             }
             return result;
@@ -347,6 +350,11 @@ export class FieldView extends EventEmitter {
     }
 
     setValidationState = valid => {
+        if (valid) {
+            this.validationState = { status: fieldStates.Valid, message:"" };
+        } else {
+            this.validationState = { status: fieldStates.Invalid, message:this.fieldCore.advice };
+        }
     }
 
     dataExtractionFunction = () => {
@@ -373,7 +381,7 @@ export class FieldView extends EventEmitter {
     updateContent = newValue => {
         var oldValueValidated = false;
         try {
-            oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue);
+            oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue).state === fieldStates.Valid;
         } catch (e) {
             this.emit("error", e, this);
         }
@@ -399,15 +407,19 @@ export class SingleFieldView extends FieldView {
         this.inputIdRemoveButton = this.inputId + "RemoveButton";
     }
 
-    setValidationState = valid => {
-        setButtonValidatedState(this.inputIdButton, valid);
+    setValidationState = validationState => {
+        setButtonValidatedState(this.inputIdButton, validationState);
         var field = $('#' + this.inputIdField);
-        if (valid) {
+        if (validationState.state === fieldStates.Valid) {
             field.removeClass("border-danger");
             field.addClass("border-success")
-        } else {
+        } else if (validationState.state === fieldStates.Invalid) {
             field.addClass("border-danger");
             field.removeClass("border-success")
+        } else if (validationState.state === fieldStates.None) {
+            field.addClass("border-light");
+            field.removeClass("border-success")
+            field.removeClass("border-danger");
         }
     }
 
@@ -436,6 +448,7 @@ export class SingleFieldView extends FieldView {
         lineValidButton.addClass("text-truncate");
         lineValidButton.text("Validate");
         lineValidButton.attr("title", this.fieldCore.placeholder);
+        setButtonValidatedState(this.inputIdButton, this.validationState);
         lineValidButtonCol.append(lineValidButton);
         var lineRemoveButtonCol = $(document.createElement('div'));
         lineRemoveButtonCol.addClass('col-1');
@@ -521,11 +534,11 @@ export class MultipleFieldView extends FieldView {
 
     }
 
-    setValidationState = valid => {
-        setButtonValidatedState(this.inputIdButton, valid);
+    setValidationState = validationState => {
+        setButtonValidatedState(this.inputIdButton, validationState);
         this.inputIdFields.forEach(id => {
             var field = $('#' + id);
-            if (valid) {
+            if (validationState.state === fieldStates.valid) {
                 field.removeClass("border-danger");
                 field.addClass("border-success")
             } else {
@@ -644,18 +657,25 @@ export class MultipleFieldView extends FieldView {
     }
 }
 
-export function setButtonValidatedState(inputId, validated, message) {
-    if (validated) {
+export function setButtonValidatedState(inputId, { state, message}) {
+    console.log(state)
+    if (state === fieldStates.Valid) {
         $('#' + inputId).removeClass("btn-light")
         $('#' + inputId).removeClass("btn-warning")
         $('#' + inputId).removeClass("btn-danger")
         $('#' + inputId).addClass("btn-success")
     }
-    else {
+    else if (state === fieldStates.Invalid) { 
         $('#' + inputId).removeClass("btn-light")
         $('#' + inputId).removeClass("btn-warning")
         $('#' + inputId).addClass("btn-danger")
         $('#' + inputId).removeClass("btn-success")
+    } else if (state === fieldStates.None) {
+        $('#' + inputId).removeClass("btn-success")
+        $('#' + inputId).removeClass("btn-warning")
+        $('#' + inputId).removeClass("btn-danger")
+        $('#' + inputId).addClass("btn-light")
+        $('#' + inputId).attr("title", message);
     }
 }
 

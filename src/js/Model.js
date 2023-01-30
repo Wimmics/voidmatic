@@ -1,5 +1,11 @@
 
 
+export const fieldStates = {
+    None: "None",
+    Valid: "Valid",
+    Invalid: "Invalid"
+}
+
 export class CategoryCore {
     constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, fields: [] }) {
         this.recommended = config.recommended;
