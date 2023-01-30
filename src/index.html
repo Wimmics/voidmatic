@@ -41,7 +41,8 @@
     <script type="module" src="./js/index.js"></script>
 
 
-    <title vocab="https://schema.org/" about="https://wimmics.github.io/voidmatic/" property="title">Metadatamatic</title>
+    <title vocab="https://schema.org/" about="https://wimmics.github.io/voidmatic/" property="title">Metadatamatic
+    </title>
 </head>
 
 <body>
@@ -58,61 +59,90 @@
                 <div class="col-1">
                     <label class="form-check-label" for="forceHTTPScheckbox">
                         Force HTTPS endpoint
-                      </label>
-                    <input type="checkbox" class="form-check-input" id="forceHTTPScheckbox" checked title="If checked, the extraction of values will use an HTTPS url, regardless of what was given as an endpoint URL."/>
-                    
+                    </label>
+                    <input type="checkbox" class="form-check-input" id="forceHTTPScheckbox" checked
+                        title="If checked, the extraction of values will use an HTTPS url, regardless of what was given as an endpoint URL." />
+
                 </div>
             </div>
         </nav>
         <div class='col-1'>
-        </div>        
-    </div>
-    <div class='row justify-content-center my-5' id='rootContainer'>
-        <div class='col-1'>
         </div>
-        <div class='col-10 justify-content-center' id='mainContentCol'>
-            <p>
-                Metadatamatic is a simple Web application that allows you to create the description of a dataset.
-                It is being provided as a quick and easy way for you to create your own dataset description.
-                Simply work through the forms on this page and complete whichever details you'd like to add to your description. 
-                If you enter the URL of an endpoint, you will be able to extract some of the details of the dataset automatically.
-                The final dataset description is displayed at the bottom of the page. It can be downloaded as a file or copied and pasted into an RDF file. 
-
-               <!-- We could expand giving some info such as: To start, you should firs... As a minimum you'll need to supply ...  --> 
-            </p>    
-            <div class='row'>
-                <div class='col-12 p-4' id='dataCol'>
-                </div>
+    </div>
+    <div class='justify-content-center container-xxl'>
+        <div class='row justify-content-center my-5' id='rootContainer'>
+            <div class='col-1'>
             </div>
-            <div class='row'>
-                <div class='col-12 my-3' id='displayCol'>
-                    <div class="row">
-                        <div class="col-6">
-                            <a class="btn btn-light" id="downloadButton">Download</a>
-                        </div>
-                        <div class="col-6">
-                            <a class="btn btn-light" id="saturationButton" title="This will add equivalent classes and properties to the one already given">Apply equivalences</a>
-                        </div>
+            <div class='col-10 justify-content-center' id='mainContentCol'>
+                <p>
+                    Metadatamatic is a simple Web application that allows you to create the description of a dataset.
+                    It is being provided as a quick and easy way for you to create your own dataset description.
+                    Simply work through the forms on this page and complete whichever details you'd like to add to your
+                    description.
+                    If you enter the URL of an endpoint, you will be able to extract some of the details of the dataset
+                    automatically.
+                    The final dataset description is displayed at the bottom of the page. It can be downloaded as a file
+                    or copied and pasted into an RDF file.
+
+                    <!-- We could expand giving some info such as: To start, you should firs... As a minimum you'll need to supply ...  -->
+                </p>
+                <div class='row'>
+                    <div class='col-12 p-4' id='dataCol'>
                     </div>
-                    <div class="row">
-                        <pre class="language-turtle">
+                </div>
+                <div class='row'>
+                    <div class='col-12 my-3' id='displayCol'>
+                        <div class="row">
+                            <div class="col-6">
+                                <a class="btn btn-light" id="downloadButton">Download</a>
+                            </div>
+                            <div class="col-6">
+                                <a class="btn btn-light" id="saturationButton"
+                                    title="This will add equivalent classes and properties to the one already given">Apply
+                                    equivalences</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <pre class="language-turtle">
     <code id="displayTextArea" title="Created RDF content" class="language-turtle" >
     </code>
                         </pre>
+                        </div>
                     </div>
                 </div>
+                <div class="row" vocab="https://schema.org/">
+                    <p about="https://wimmics.github.io/voidmatic/" typeof="WebApplication" class="text-center">
+                        This service is maintained by the <a property="author maintainer sourceOrganization"
+                            href="https://team.inria.fr/wimmics/">WIMMICS joint team</a> <a
+                            href="https://twitter.com/wimmics"><i class="bi bi-twitter"></i></a> <a
+                            href="https://www.youtube.com/channel/UCwo21i7ELnTGZ72kHzOq7kQ"><i
+                                class="bi bi-youtube"></i></a> from <a property="sponsor"
+                            href="https://univ-cotedazur.fr/">Université Côte d'Azur</a>, <a
+                            property="sponsor copyrightHolder" href="https://www.inria.fr">Inria</a>, <a
+                            property="sponsor" href="https://www.cnrs.fr">CNRS</a>, <a property="sponsor"
+                            href="https://www.i3s.unice.fr/">I3S</a>. Its <a property="codeRepository"
+                            href="https://github.com/Wimmics/voidmatic">source code</a> is available under the <a
+                            property="license" href="http://www.apache.org/licenses/LICENSE-2.0">Apache v2.0
+                            license</a>. Its development was conducted in the framework of the <a
+                            href="https://dekalog.univ-nantes.fr/">DeKaLoG</a> and <a
+                            href="https://d2kab.mystrikingly.com/">D2KAB</a> projects. <span
+                            property="isAccessibleForFree" content="true" datatype="xsd:boolean"></span>
+                        <span>This service was inspired by the lack of dataset descriptions observed in the <a
+                                href="https://github.com/Wimmics/dekalog">IndeGx framework experimentation</a>,
+                            published <a href="https://hal.science/hal-03946680#">here</a>. A visualization of those
+                            results is shown in the <a href="http://prod-dekalog.inria.fr/">KartoGraphI website</a>,
+                            published <a href="https://hal.science/hal-03652865">here</a></span>
+                    </p>
+                    <p about="https://wimmics.github.io/voidmatic/" property="usageInfo" class="text-center">
+                        By using this service, you accept that the data you input into Metadatamatic may be used by the
+                        WIMMICS team, exclusively for research purposes. Do not input sensitive private information in
+                        the fields. If you wish for your information to be removed from the data retrieved by the
+                        WIMMICS team, please contact us with the details of your information.
+                    </p>
+                </div>
             </div>
-            <div class="row" vocab="https://schema.org/">
-                <p about="https://wimmics.github.io/voidmatic/" typeof="WebApplication" class="text-center">
-                    This service is maintained by the <a property="author maintainer sourceOrganization" href="https://team.inria.fr/wimmics/">WIMMICS joint team</a> <a href="https://twitter.com/wimmics"><i class="bi bi-twitter"></i></a> <a href="https://www.youtube.com/channel/UCwo21i7ELnTGZ72kHzOq7kQ"><i class="bi bi-youtube"></i></a> from <a property="sponsor" href="https://univ-cotedazur.fr/">Université Côte d'Azur</a>, <a property="sponsor copyrightHolder" href="https://www.inria.fr">Inria</a>, <a property="sponsor" href="https://www.cnrs.fr">CNRS</a>, <a property="sponsor" href="https://www.i3s.unice.fr/">I3S</a>. Its <a property="codeRepository" href="https://github.com/Wimmics/voidmatic">source code</a> is available under the <a property="license" href="http://www.apache.org/licenses/LICENSE-2.0">Apache v2.0 license</a>. Its development was conducted in the framework of the  <a href="https://dekalog.univ-nantes.fr/">DeKaLoG</a> and <a href="https://d2kab.mystrikingly.com/">D2KAB</a> projects. <span property="isAccessibleForFree" content="true" datatype="xsd:boolean"></span>
-                    <span>This service was inspired by the lack of dataset descriptions observed in the <a href="https://github.com/Wimmics/dekalog">IndeGx framework experimentation</a>, published <a href="https://hal.science/hal-03946680#">here</a>. A visualization of those results is shown in the <a href="http://prod-dekalog.inria.fr/">KartoGraphI website</a>, published <a href="https://hal.science/hal-03652865">here</a></span>
-                </p>
-                <p  about="https://wimmics.github.io/voidmatic/" property="usageInfo" class="text-center">
-                    By using this service, you accept that the data you input into Metadatamatic may be used by the WIMMICS team, exclusively for research purposes. Do not input sensitive private information in the fields. If you wish for your information to be removed from the data retrieved by the WIMMICS team, please contact us with the details of your information.
-                </p>
+            <div class='col-1'>
             </div>
-        </div>
-        <div class='col-1'>
         </div>
     </div>
 </body>
