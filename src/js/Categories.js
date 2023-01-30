@@ -400,12 +400,12 @@ export var inputMetadata = [
                 defaultValue: "",
                 advice: "The name of the graph must be an URI",
                 dataCreationFunction: (inputVal) => {
-                    var graphBN = $rdf.blankNode();
+                    var graphNode = $rdf.sym(inputVal);
                     return [
-                        new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphBN),
-                        new Statement(graphBN, RDFUtils.SD('name'), $rdf.sym(inputVal)),
+                        new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
+                        new Statement(graphNode, RDFUtils.SD('name'), graphNode),
                         new Statement(exampleDataset, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
-                        new Statement(graphBN, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph"))
+                        new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph"))
                     ];
                 },
                 dataValidationFunction: (inputVal) => {
