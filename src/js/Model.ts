@@ -1,3 +1,4 @@
+import { Statement } from "rdflib";
 
 
 export const fieldStates = {
@@ -7,7 +8,17 @@ export const fieldStates = {
 }
 
 export class CategoryCore {
-    constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, fields: [] }) {
+
+    recommended: boolean;
+    categoryTitle: string;
+    legend: string;
+    idPrefix: string;
+    minArity: number;
+    maxArity: number;
+    computable: boolean;
+    fields: FieldCore[];
+
+    constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, computable: false, fields: [] }) {
         this.recommended = config.recommended;
         this.categoryTitle = config.categoryTitle;
         this.legend = config.legend;
@@ -27,18 +38,46 @@ export class CategoryCore {
     }
 }
 
+export interface FieldState {
+    state: "Valid" | "Invalid" | "None";
+    message: string;
+}
+
+export interface FieldConfig {
+    placeholder: string;
+    dataValidationFunction: (inputVal: string | string[]) => FieldState;
+    dataCreationFunction: (inputVal: string) => Statement[];
+    dataExtractionFunction: () => string[];
+    dataSuggestionFunction: () => string[];
+    parentCategory: CategoryCore | null;
+    defaultValue: any;
+    advice: string;
+    bootstrapFieldColWidth?: number[];
+}
+
 export class FieldCore {
-    constructor(config = { placeholder: "", dataValidationFunction: (inputVal) => { }, dataCreationFunction: (inputVal) => [], dataExtractionFunction: () => { }, dataSuggestionFunction: () => [], parentCategory: null, defaultValue: null, advice: "" }) {
+
+    placeholder: string;
+    dataValidationFunction: (inputVal: string | string[]) => FieldState;
+    dataCreationFunction: (inputVal: string | string[]) => Statement[];
+    dataExtractionFunction: () => string[];
+    dataSuggestionFunction: () => string[];
+    parentCategory: CategoryCore | null;
+    defaultValue: any;
+    advice: string;
+    bootstrapFieldColWidth: number[] | undefined;
+
+    constructor(config: FieldConfig) {
         this.placeholder = config.placeholder;
-        this.dataValidationFunction = (inputVal) => {
-            var result = false;
+        this.dataValidationFunction = (inputVal: string | string[]) : FieldState => {
+            var result = { state: "None", message: ""} ;
             try {
                 result = config.dataValidationFunction(inputVal);
             } catch (e) {
                 throw e;
             }
             return result;
-        }
+        };
         this.dataCreationFunction = (inputVal) => {
             if (this.dataValidationFunction(inputVal)) {
                 return config.dataCreationFunction(inputVal);
@@ -65,17 +104,10 @@ export class FieldCore {
         this.parentCategory = config.parentCategory;
         this.defaultValue = config.defaultValue;
         this.advice = config.advice;
+        if(config.bootstrapFieldColWidth != undefined) {
+            this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
+        } else {
+            config.bootstrapFieldColWidth = [12];
+        }
     }
-}
-
-export class SingleFieldCore extends FieldCore {
-
-}
-
-export class MultipleFieldCore extends FieldCore {
-    constructor(config = { placeholder: [], bootstrapFieldColWidth: [11, 1], dataValidationFunction: (inputValArray) => { }, dataCreationFunction: (inputValArray) => { }, dataExtractionFunction: () => { }, parentCategory: null, defaultValue: [] }) {
-        super(config);
-        this.bootstrapFieldColWidth = config.bootstrapFieldColWidth;
-    }
-
 }

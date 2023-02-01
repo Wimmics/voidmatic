@@ -1,8 +1,8 @@
-import * as RDFUtils from "./RDFUtils.js";
-import * as Query from "./QueryUtils.js";
-import { inputMetadata } from './Categories.js';
-import { CategoryCore } from './Model.js';
-import { CategoryView, generateNavItem } from "./View.js";
+import * as RDFUtils from "./RDFUtils.ts";
+import * as Query from "./QueryUtils.ts";
+import { inputMetadata } from './Categories.ts';
+import { CategoryCore } from './Model.ts';
+import { CategoryView, generateNavItem } from "./View.ts";
 
 import $ from 'jquery';
 import * as $rdf from 'rdflib';
@@ -12,6 +12,14 @@ import { v4 as uuid } from 'uuid';
 export let controlInstance;
 
 export class Control {
+
+    store: $rdf.Store;
+    contentDisplay: JQuery<HTMLElement>;
+    categoryViews: CategoryView[];
+    metadataCategoryViewMap: Map<CategoryCore, CategoryView>;
+    forceHTTPSFlag: boolean;
+    sessionId: string;
+
     constructor() {
         if (controlInstance) {
             throw new Error("Control already instanced")
@@ -25,6 +33,7 @@ export class Control {
         this.categoryViews = [];
         this.metadataCategoryViewMap = new Map();
         this.forceHTTPSFlag = true;
+        this.sessionId = uuid();
 
         this.generateFields();
 
@@ -49,8 +58,6 @@ export class Control {
 
         this.addStatement(new $rdf.Statement(RDFUtils.exampleDataset, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")));
 
-        this.sessionId = uuid();
-
     }
 
     standardizeEndpointURL(endpointURL) {
@@ -66,7 +73,7 @@ export class Control {
      * TODO: Make it using SPARQL or defined in each field.
      */
     generateEquivalenceTriples() {
-        var result = [];
+        var result: $rdf.Statement[] = [];
 
         const dcatDatasetInstanceStatement = this.store.anyStatementMatching(null, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset"));
         if (dcatDatasetInstanceStatement != undefined) {
@@ -145,15 +152,6 @@ export class Control {
         }
 
         return result;
-    }
-
-    queryStore(query) {
-        var queryObj = $rdf.SPARQLToQuery(query, false);
-        return new Promise((resolve, reject) => {
-            this.store.query(queryObj, bindings => {
-                resolve(bindings);
-            })
-        });
     }
 
     listNodesStore(s, p, o) {

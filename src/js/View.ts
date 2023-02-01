@@ -1,6 +1,6 @@
-import * as RDFUtils from "./RDFUtils.js";
-import { SingleFieldCore, MultipleFieldCore, fieldStates } from './Model.js';
-import { controlInstance } from "./Control.js";
+import * as RDFUtils from "./RDFUtils.ts";
+import { SingleFieldCore, MultipleFieldCore, fieldStates } from './Model.ts';
+import { controlInstance } from "./Control.ts";
 
 const EventEmitter = require('events');
 import Autocomplete from "bootstrap5-autocomplete";
@@ -18,7 +18,7 @@ export class CategoryView extends EventEmitter {
 
         this.categoryCore.fields.forEach(field => {
             if (this.categoryCore.minArity > 0) {
-                for(var nbLine = 0; nbLine < this.categoryCore.minArity; nbLine++) {
+                for (var nbLine = 0; nbLine < this.categoryCore.minArity; nbLine++) {
                     this.addLine()
                 }
             }
@@ -49,7 +49,8 @@ export class CategoryView extends EventEmitter {
         this.displayContent.text(content);
     }
 
-    addLine() {
+    addLine(value) {
+        console.log("CategoryView.addLine")
         this.categoryCore.fields.forEach(field => {
             if (this.underMaximumNumberOfLine()) {
                 var fieldLine = null;
@@ -60,6 +61,10 @@ export class CategoryView extends EventEmitter {
                 } else {
                     console.error(field)
                     throw new Error("Unknown line type ")
+                }
+                if(value != undefined) {
+                    fieldLine.updateContent(value);
+                    fieldLine.validateContent();
                 }
                 this.lines.set(fieldLine.inputId, fieldLine);
 
@@ -239,6 +244,9 @@ export class CategoryView extends EventEmitter {
             catFieldCol.empty();
             this.lines.forEach((field, fieldId) => {
                 catFieldCol.append(field.generateJQueryContent());
+                if(field.getValue() != undefined && field.hasValidValue()) {
+                    field.validateContent();
+                }
             });
             if (this.lines.size == this.categoryCore.maxArity) {
                 catAddLineButton.addClass("d-none");
@@ -259,6 +267,7 @@ export class CategoryView extends EventEmitter {
                         lineComputeButton.addClass("disabled");
                         extractedValuesPromise.then(extractedValues => {
                             extractedValues.forEach(value => {
+                                this.addLine(value)
                                 var statement = field.dataCreationFunction(value);
                                 controlInstance.addAllStatements(statement);
                                 this.displayStore.addAll(statement);
@@ -267,15 +276,14 @@ export class CategoryView extends EventEmitter {
                             lineComputeButton.removeClass("btn-warning");
                             lineComputeButton.addClass("btn-success");
                             lineComputeButton.removeClass("disabled");
-                        })
-                            .catch(e => {
-                                lineComputeButton.removeClass("btn-warning");
-                                lineComputeButton.addClass("btn-danger");
-                                lineComputeButton.removeClass("disabled");
+                        }).catch(e => {
+                            lineComputeButton.removeClass("btn-warning");
+                            lineComputeButton.addClass("btn-danger");
+                            lineComputeButton.removeClass("disabled");
 
-                                this.showError(new Error("Could not retrieve the data. Have you tried to force the endpoint url into HTTPS ?"));
-                                console.error(e);
-                            });
+                            this.showError(new Error("Could not retrieve the data. Have you tried to force the endpoint url into HTTPS ?"));
+                            console.error(e);
+                        });
                     } catch (e) {
                         this.showError(new Error("Error during data retrieval: " + e.message));
                         console.error(e);
@@ -301,7 +309,7 @@ export class FieldView extends EventEmitter {
         this.fieldValue = this.fieldCore.defaultValue;
         this.inputId = this.metadataFieldIdPrefix + this.index;
         this.tooltip = null;
-        this.validationState = { status: fieldStates.None, message:"" };
+        this.validationState = { state: fieldStates.None, message: "" };
     }
 
     getValue() {
@@ -310,7 +318,7 @@ export class FieldView extends EventEmitter {
 
     hasValidValue() {
         try {
-            return this.fieldCore.dataValidationFunction(this.getValue());
+            return this.fieldCore.dataValidationFunction(this.getValue()).state.localeCompare(fieldStates.Valid) == 0;
         } catch (e) {
             return false;
         }
@@ -319,7 +327,7 @@ export class FieldView extends EventEmitter {
     getRDFData() {
         var validated = false;
         try {
-            validated = this.dataValidationFunction(this.fieldValue);
+            validated = this.dataValidationFunction(this.fieldValue).state.localeCompare(fieldStates.Valid) == 0;
         } catch (e) {
             this.emit("error", e, this);
         }
@@ -331,16 +339,16 @@ export class FieldView extends EventEmitter {
         }
     }
 
-    dataValidationFunction = (inputVal) => {
+    dataValidationFunction(inputVal) {
         try {
-            var result = false;
+            var result = { state: fieldStates.None, message: "" };
             try {
                 result = this.fieldCore.dataValidationFunction(inputVal);
             } catch (e) {
                 this.emit("error", e, this);
             }
             this.setValidationState(result);
-            if (result.state === fieldStates.Valid) {
+            if (result.state.localeCompare(fieldStates.Valid) == 0) {
                 this.fieldValue = inputVal;
             }
             return result;
@@ -349,15 +357,15 @@ export class FieldView extends EventEmitter {
         }
     }
 
-    setValidationState = valid => {
-        if (valid) {
-            this.validationState = { status: fieldStates.Valid, message:"" };
+    setValidationState(valid) {
+        if (valid != undefined && valid.state != undefined && valid.message != undefined) {
+            this.validationState = valid;
         } else {
-            this.validationState = { status: fieldStates.Invalid, message:this.fieldCore.advice };
+            this.validationState = { state: fieldStates.None, message: "" };
         }
     }
 
-    dataExtractionFunction = () => {
+    dataExtractionFunction() {
         var result = [];
         try {
             result = this.fieldCore.dataExtractionFunction();
@@ -367,18 +375,24 @@ export class FieldView extends EventEmitter {
         return result;
     }
 
-    validateContent = () => {
-        var validated = this.dataValidationFunction(this.fieldValue);
+    validateContent() {
+        const validationState = this.dataValidationFunction(this.fieldValue);
+        var validated = validationState.state === fieldStates.Valid;
+        this.setValidationState(validationState);
         if (validated) {
             var statements = this.fieldCore.dataCreationFunction(this.fieldValue);
             this.emit("add", statements, this);
             return statements;
         } else {
-            this.emit("error", this.fieldCore.advice, this);
+            if(this.fieldCore.advice != undefined) {
+                this.emit("error", this.fieldCore.advice, this);
+            } else {
+                this.emit("error", validationState.message, this);
+            }
         }
     }
 
-    updateContent = newValue => {
+    updateContent(newValue) {
         var oldValueValidated = false;
         try {
             oldValueValidated = this.fieldCore.dataValidationFunction(this.fieldValue).state === fieldStates.Valid;
@@ -393,7 +407,31 @@ export class FieldView extends EventEmitter {
         this.validateContent();
     }
 
-    generateJQueryContent = () => {
+    generateJQueryContent() {
+        console.log("FieldView.generateJQueryContent")
+    }
+
+    setButtonValidatedState(validationState) {
+        console.log("FieldView.setButtonValidatedState", validationState)
+        var validationButton = $('#' + this.inputId );
+        if (validationState.state === fieldStates.Valid) {
+            validationButton.removeClass("btn-light")
+            validationButton.removeClass("btn-warning")
+            validationButton.removeClass("btn-danger")
+            validationButton.addClass("btn-success")
+        }
+        else if (validationState.state === fieldStates.Invalid) {
+            validationButton.removeClass("btn-light")
+            validationButton.removeClass("btn-warning")
+            validationButton.removeClass("btn-success")
+            validationButton.addClass("btn-danger")
+        } else if (validationState.state === fieldStates.None) {
+            validationButton.removeClass("btn-success")
+            validationButton.removeClass("btn-warning")
+            validationButton.removeClass("btn-danger")
+            validationButton.addClass("btn-light")
+            validationButton.attr("title", validationState.message);
+        }
     }
 
 }
@@ -407,26 +445,34 @@ export class SingleFieldView extends FieldView {
         this.inputIdRemoveButton = this.inputId + "RemoveButton";
     }
 
-    setValidationState = validationState => {
-        setButtonValidatedState(this.inputIdButton, validationState);
+    setValidationState(validationState) {
+        console.log("SingleFieldView.setValidationState", validationState)
+        super.setValidationState(validationState);
+        this.setButtonValidatedState(validationState);
         var field = $('#' + this.inputIdField);
-        if (validationState.state === fieldStates.Valid) {
+        if (validationState.state.localeCompare(fieldStates.Valid) === 0) {
+            field.removeClass("border-light");
             field.removeClass("border-danger");
-            field.addClass("border-success")
-        } else if (validationState.state === fieldStates.Invalid) {
+            field.addClass("border-success");
+        } else if (validationState.state.localeCompare(fieldStates.Invalid) === 0) {
             field.addClass("border-danger");
-            field.removeClass("border-success")
-        } else if (validationState.state === fieldStates.None) {
+            field.removeClass("border-success");
+            field.removeClass("border-light");
+        } else if (validationState.state.localeCompare(fieldStates.None) === 0) {
             field.addClass("border-light");
-            field.removeClass("border-success")
+            field.removeClass("border-success");
             field.removeClass("border-danger");
+        } else {
+            throw new Error("Unknown validation state: ", validationState);
         }
     }
 
-    generateJQueryContent = () => {
+    generateJQueryContent() {
+        console.log("SingleFieldView.generateJQueryContent")
         var lineDiv = $(document.createElement('div'));
         var textInput = $(document.createElement('input'))
         var lineLabel = $(document.createElement('label'));
+        lineDiv.addClass('row');
         textInput.attr('type', 'text');
         textInput.addClass('form-control');
         textInput.attr('id', this.inputIdField);
@@ -448,7 +494,7 @@ export class SingleFieldView extends FieldView {
         lineValidButton.addClass("text-truncate");
         lineValidButton.text("Validate");
         lineValidButton.attr("title", this.fieldCore.placeholder);
-        setButtonValidatedState(this.inputIdButton, this.validationState);
+        this.setValidationState(this.validationState);
         lineValidButtonCol.append(lineValidButton);
         var lineRemoveButtonCol = $(document.createElement('div'));
         lineRemoveButtonCol.addClass('col-1');
@@ -468,14 +514,13 @@ export class SingleFieldView extends FieldView {
         } else {
             lineRemoveButton.removeClass("d-none");
         }
-
-        lineDiv.addClass('row');
-        lineDiv.append(lineFieldCol);
-        lineDiv.append(lineValidButtonCol);
-        lineDiv.append(lineRemoveButtonCol);
         lineFieldCol.addClass('form-floating');
         lineFieldCol.append(textInput);
         lineFieldCol.append(lineLabel);
+
+        lineDiv.append(lineFieldCol);
+        lineDiv.append(lineValidButtonCol);
+        lineDiv.append(lineRemoveButtonCol);
 
         if (this.fieldCore.dataSuggestionFunction != undefined) {
             var items = this.fieldCore.dataSuggestionFunction();
@@ -534,21 +579,31 @@ export class MultipleFieldView extends FieldView {
 
     }
 
-    setValidationState = validationState => {
-        setButtonValidatedState(this.inputIdButton, validationState);
+    setValidationState(validationState) {
+        super.setValidationState(validationState);
+        this.setButtonValidatedState(validationState);
         this.inputIdFields.forEach(id => {
             var field = $('#' + id);
-            if (validationState.state === fieldStates.valid) {
+            if (validationState.state.localeCompare(fieldStates.Valid) === 0) {
+                field.removeClass("border-light");
                 field.removeClass("border-danger");
-                field.addClass("border-success")
-            } else {
+                field.addClass("border-success");
+            } else if (validationState.state.localeCompare(fieldStates.Invalid) === 0) {
                 field.addClass("border-danger");
-                field.removeClass("border-success")
+                field.removeClass("border-success");
+                field.removeClass("border-light");
+            } else if (validationState.state.localeCompare(fieldStates.None) === 0) {
+                field.addClass("border-light");
+                field.removeClass("border-success");
+                field.removeClass("border-danger");
+            } else {
+                throw new Error("Unknown validation state: ", validationState);
             }
         })
     }
 
-    generateJQueryContent = () => {
+    generateJQueryContent() {
+        super.generateJQueryContent();
         var lineDiv = $(document.createElement('div'));
 
         var lineValidButtonCol = $(document.createElement('div'));
@@ -654,28 +709,6 @@ export class MultipleFieldView extends FieldView {
         });
 
         return lineDiv;
-    }
-}
-
-export function setButtonValidatedState(inputId, { state, message}) {
-    console.log(state)
-    if (state === fieldStates.Valid) {
-        $('#' + inputId).removeClass("btn-light")
-        $('#' + inputId).removeClass("btn-warning")
-        $('#' + inputId).removeClass("btn-danger")
-        $('#' + inputId).addClass("btn-success")
-    }
-    else if (state === fieldStates.Invalid) { 
-        $('#' + inputId).removeClass("btn-light")
-        $('#' + inputId).removeClass("btn-warning")
-        $('#' + inputId).addClass("btn-danger")
-        $('#' + inputId).removeClass("btn-success")
-    } else if (state === fieldStates.None) {
-        $('#' + inputId).removeClass("btn-success")
-        $('#' + inputId).removeClass("btn-warning")
-        $('#' + inputId).removeClass("btn-danger")
-        $('#' + inputId).addClass("btn-light")
-        $('#' + inputId).attr("title", message);
     }
 }
 
