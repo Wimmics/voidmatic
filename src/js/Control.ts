@@ -37,8 +37,6 @@ export class Control {
 
         this.generateFields();
 
-        navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
-
         $("#downloadButton").on("click", () => {
             RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
                 saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
@@ -192,9 +190,11 @@ export class Control {
         var navCol = $('#navCol');
 
         inputMetadata.forEach(catMetadata => {
-            var catMetadataView = new CategoryView({ category: new CategoryCore(catMetadata) })
+            var catMetadataView = new CategoryView({ category: catMetadata });
             this.categoryViews.push(catMetadataView);
-            dataCol.append(catMetadataView.jQueryContent)
+            const categoryJquery = catMetadataView.generateJQueryContent();
+            console.log(categoryJquery.html());
+            dataCol.append(categoryJquery)
             navCol.append(catMetadataView.navItem);
 
             catMetadataView.on("add", (statements, source) => {
@@ -211,8 +211,16 @@ export class Control {
                 console.error(message);
             })
 
+            catMetadataView.on("change", () => {
+                dataCol.empty();
+                navCol.empty();
+                this.generateFields();
+            })
+
             this.metadataCategoryViewMap.set(catMetadata.idPrefix, catMetadataView);
         })
+
+        navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
     }
 
     refreshStore() {

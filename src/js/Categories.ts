@@ -6,7 +6,7 @@ import * as suggestions from "./suggestions.json";
 import * as Validation from "./Validation.ts";
 import * as RDFUtils from "./RDFUtils.ts";
 import * as Query from "./QueryUtils.ts";
-import { FieldCore, FieldState } from './Model.ts';
+import { FieldCore, FieldState, CategoryCore } from './Model.ts';
 import { exampleDataset } from './RDFUtils.ts';
 import { controlInstance } from "./Control.ts";
 
@@ -27,8 +27,8 @@ const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
     return result;
 });
 
-export var inputMetadata = [
-    {
+export const inputMetadata = [
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Title",
         legend: "Short title for the knowledge base and its content.",
@@ -62,8 +62,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Description",
         legend: "Long description of the knowledge base and its content.",
@@ -97,8 +97,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Endpoint URL",
         legend: "URL of the SPARQL endpoint.",
@@ -109,7 +109,7 @@ export var inputMetadata = [
         fields: [
             new FieldCore({
                 placeholder: "Endpoint's URL",
-                defaultValue: "",
+                defaultValue: [""],
                 dataValidationFunction: (inputVal) => {
                     var result = Validation.isURI(inputVal);
                     if(result) {
@@ -125,8 +125,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Creator",
         legend: "Represents the different actors involved in the creation of the dataset.",
@@ -136,9 +136,8 @@ export var inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Creator's name or URI",
-                defaultValue: "",
-                advice: "The creator must be non-empty",
+                placeholder: ["Creator's name or URI"],
+                defaultValue: [""],
                 dataValidationFunction: (inputVal) => {
                     var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if(result) {
@@ -158,8 +157,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Publication date",
         legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
@@ -169,8 +168,8 @@ export var inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Publication date of the knowledge base.",
-                defaultValue: "",
+                placeholder: ["Publication date of the knowledge base."],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
                 },
@@ -184,8 +183,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Keywords",
         legend: "Keywords describing the content of the knowledge base.",
@@ -195,8 +194,8 @@ export var inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Keywords used to describe the knowledge base",
-                defaultValue: "keyword",
+                placeholder: ["Keywords used to describe the knowledge base"],
+                defaultValue: ["keyword"],
                 dataCreationFunction: (inputVal) => {
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
@@ -216,8 +215,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Version",
         legend: "Current version number of the knowledge base.",
@@ -227,9 +226,8 @@ export var inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Current version of the knowledge base",
-                defaultValue: "1.0",
-                advice: "The version must be non empty",
+                placeholder: ["Current version of the knowledge base"],
+                defaultValue: ["1.0"],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
                 },
@@ -243,8 +241,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "License",
         legend: "License of the knowledge base. Use an URI to refer to a license, or a literal to describe the license.",
@@ -254,8 +252,8 @@ export var inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Reference to the license of the knowledge base",
-                defaultValue: "",
+                placeholder: ["Reference to the license of the knowledge base"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal))];
@@ -278,8 +276,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Vocabularies",
         legend: "URIs of the vocabularies used in the knowledge base.",
@@ -289,8 +287,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Vocabularies used in the knowledge base",
-                defaultValue: "",
+                placeholder: ["Vocabularies used in the knowledge base"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
                 },
@@ -333,8 +331,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Languages",
         legend: "Language tags used in the literals of the knowledge base. It is recommended to use the tags used in the language tagged literal, or to follow the <a href='https://www.rfc-editor.org/info/bcp47#section-2.2.9'>RDF1.1 standard</a>.",
@@ -344,8 +342,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Language tags used in the literals of the knowledge base.",
-                defaultValue: "",
+                placeholder: ["Language tags used in the literals of the knowledge base."],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
                 },
@@ -390,44 +388,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    // {
-    //     recommended: false,
-    //     categoryTitle: "Distributions",
-    //     legend: "Means of distribution of the dataset, other than an endpoint",
-    //     idPrefix: "distribution",
-    //     minArity: 0,
-    //     maxArity: Infinity,
-    //     computable: false,
-    //     fields: [
-    //         new MultipleFieldCore({
-    //             placeholder: ["Name", "URL", "Type"],
-    //             defaultValue: ["", "", "text/turtle"],
-    //             bootstrapFieldColWidth: [4, 5, 2],
-    //             advice: "The name of the distribution must be a literal. The URL must be an URI. The type must be a literal, preferably from <a href='https://www.iana.org/assignments/media-types/'>here</a>. None of the fields can be empty.",
-    //             dataCreationFunction: (inputVal) => {
-    //                 var nameVal = inputVal[0];
-    //                 var urlVal = inputVal[1];
-    //                 var typeVal = inputVal[2];
-    //                 var distribBN = $rdf.sym("https://e.g/#distribution" + uniqueIdCounter++);
-    //                 return [ 
-    //                     new Statement(exampleDataset, DCAT('distribution'), distribBN), 
-    //                     new Statement(distribBN, RDF("type"), DCAT("Distribution")), 
-    //                     new Statement(distribBN, DCAT('accessURL'), $rdf.sym(urlVal)), 
-    //                     new Statement(distribBN, DCT("title"), $rdf.lit(nameVal)),
-    //                     new Statement(distribBN, DCAT("mediaType"), $rdf.lit(typeVal))  
-    //                 ];
-    //             },
-    //             dataValidationFunction: (inputVal) => {
-    //                 var nameVal = inputVal[0];
-    //                 var urlVal = inputVal[1];
-    //                 var typeVal = inputVal[2];
-    //                 return nameVal != undefined && urlVal != undefined && typeVal != undefined && isLiteral(nameVal) && isURI(urlVal) && isLiteral(typeVal);
-    //             }
-    //         })
-    //     ]
-    // },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Graph",
         legend: "Graphs present in the dataset",
@@ -437,8 +399,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Uri of the graph",
-                defaultValue: "",
+                placeholder: ["Uri of the graph"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     var graphNode = $rdf.sym(inputVal);
                     return [
@@ -486,8 +448,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Triples",
         legend: "Number of triples present in the dataset",
@@ -497,8 +459,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Number of triples",
-                defaultValue: "",
+                placeholder: ["Number of triples"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
@@ -540,8 +502,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Classes",
         legend: "Number of classes present in the dataset",
@@ -551,9 +513,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Number of classes",
-                defaultValue: "",
-                advice: "",
+                placeholder: ["Number of classes"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
@@ -595,8 +556,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Properties",
         legend: "Number of properties present in the dataset",
@@ -606,8 +567,8 @@ export var inputMetadata = [
         computable: true,
         fields: [
             new FieldCore({
-                placeholder: "Number of properties",
-                defaultValue: "",
+                placeholder: ["Number of properties"],
+                defaultValue: [""],
                 dataCreationFunction: (inputVal) => {
                     return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
@@ -649,5 +610,5 @@ export var inputMetadata = [
                 }
             })
         ]
-    }
+    })
 ];

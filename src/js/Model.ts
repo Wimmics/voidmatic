@@ -63,7 +63,7 @@ export class FieldCore {
     dataExtractionFunction: () => string[];
     dataSuggestionFunction: () => string[];
     parentCategory: CategoryCore | null;
-    defaultValue: any;
+    defaultValue: string[];
     advice: string;
     bootstrapFieldColWidth: number[] | undefined;
 
