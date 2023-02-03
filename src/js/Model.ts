@@ -1,13 +1,45 @@
 import { Statement } from "rdflib";
 
 
-export const fieldStates = {
-    None: "None",
-    Valid: "Valid",
-    Invalid: "Invalid"
+export class FieldState {
+    state: "Valid" | "Invalid" | "None";
+    message: string;
+
+    constructor(state: "Valid" | "Invalid" | "None", message: string) {
+        this.state = state;
+        this.message = message;
+    }
+
+    static valid() {
+        return new FieldState("Valid", "");
+    }
+
+    static invalid(message: string) {
+        return new FieldState("Invalid", message);
+    }
+
+    static none() {
+        return new FieldState("None", "");
+    }
+
+    static isValid(fieldState: FieldState) {
+        return fieldState.state.localeCompare("Valid") == 0;
+    }
+
+    static isInvalid(fieldState: FieldState) {
+        return fieldState.state.localeCompare("Invalid") == 0;
+    }
+
+    static isNone(fieldState: FieldState) {
+        return fieldState.state.localeCompare("None") == 0;
+    }
 }
 
-export class CategoryCore {
+export interface CoreElement {
+
+}
+
+export class CategoryCore implements CoreElement {
 
     recommended: boolean;
     categoryTitle: string;
@@ -38,15 +70,10 @@ export class CategoryCore {
     }
 }
 
-export interface FieldState {
-    state: "Valid" | "Invalid" | "None";
-    message: string;
-}
-
 export interface FieldConfig {
     placeholder: string;
-    dataValidationFunction: (inputVal: string | string[]) => FieldState;
-    dataCreationFunction: (inputVal: string) => Statement[];
+    dataValidationFunction: (inputVal: string[]) => FieldState;
+    dataCreationFunction: (inputVal: string[]) => Statement[];
     dataExtractionFunction: () => string[];
     dataSuggestionFunction: () => string[];
     parentCategory: CategoryCore | null;
@@ -55,11 +82,11 @@ export interface FieldConfig {
     bootstrapFieldColWidth?: number[];
 }
 
-export class FieldCore {
+export class FieldCore implements CoreElement {
 
     placeholder: string;
-    dataValidationFunction: (inputVal: string | string[]) => FieldState;
-    dataCreationFunction: (inputVal: string | string[]) => Statement[];
+    dataValidationFunction: (inputVal: string[]) => FieldState;
+    dataCreationFunction: (inputVal: string[]) => Statement[];
     dataExtractionFunction: () => string[];
     dataSuggestionFunction: () => string[];
     parentCategory: CategoryCore | null;
@@ -69,8 +96,8 @@ export class FieldCore {
 
     constructor(config: FieldConfig) {
         this.placeholder = config.placeholder;
-        this.dataValidationFunction = (inputVal: string | string[]) : FieldState => {
-            var result = { state: "None", message: ""} ;
+        this.dataValidationFunction = (inputVal: string[]) : FieldState => {
+            var result = FieldState.none() ;
             try {
                 result = config.dataValidationFunction(inputVal);
             } catch (e) {

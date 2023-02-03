@@ -6,7 +6,7 @@ import * as suggestions from "./suggestions.json";
 import * as Validation from "./Validation.ts";
 import * as RDFUtils from "./RDFUtils.ts";
 import * as Query from "./QueryUtils.ts";
-import { FieldCore, FieldState, CategoryCore } from './Model.ts';
+import { FieldCore, CategoryCore, FieldState } from './Model.ts';
 import { exampleDataset } from './RDFUtils.ts';
 import { controlInstance } from "./Control.ts";
 
@@ -41,9 +41,9 @@ export const inputMetadata = [
                 placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
-                dataCreationFunction: argArray => {
-                    var inputVal = argArray[0];
-                    var inputTag = argArray[1];
+                dataCreationFunction: valuesArray => {
+                    var inputVal = valuesArray[0];
+                    var inputTag = valuesArray[1];
                     if (inputTag.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
                     } else {
@@ -55,9 +55,9 @@ export const inputMetadata = [
                     var inputTag = valuesArray[1];
                     var testResult = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
                     if(testResult) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The short title must be non-empty" };
+                        return FieldState.invalid("The short title must be non-empty");
                     }
                 }
             })
@@ -76,23 +76,23 @@ export const inputMetadata = [
                 placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
-                dataCreationFunction: argArray => {
-                    var inputVal = argArray[0];
-                    var inputLang = argArray[1];
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
+                    var inputLang = valuesArray[1];
                     if (inputLang.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal, inputLang))];
                     } else {
                         return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal))];
                     }
                 },
-                dataValidationFunction: (valuesArray: string[]): FieldState => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
                     var inputVal = valuesArray[0];
                     var inputTag = valuesArray[1];
                     var result = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The description must be non-empty" };
+                        return FieldState.invalid("The description must be non-empty");
                     }
                 }
             })
@@ -108,17 +108,19 @@ export const inputMetadata = [
         computable: false,
         fields: [
             new FieldCore({
-                placeholder: "Endpoint's URL",
+                placeholder: ["Endpoint's URL"],
                 defaultValue: [""],
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     var result = Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The URL must direct to a working SPARQL endpoint for the extraction functions to work." };
+                        return FieldState.invalid("The URL must direct to a working SPARQL endpoint for the extraction functions to work.");
                     }
                 },
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [
                         new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal))
                     ];
@@ -138,15 +140,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Creator's name or URI"],
                 defaultValue: [""],
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The creator must be non-empty" };
+                        return FieldState.invalid("The creator must be non-empty");
                     }
                 },
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
                     }
@@ -170,15 +174,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Publication date of the knowledge base."],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction( valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result =  Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The date must be non-empty and in the correct format" };
+                        return FieldState.invalid("The date must be non-empty and in the correct format");
                     }
                 }
             })
@@ -196,7 +202,8 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Keywords used to describe the knowledge base"],
                 defaultValue: ["keyword"],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
                     }
@@ -205,12 +212,13 @@ export const inputMetadata = [
                     }
                     return null;
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The keyword must be non empty" };
+                        return FieldState.invalid("The keyword must be non empty");
                     }
                 }
             })
@@ -228,15 +236,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Current version of the knowledge base"],
                 defaultValue: ["1.0"],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The keyword must be non empty" };
+                        return FieldState.invalid("The keyword must be non empty");
                     }
                 }
             })
@@ -254,7 +264,8 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Reference to the license of the knowledge base"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal))];
                     }
@@ -263,12 +274,13 @@ export const inputMetadata = [
                     }
                     return null;
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The license must be non empty" };
+                        return FieldState.invalid("The license must be non empty");
                     }
                 },
                 dataSuggestionFunction: (inputVal) => {
@@ -289,15 +301,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Vocabularies used in the knowledge base"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The vocabulary must be an URI" };
+                        return FieldState.invalid("The vocabulary must be an URI");
                     }
                 },
                 dataExtractionFunction: () => {
@@ -344,15 +358,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Language tags used in the literals of the knowledge base."],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result =  Validation.isLiteral(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The language must be non empty" };
+                        return FieldState.invalid("The language must be non empty");
                     }
                 },
                 dataExtractionFunction: () => {
@@ -401,7 +417,8 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Uri of the graph"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     var graphNode = $rdf.sym(inputVal);
                     return [
                         new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
@@ -410,12 +427,13 @@ export const inputMetadata = [
                         new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph"))
                     ];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isURI(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The name of the graph must be an URI" };
+                        return FieldState.invalid("The name of the graph must be an URI");
                     }
                 },
                 dataExtractionFunction: () => {
@@ -461,15 +479,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of triples"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The number of triples must be a positive integer number." };
+                        return FieldState.invalid("The number of triples must be a positive integer number.");
                     }
                 },
                 dataExtractionFunction: () => {
@@ -515,15 +535,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of classes"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The number of classes must be a positive integer number." };
+                        return FieldState.invalid("The number of classes must be a positive integer number.");
                     }
                 },
                 dataExtractionFunction: () => {
@@ -569,15 +591,17 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of properties"],
                 defaultValue: [""],
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) : FieldState => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if(result) {
-                        return { state: "Valid", message: "" };
+                        return FieldState.valid();
                     } else {
-                        return { state: "Invalid", message: "The number of properties must be a positive integer number." };
+                        return FieldState.invalid("The number of properties must be a positive integer number.");
                     }
                 },
                 dataExtractionFunction: () => {

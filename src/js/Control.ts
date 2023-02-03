@@ -35,7 +35,7 @@ export class Control {
         this.forceHTTPSFlag = true;
         this.sessionId = uuid();
 
-        this.generateFields();
+        this.initCategoryViews();
 
         $("#downloadButton").on("click", () => {
             RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
@@ -185,17 +185,20 @@ export class Control {
         this.contentDisplay.text(str);
     }
 
-    generateFields() {
+    /**
+     * Add the category views to the page and add the listeners
+     */
+    initCategoryViews() {
         var dataCol = $('#dataCol');
         var navCol = $('#navCol');
 
         inputMetadata.forEach(catMetadata => {
             var catMetadataView = new CategoryView({ category: catMetadata });
             this.categoryViews.push(catMetadataView);
-            const categoryJquery = catMetadataView.generateJQueryContent();
-            console.log(categoryJquery.html());
+            const categoryJquery = catMetadataView.render();
             dataCol.append(categoryJquery)
             navCol.append(catMetadataView.navItem);
+            this.metadataCategoryViewMap.set(catMetadata.idPrefix, catMetadataView);
 
             catMetadataView.on("add", (statements, source) => {
                 this.addAllStatements(statements);
@@ -211,16 +214,22 @@ export class Control {
                 console.error(message);
             })
 
-            catMetadataView.on("change", () => {
+            catMetadataView.on("change", source => {
+                console.log("Control received Change event from ", source);
                 dataCol.empty();
                 navCol.empty();
-                this.generateFields();
+                catMetadataView.refresh();
             })
 
-            this.metadataCategoryViewMap.set(catMetadata.idPrefix, catMetadataView);
         })
 
-        navCol.append(generateNavItem("Description of the dataset", "displayTextArea"));
+        navCol.append($(`<div class="navbar-item"><a class="navbar-link btn" href="#displayTextArea">Description of the dataset</a></div>`));
+    }
+
+    refreshCategories() {
+        this.categoryViews.forEach(categoryView => {
+            categoryView.refresh();
+        })
     }
 
     refreshStore() {
