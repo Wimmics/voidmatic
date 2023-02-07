@@ -44,6 +44,7 @@ export class CategoryView extends ViewElement {
     navItem: JQuery<HTMLElement>;
     catDisplayContent: JQuery<HTMLElement>;
     showError: (message: string | Error) => void;
+    hideError: () => void;
 
     constructor(config = { category: null }) {
         super();
@@ -96,6 +97,10 @@ export class CategoryView extends ViewElement {
 
                 fieldLine.on("error", (message, source) => {
                     this.showError(message);
+                })
+
+                fieldLine.on("validation", (source) => {
+                    this.hideError();
                 })
             })
             this.refresh();
@@ -248,6 +253,11 @@ export class CategoryView extends ViewElement {
             catErrorDisplayCol.removeClass("collapse");
             catErrorDisplayCol.addClass("collapse.show");
         }
+        this.hideError = () => {
+            catErrorDiplayParagraph.text("");
+            catErrorDisplayCol.removeClass("collapse.show");
+            catErrorDisplayCol.addClass("collapse");
+        }
 
 
         // Display the RDF content of the category
@@ -278,7 +288,7 @@ export class CategoryView extends ViewElement {
             const fieldJqueryContent = field.render();
             catCardBody.append(fieldJqueryContent);
         });
-        if (this.lines.size == this.coreElement.maxArity) {
+        if (this.lines.size >= this.coreElement.maxArity) {
             catAddLineButton.addClass("d-none");
         } else {
             catAddLineButton.removeClass("d-none");
@@ -383,6 +393,7 @@ export class FieldView extends ViewElement {
                 field.removeClass("border-danger");
                 field.addClass("border-success");
             })
+            this.emit("validation", this)
         }
         else if (FieldState.isInvalid(validationState)) {
             validationButton.removeClass("btn-dark")
