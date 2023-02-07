@@ -1,5 +1,5 @@
 import * as RDFUtils from "./RDFUtils.ts";
-import { FieldCore, FieldState, CategoryCore, CoreElement } from './Model.ts';
+import { FieldState, CoreElement } from './Model.ts';
 import { controlInstance } from "./Control.ts";
 import { Store } from "rdflib";
 
@@ -38,19 +38,40 @@ export class ViewElement extends EventEmitter {
 }
 
 export class CategoryView extends ViewElement {
+    parent: CategoryView | null;
     lines: Map<string, FieldView>;
     displayStore: Store;
     categoryId: string;
+    categoryContentId: string;
     navItem: JQuery<HTMLElement>;
     catDisplayContent: JQuery<HTMLElement>;
+    subCategoryViews: CategoryView[];
     showError: (message: string | Error) => void;
     hideError: () => void;
 
-    constructor(config = { category: null }) {
+    constructor(config = { category: null, parent:null }) {
         super();
+        this.parent = config.parent;
         this.coreElement = config.category;
         this.lines = new Map();
         this.displayStore = RDFUtils.createStore();
+        this.categoryId = this.coreElement.idPrefix + uuid() + "Category";
+        this.categoryContentId = this.coreElement.idPrefix + uuid() + "CategoryContent";
+        this.JQueryContentContainer = $(`<div class="border rounded mb-4 border-secondary col-12"></div>`);
+        this.subCategoryViews = [];
+        if(this.coreElement.subCategories !== undefined) {
+            this.coreElement.subCategories.forEach(subCategory => {
+                var subCategoryView = new CategoryView({ category: subCategory, parent: this});
+                subCategoryView.on("add", (statements, source) => {
+                    this.emit("add", statements, source);
+                });
+
+                subCategoryView.on("remove", (statements, source) => {
+                    this.emit("remove", statements, source);
+                });
+                this.subCategoryViews.push(subCategoryView);
+            })
+        }
 
         this.coreElement.fields.forEach(field => {
             if (this.coreElement.minArity > 0) {
@@ -59,8 +80,10 @@ export class CategoryView extends ViewElement {
                 }
             }
         });
-        this.categoryId = this.coreElement.idPrefix + uuid() + "Category";
-        this.JQueryContentContainer = $(`<div class="card mb-4 border-secondary col-12"></div>`);
+    }
+
+    isASubCategory(): boolean {
+        return this.parent !== undefined && this.parent !== null;
     }
 
     refreshDisplay() {
@@ -74,7 +97,6 @@ export class CategoryView extends ViewElement {
     }
 
     addLine(value?: string[]): void {
-        console.log("addLine", value);
         if (this.underMaximumNumberOfLine()) {
             this.coreElement.fields.forEach(field => {
                 var fieldLine = new FieldView({ core: field, parentCategoryView: this });
@@ -133,14 +155,16 @@ export class CategoryView extends ViewElement {
     render(): JQuery<HTMLElement> {
         var result = $(`<div class="row" id="${this.categoryContentId}"></div>`);
 
-        // Anchor for the navigation bar
-        var catAnchorDiv = $(`<span class="category-anchor" id="${this.categoryId}"></span>`);
-        var navBarHeight = $("#title-row").height();
-        catAnchorDiv.css("height", navBarHeight + "px")
-        catAnchorDiv.css("margin-top", "-" + navBarHeight + "px")
-        this.navItem = this.generateNavItem();
+        if(! this.isASubCategory()) {
+            // Anchor for the navigation bar
+            var catAnchorDiv = $(`<span class="category-anchor" id="${this.categoryId}"></span>`);
+            var navBarHeight = $("#title-row").height();
+            catAnchorDiv.css("height", navBarHeight + "px")
+            catAnchorDiv.css("margin-top", "-" + navBarHeight + "px")
+            this.navItem = this.generateNavItem();
 
-        result.append(catAnchorDiv);
+            result.append(catAnchorDiv);
+        }
 
         // Removing and re-rendering the category content
         const content = this.generateJQueryContent();
@@ -158,29 +182,33 @@ export class CategoryView extends ViewElement {
 
         var result = [];
 
-        const catCardHeader = $(`<h3 class="card-title text-center gx-0 display-6">${this.coreElement.categoryTitle}</h3>`)
-
-        // Recommended badge
-        if(this.coreElement.recommended) {
-            catCardHeader.append($(`<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill fs-6 bg-secondary" title="This feature is recommended to create a minimal description of good quality">Recommended</span>`));
+        var catCardHeader = $(`<div class="row"><p class="col-12 text-center gx-0 display-6">${this.coreElement.categoryTitle}</p></div>`)
+        if(this.isASubCategory()) {
+            catCardHeader = $(`<div class="row"><p class="btn col-12 text-center gx-0 display-7">${this.coreElement.categoryTitle}</p></div>`)
         }
 
+        // // Recommended badge
+        // if(this.coreElement.recommended) {
+        //     catCardHeader.append($(`<span class="position-absolute top-0 end-0 badge rounded-pill fs-6 bg-secondary" title="This feature is recommended to create a minimal description of good quality">Recommended</span>`));
+        // }
+
         // Legend and extract button
-        var catCardControlCol = $(`<div class="col-12"></div>`);
-        var catCardControlInnerRow = $(`<div class="row"></div>`);
-        var catCardLegendCol = $(`<div><p>${this.coreElement.legend}</p></div>`);
+        var catCardControlOuterRow = $(`<div class="row"></div>`);
+        if(this.isASubCategory()) {
+            catCardControlOuterRow.addClass("collapse");
+        }
+        var catCardLegendCol = $(`<div class=".text-wrap"><p>${this.coreElement.legend}</p></div>`);
         var catExtractLineCol = $(`<div></div>`);
         var catExtractButton = $(`<a type="button" class="btn btn-dark" id="${this.inputIdButton}" title="Metadatamatic will try to extract the information from the SPARQL endpoint.">Extract</a> `)
         catExtractLineCol.append(catExtractButton);
-        catCardControlInnerRow.append(catCardLegendCol);
+        catCardControlOuterRow.append(catCardLegendCol);
         if (this.coreElement.computable) {
             catCardLegendCol.addClass("col-10");
             catExtractLineCol.addClass("col-2");
-            catCardControlInnerRow.append(catExtractLineCol);
+            catCardControlOuterRow.append(catExtractLineCol);
         } else {
             catCardLegendCol.addClass("col-12");
         }
-        catCardControlCol.append(catCardControlInnerRow);
 
         catExtractButton.on("click", () => {
             console.log("this.coreElement.fields: ", this.coreElement.fields)
@@ -225,7 +253,10 @@ export class CategoryView extends ViewElement {
 
 
         // Add button
-        var catCardBody = $(`<div class="card-body col-12"></div>`);
+        var catCardBody = $(`<div class="col-12 pb-2"></div>`);
+        if(this.isASubCategory()) {
+            catCardBody.addClass("collapse")
+        }
 
         var catLineControlRow = $(`<div class="row"><div class="col-11"></div></div>`);
         var catAddLineButton = $(`<a type="button" class="btn btn-secondary" id="${addButtonId}" title="Add a new line"><i class="bi bi-file-plus fs-4"></i></a> `)
@@ -264,7 +295,6 @@ export class CategoryView extends ViewElement {
             catErrorDisplayCol.addClass("collapse");
         }
 
-
         // Display the RDF content of the category
         var catDisplay = $(`<pre class="language-turtle"></pre>`);
         this.catDisplayContent = $(`<code class="language-turtle" title="RDF content generated for this category."></code>`);
@@ -299,10 +329,36 @@ export class CategoryView extends ViewElement {
             catAddLineButton.removeClass("d-none");
         }
 
+        // Subcategories
+        if(this.subCategoryViews.length > 0) {
+            var catSubCategoryCol = $(`<div class="row px-3 pt-2"></div>`);
+            this.subCategoryViews.forEach(subCategoryView => {
+                catSubCategoryCol.append(subCategoryView.render());
+            })
+            catCardBody.append(catSubCategoryCol);
+        }
+
         result.push(catCardHeader);
-        result.push(catCardControlCol);
+        result.push(catCardControlOuterRow);
         result.push(catCardBody);
-        result.push(catDisplay);
+        
+        if(! this.isASubCategory()) {
+            result.push(catDisplay);
+        } else {
+            catCardHeader.on("click", () => {
+                if(catCardBody.hasClass("collapse.show")) {
+                    catCardBody.removeClass("collapse.show");
+                    catCardBody.addClass("collapse");
+                    catCardControlOuterRow.removeClass("collapse.show");
+                    catCardControlOuterRow.addClass("collapse");
+                } else {
+                    catCardBody.removeClass("collapse");
+                    catCardBody.addClass("collapse.show");
+                    catCardControlOuterRow.removeClass("collapse");
+                    catCardControlOuterRow.addClass("collapse.show");
+                }
+            })
+        }
 
         return result;
     }
@@ -346,7 +402,7 @@ export class FieldView extends ViewElement {
         }
         this.inputIdButton = this.inputId + "Button";
 
-        this.JQueryContentContainer = $(`<div class="row"></div>`)
+        this.JQueryContentContainer = $(`<div class="row pb-2"></div>`)
     }
 
     getValue() {
@@ -466,7 +522,6 @@ export class FieldView extends ViewElement {
     }
 
     refresh(): void {
-        console.log("refresh", this.inputId)
         this.setValidationState(this.validationState);
         this.changeViewValidationState();
         super.refresh();

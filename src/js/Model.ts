@@ -49,8 +49,9 @@ export class CategoryCore implements CoreElement {
     maxArity: number;
     computable: boolean;
     fields: FieldCore[];
+    subCategories: CategoryCore[];
 
-    constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, computable: false, fields: [] }) {
+    constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, computable: false, fields: [], subCategories: [] }) {
         this.recommended = config.recommended;
         this.categoryTitle = config.categoryTitle;
         this.legend = config.legend;
@@ -61,7 +62,11 @@ export class CategoryCore implements CoreElement {
         this.fields = [];
         config.fields.forEach(fieldConfig => {
             this.addNewField(fieldConfig);
-        })
+        });
+        this.subCategories = [];
+        if(config.subCategories != undefined) {
+            this.subCategories = config.subCategories;
+        }
     }
 
     addNewField(fieldConfig) {
