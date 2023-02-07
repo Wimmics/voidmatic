@@ -160,6 +160,11 @@ export class CategoryView extends ViewElement {
 
         const catCardHeader = $(`<h3 class="card-title text-center gx-0 display-6">${this.coreElement.categoryTitle}</h3>`)
 
+        // Recommended badge
+        if(this.coreElement.recommended) {
+            catCardHeader.append($(`<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill fs-6 bg-secondary" title="This feature is recommended to create a minimal description of good quality">Recommended</span>`));
+        }
+
         // Legend and extract button
         var catCardControlCol = $(`<div class="col-12"></div>`);
         var catCardControlInnerRow = $(`<div class="row"></div>`);
@@ -484,7 +489,7 @@ export class FieldView extends ViewElement {
         // Validation button
         var lineValidButton = $(`<a id="${this.inputIdButton}" type="button" class="btn btn-dark text-truncate" title="Validate this line" tabindex="0">
                 Validate
-            </a>`)
+            </a>`);
         lineValidButton.attr("title", this.validationState.message);
         if (FieldState.isValid(this.validationState)) {
             lineValidButton.removeClass("btn-dark")
