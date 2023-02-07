@@ -284,7 +284,7 @@ export const inputMetadata = [
                     }
                 },
                 dataSuggestionFunction: (inputVal) => {
-                    return suggestions.license;
+                    return [suggestions.license];
                 }
             })
         ]
@@ -341,7 +341,7 @@ export const inputMetadata = [
                         })
                 },
                 dataSuggestionFunction: () => {
-                    return vocabularySuggestions;
+                    return [vocabularySuggestions];
                 }
             })
         ]
@@ -400,7 +400,7 @@ export const inputMetadata = [
                         })
                 },
                 dataSuggestionFunction: (inputVal) => {
-                    return suggestions.lang;
+                    return [suggestions.lang];
                 }
             })
         ]
