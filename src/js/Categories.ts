@@ -3,12 +3,12 @@ import { Statement } from 'rdflib';
 import * as $rdf from 'rdflib';
 
 import * as suggestions from "./suggestions.json";
-import * as Validation from "./Validation.js";
-import * as RDFUtils from "./RDFUtils.js";
-import * as Query from "./QueryUtils.js";
-import { SingleFieldCore, MultipleFieldCore } from './Model.js';
-import { exampleDataset } from './RDFUtils.js';
-import { controlInstance } from "./Control.js";
+import * as Validation from "./Validation.ts";
+import * as RDFUtils from "./RDFUtils.ts";
+import * as Query from "./QueryUtils.ts";
+import { FieldCore, CategoryCore, FieldState } from './Model.ts';
+import { exampleDataset } from './RDFUtils.ts';
+import { controlInstance } from "./Control.ts";
 
 const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
     var result = {
@@ -27,8 +27,8 @@ const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
     return result;
 });
 
-export var inputMetadata = [
-    {
+export const inputMetadata = [
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Title",
         legend: "Short title for the knowledge base and its content.",
@@ -37,14 +37,13 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new MultipleFieldCore({
+            new FieldCore({
                 placeholder: ["Short title for the knowledge base", "Language tag (optional)"],
-                advice: "The short title must be non-empty",
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
-                dataCreationFunction: argArray => {
-                    var inputVal = argArray[0];
-                    var inputTag = argArray[1];
+                dataCreationFunction: valuesArray => {
+                    var inputVal = valuesArray[0];
+                    var inputTag = valuesArray[1];
                     if (inputTag.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
                     } else {
@@ -54,13 +53,17 @@ export var inputMetadata = [
                 dataValidationFunction: valuesArray => {
                     var inputVal = valuesArray[0];
                     var inputTag = valuesArray[1];
-                    var result = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
-                    return result;
+                    var testResult = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
+                    if(testResult) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The short title must be non-empty");
+                    }
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Description",
         legend: "Long description of the knowledge base and its content.",
@@ -69,30 +72,33 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new MultipleFieldCore({
+            new FieldCore({
                 placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
                 defaultValue: ["", "en"],
-                advice: "The description must be non-empty",
                 bootstrapFieldColWidth: [8, 2],
-                dataCreationFunction: argArray => {
-                    var inputVal = argArray[0];
-                    var inputLang = argArray[1];
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
+                    var inputLang = valuesArray[1];
                     if (inputLang.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal, inputLang))];
                     } else {
                         return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal))];
                     }
                 },
-                dataValidationFunction: valuesArray => {
+                dataValidationFunction(valuesArray: string[]): FieldState {
                     var inputVal = valuesArray[0];
                     var inputTag = valuesArray[1];
                     var result = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
-                    return result;
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The description must be non-empty");
+                    }
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Endpoint URL",
         legend: "URL of the SPARQL endpoint.",
@@ -101,21 +107,28 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Endpoint's URL",
-                defaultValue: "",
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isURI(inputVal);
+            new FieldCore({
+                placeholder: ["Endpoint's URL"],
+                defaultValue: [""],
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    var result = Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The URL must direct to a working SPARQL endpoint for the extraction functions to work.");
+                    }
                 },
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [
                         new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal))
                     ];
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Creator",
         legend: "Represents the different actors involved in the creation of the dataset.",
@@ -124,14 +137,20 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Creator's name or URI",
-                defaultValue: "",
-                advice: "The creator must be non-empty",
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+            new FieldCore({
+                placeholder: ["Creator's name or URI"],
+                defaultValue: [""],
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The creator must be non-empty");
+                    }
                 },
-                dataCreationFunction: (inputVal) => {
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
                     }
@@ -142,8 +161,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Publication date",
         legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
@@ -152,20 +171,26 @@ export var inputMetadata = [
         maxArity: 1,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Publication date of the knowledge base.",
-                defaultValue: "",
-                advice: "The date must be non-empty and in the correct format",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Publication date of the knowledge base."],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
+                dataValidationFunction( valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result =  Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The date must be non-empty and in the correct format");
+                    }
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Keywords",
         legend: "Keywords describing the content of the knowledge base.",
@@ -174,11 +199,11 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Keyworks used to describe the knowledge base",
-                defaultValue: "keyword",
-                advice: "The keyword must be non empty",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Keywords used to describe the knowledge base"],
+                defaultValue: ["keyword"],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
                     }
@@ -187,13 +212,19 @@ export var inputMetadata = [
                     }
                     return null;
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The keyword must be non empty");
+                    }
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Version",
         legend: "Current version number of the knowledge base.",
@@ -202,20 +233,26 @@ export var inputMetadata = [
         maxArity: 1,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Current version of the knowledge base",
-                defaultValue: "1.0",
-                advice: "The version must be non empty",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Current version of the knowledge base"],
+                defaultValue: ["1.0"],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The keyword must be non empty");
+                    }
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "License",
         legend: "License of the knowledge base. Use an URI to refer to a license, or a literal to describe the license.",
@@ -224,11 +261,11 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: false,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Reference to the license of the knowledge base",
-                defaultValue: "",
-                advice: "The license must be non empty",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Reference to the license of the knowledge base"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal))];
                     }
@@ -237,16 +274,22 @@ export var inputMetadata = [
                     }
                     return null;
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The license must be non empty");
+                    }
                 },
                 dataSuggestionFunction: (inputVal) => {
-                    return suggestions.license;
+                    return [suggestions.license];
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Vocabularies",
         legend: "URIs of the vocabularies used in the knowledge base.",
@@ -255,15 +298,21 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Vocabularies used in the knowledge base",
-                defaultValue: "",
-                advice: "The vocabulary must be an URI",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Vocabularies used in the knowledge base"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isURI(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The vocabulary must be an URI");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -292,12 +341,12 @@ export var inputMetadata = [
                         })
                 },
                 dataSuggestionFunction: () => {
-                    return vocabularySuggestions;
+                    return [vocabularySuggestions];
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: true,
         categoryTitle: "Languages",
         legend: "Language tags used in the literals of the knowledge base. It is recommended to use the tags used in the language tagged literal, or to follow the <a href='https://www.rfc-editor.org/info/bcp47#section-2.2.9'>RDF1.1 standard</a>.",
@@ -306,15 +355,21 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Language tags used in the literals of the knowledge base.",
-                defaultValue: "",
-                advice: "The vocabulary must be non empty",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Language tags used in the literals of the knowledge base."],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result =  Validation.isLiteral(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The language must be non empty");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -345,48 +400,12 @@ export var inputMetadata = [
                         })
                 },
                 dataSuggestionFunction: (inputVal) => {
-                    return suggestions.lang;
+                    return [suggestions.lang];
                 }
             })
         ]
-    },
-    // {
-    //     recommended: false,
-    //     categoryTitle: "Distributions",
-    //     legend: "Means of distribution of the dataset, other than an endpoint",
-    //     idPrefix: "distribution",
-    //     minArity: 0,
-    //     maxArity: Infinity,
-    //     computable: false,
-    //     fields: [
-    //         new MultipleFieldCore({
-    //             placeholder: ["Name", "URL", "Type"],
-    //             defaultValue: ["", "", "text/turtle"],
-    //             bootstrapFieldColWidth: [4, 5, 2],
-    //             advice: "The name of the distribution must be a literal. The URL must be an URI. The type must be a literal, preferably from <a href='https://www.iana.org/assignments/media-types/'>here</a>. None of the fields can be empty.",
-    //             dataCreationFunction: (inputVal) => {
-    //                 var nameVal = inputVal[0];
-    //                 var urlVal = inputVal[1];
-    //                 var typeVal = inputVal[2];
-    //                 var distribBN = $rdf.sym("https://e.g/#distribution" + uniqueIdCounter++);
-    //                 return [ 
-    //                     new Statement(exampleDataset, DCAT('distribution'), distribBN), 
-    //                     new Statement(distribBN, RDF("type"), DCAT("Distribution")), 
-    //                     new Statement(distribBN, DCAT('accessURL'), $rdf.sym(urlVal)), 
-    //                     new Statement(distribBN, DCT("title"), $rdf.lit(nameVal)),
-    //                     new Statement(distribBN, DCAT("mediaType"), $rdf.lit(typeVal))  
-    //                 ];
-    //             },
-    //             dataValidationFunction: (inputVal) => {
-    //                 var nameVal = inputVal[0];
-    //                 var urlVal = inputVal[1];
-    //                 var typeVal = inputVal[2];
-    //                 return nameVal != undefined && urlVal != undefined && typeVal != undefined && isLiteral(nameVal) && isURI(urlVal) && isLiteral(typeVal);
-    //             }
-    //         })
-    //     ]
-    // },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Graph",
         legend: "Graphs present in the dataset",
@@ -395,11 +414,11 @@ export var inputMetadata = [
         maxArity: Infinity,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Uri of the graph",
-                defaultValue: "",
-                advice: "The name of the graph must be an URI",
-                dataCreationFunction: (inputVal) => {
+            new FieldCore({
+                placeholder: ["Uri of the graph"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
                     var graphNode = $rdf.sym(inputVal);
                     return [
                         new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
@@ -408,8 +427,14 @@ export var inputMetadata = [
                         new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph"))
                     ];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isURI(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isURI(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The name of the graph must be an URI");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -441,8 +466,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Triples",
         legend: "Number of triples present in the dataset",
@@ -451,16 +476,21 @@ export var inputMetadata = [
         maxArity: 1,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Number of triples",
-                defaultValue: "",
-                advice: "The number of triples must be a positive integer number.",
-                dataCreationFunction: (inputVal) => {
-                    var parsedIntValue = Number.parseInt(inputVal);
-                    return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(parsedIntValue, RDFUtils.XSD("integer")))];
+            new FieldCore({
+                placeholder: ["Number of triples"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
+                    return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The number of triples must be a positive integer number.");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -492,8 +522,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Classes",
         legend: "Number of classes present in the dataset",
@@ -502,16 +532,21 @@ export var inputMetadata = [
         maxArity: 1,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Number of classes",
-                defaultValue: "",
-                advice: "The number of classes must be a positive integer number.",
-                dataCreationFunction: (inputVal) => {
-                    var parsedIntValue = Number.parseInt(inputVal);
-                    return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(parsedIntValue, RDFUtils.XSD("integer")))];
+            new FieldCore({
+                placeholder: ["Number of classes"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
+                    return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The number of classes must be a positive integer number.");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -543,8 +578,8 @@ export var inputMetadata = [
                 }
             })
         ]
-    },
-    {
+    }),
+    new CategoryCore({
         recommended: false,
         categoryTitle: "Properties",
         legend: "Number of properties present in the dataset",
@@ -553,16 +588,21 @@ export var inputMetadata = [
         maxArity: 1,
         computable: true,
         fields: [
-            new SingleFieldCore({
-                placeholder: "Number of properties",
-                defaultValue: "",
-                advice: "The number of properties must be a positive integer number.",
-                dataCreationFunction: (inputVal) => {
-                    var parsedIntValue = Number.parseInt(inputVal);
-                    return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(parsedIntValue, RDFUtils.XSD("integer")))];
+            new FieldCore({
+                placeholder: ["Number of properties"],
+                defaultValue: [""],
+                dataCreationFunction( valuesArray: string[]): Statement[] {
+                    var inputVal = valuesArray[0];
+                    return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
-                dataValidationFunction: (inputVal) => {
-                    return Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                dataValidationFunction(valuesArray: string[]): FieldState {
+                    var inputVal = valuesArray[0];
+                    const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
+                    if(result) {
+                        return FieldState.valid();
+                    } else {
+                        return FieldState.invalid("The number of properties must be a positive integer number.");
+                    }
                 },
                 dataExtractionFunction: () => {
                     var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
@@ -594,5 +634,5 @@ export var inputMetadata = [
                 }
             })
         ]
-    }
+    })
 ];
