@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This project is an effort to create a website to make possible for people not familiar with dataset metadata to easily create the description of their dataset in RDF, using the proper vocabularies.
+Metadatamatic is a simple Web application that allows you to create the description of a dataset. It is being provided as a quick and easy way for you to create your own dataset description. This project is an effort to create a website to make possible for people not familiar with dataset metadata to easily create the description of their dataset in RDF, using the proper vocabularies. 
 
 #### Commands
 
