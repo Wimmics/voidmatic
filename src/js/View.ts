@@ -72,11 +72,12 @@ export class CategoryView extends ViewElement {
         this.catDisplayContent.text(content);
     }
 
-    addLine(value?: string): void {
+    addLine(value?: string[]): void {
+        console.log("addLine", value);
         if (this.underMaximumNumberOfLine()) {
             this.coreElement.fields.forEach(field => {
                 var fieldLine = new FieldView({ core: field, parentCategoryView: this });
-                if (value != undefined) {
+                if (value !== undefined) {
                     fieldLine.updateContent(value);
                 }
                 this.lines.set(fieldLine.inputId, fieldLine);
@@ -97,6 +98,8 @@ export class CategoryView extends ViewElement {
                     this.showError(message);
                 })
             })
+            this.refresh();
+            this.refreshDisplay();
         }
     }
 
@@ -170,6 +173,7 @@ export class CategoryView extends ViewElement {
         catCardControlCol.append(catCardControlInnerRow);
 
         catExtractButton.on("click", () => {
+            console.log("this.coreElement.fields: ", this.coreElement.fields)
             this.coreElement.fields.forEach(field => {
                 if (field.dataExtractionFunction != undefined) {
                     try {
@@ -178,12 +182,17 @@ export class CategoryView extends ViewElement {
                         catExtractButton.addClass("btn-warning");
                         catExtractButton.addClass("disabled");
                         extractedValuesPromise.then(extractedValues => {
+                            console.log("extractedValues: ", extractedValues)
                             extractedValues.forEach(value => {
-                                this.addLine(value)
-                                var statement = field.dataCreationFunction(value);
-                                controlInstance.addAllStatements(statement);
-                                this.displayStore.addAll(statement);
-
+                                try {
+                                    var statement = field.dataCreationFunction([value]);
+                                    controlInstance.addAllStatements(statement);
+                                    this.displayStore.addAll(statement);
+                                    this.addLine([value])
+                                } catch (e) {
+                                    console.error(e);
+                                    this.showError(new Error("Error during data creation: " + e.message));
+                                }
                             })
                             catExtractButton.removeClass("btn-warning");
                             catExtractButton.addClass("btn-success");
@@ -197,8 +206,8 @@ export class CategoryView extends ViewElement {
                             console.error(e);
                         });
                     } catch (e) {
-                        this.showError(new Error("Error during data retrieval: " + e.message));
                         console.error(e);
+                        this.showError(new Error("Error during data retrieval: " + e.message));
                     }
                 }
             })
@@ -230,6 +239,8 @@ export class CategoryView extends ViewElement {
                 catErrorDiplayParagraph.text("");
             }
         });
+        catErrorDisplayRow.append(catErrorDisplayCol);
+        catErrorDisplayCol.append(catErrorDiplayParagraph);
 
         this.showError = (message: Error | string) => {
             console.error(message)
