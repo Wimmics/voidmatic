@@ -153,26 +153,28 @@ export class CategoryView extends ViewElement {
         const catCardHeader = $(`<h3 class="card-title text-center gx-0 display-6">${this.coreElement.categoryTitle}</h3>`)
 
         // Legend and extract button
-        var catCardControlRow = $(`<div class="row"></div>`);
+        var catCardControlCol = $(`<div class="col-12"></div>`);
+        var catCardControlInnerRow = $(`<div class="row"></div>`);
         var catCardLegendCol = $(`<div><p>${this.coreElement.legend}</p></div>`);
         var catExtractLineCol = $(`<div></div>`);
-        var catExtractButton = $(`<a type="button" class="btn btn-light" id="${this.inputIdButton}" title="Metadatamatic will try to extract the information from the SPARQL endpoint.">Extract</a> `)
+        var catExtractButton = $(`<a type="button" class="btn btn-dark" id="${this.inputIdButton}" title="Metadatamatic will try to extract the information from the SPARQL endpoint.">Extract</a> `)
         catExtractLineCol.append(catExtractButton);
-        catCardControlRow.append(catCardLegendCol);
+        catCardControlInnerRow.append(catCardLegendCol);
         if (this.coreElement.computable) {
-            catCardLegendCol.addClass("col-11");
-            catExtractLineCol.addClass("col-1");
-            catCardControlRow.append(catExtractLineCol);
+            catCardLegendCol.addClass("col-10");
+            catExtractLineCol.addClass("col-2");
+            catCardControlInnerRow.append(catExtractLineCol);
         } else {
             catCardLegendCol.addClass("col-12");
         }
+        catCardControlCol.append(catCardControlInnerRow);
 
         catExtractButton.on("click", () => {
             this.coreElement.fields.forEach(field => {
                 if (field.dataExtractionFunction != undefined) {
                     try {
                         var extractedValuesPromise = field.dataExtractionFunction();
-                        catExtractButton.removeClass("btn-light");
+                        catExtractButton.removeClass("btn-dark");
                         catExtractButton.addClass("btn-warning");
                         catExtractButton.addClass("disabled");
                         extractedValuesPromise.then(extractedValues => {
@@ -207,7 +209,7 @@ export class CategoryView extends ViewElement {
         var catCardBody = $(`<div class="card-body col-12"></div>`);
 
         var catLineControlRow = $(`<div class="row"><div class="col-11"></div></div>`);
-        var catAddLineButton = $(`<a type="button" class="btn btn-light" id="${addButtonId}" title="Add a new line"><i class="bi bi-file-plus fs-4"></i></a> `)
+        var catAddLineButton = $(`<a type="button" class="btn btn-secondary" id="${addButtonId}" title="Add a new line"><i class="bi bi-file-plus fs-4"></i></a> `)
         var catAddLineButtonCol = $(`<div class="col-1"></div>`);
         catAddLineButtonCol.append(catAddLineButton);
         catLineControlRow.append(catAddLineButtonCol);
@@ -236,18 +238,6 @@ export class CategoryView extends ViewElement {
             catErrorDisplayCol.addClass("collapse.show");
         }
 
-        // Fields
-        var catFieldCol = $(`<div class="row"></div>`);
-        this.lines.forEach((field, id) => {
-            const fieldJqueryContent = field.render();
-            catFieldCol.append(fieldJqueryContent);
-        });
-        if (this.lines.size == this.coreElement.maxArity) {
-            catAddLineButton.addClass("d-none");
-        } else {
-            catAddLineButton.removeClass("d-none");
-        }
-
 
         // Display the RDF content of the category
         var catDisplay = $(`<pre class="language-turtle"></pre>`);
@@ -271,10 +261,20 @@ export class CategoryView extends ViewElement {
 
         catCardBody.append(catLineControlRow)
         catCardBody.append(catErrorDisplayRow)
-        catCardBody.append(catFieldCol);
+
+        // Fields
+        this.lines.forEach((field, id) => {
+            const fieldJqueryContent = field.render();
+            catCardBody.append(fieldJqueryContent);
+        });
+        if (this.lines.size == this.coreElement.maxArity) {
+            catAddLineButton.addClass("d-none");
+        } else {
+            catAddLineButton.removeClass("d-none");
+        }
 
         result.push(catCardHeader);
-        result.push(catCardControlRow);
+        result.push(catCardControlCol);
         result.push(catCardBody);
         result.push(catDisplay);
 
@@ -347,7 +347,6 @@ export class FieldView extends ViewElement {
     }
 
     setValidationState(validationState: FieldState) {
-        console.log("setValidationState", this.inputId)
         if (validationState != undefined && validationState.state != undefined && validationState.message != undefined) {
             this.validationState = validationState;
         } else {
@@ -355,8 +354,7 @@ export class FieldView extends ViewElement {
         }
     }
 
-    setViewValidationState(validationState?: FieldState) {
-        console.log("setViewValidationState", this.inputId)
+    changeViewValidationState(validationState?: FieldState) {
         if (validationState == undefined) {
             validationState = this.validationState;
         }
@@ -364,19 +362,19 @@ export class FieldView extends ViewElement {
         var validationButton = $('#' + this.inputIdButton);
         validationButton.attr("title", validationState.message);
         if (FieldState.isValid(validationState)) {
-            validationButton.removeClass("btn-light")
+            validationButton.removeClass("btn-dark")
             validationButton.removeClass("btn-warning")
             validationButton.removeClass("btn-danger")
             validationButton.addClass("btn-success")
             this.inputIdFields.forEach(id => {
                 var field = $('#' + id);
-                field.removeClass("border-light");
+                field.removeClass("border-dark");
                 field.removeClass("border-danger");
                 field.addClass("border-success");
             })
         }
         else if (FieldState.isInvalid(validationState)) {
-            validationButton.removeClass("btn-light")
+            validationButton.removeClass("btn-dark")
             validationButton.removeClass("btn-warning")
             validationButton.removeClass("btn-success")
             validationButton.addClass("btn-danger")
@@ -384,16 +382,16 @@ export class FieldView extends ViewElement {
                 var field = $('#' + id);
                 field.addClass("border-danger");
                 field.removeClass("border-success");
-                field.removeClass("border-light");
+                field.removeClass("border-dark");
             })
         } else if (FieldState.isNone(validationState)) {
             validationButton.removeClass("btn-success")
             validationButton.removeClass("btn-warning")
             validationButton.removeClass("btn-danger")
-            validationButton.addClass("btn-light")
+            validationButton.addClass("btn-dark")
             this.inputIdFields.forEach(id => {
                 var field = $('#' + id);
-                field.addClass("border-light");
+                field.addClass("border-dark");
                 field.removeClass("border-success");
                 field.removeClass("border-danger");
             })
@@ -403,7 +401,6 @@ export class FieldView extends ViewElement {
     }
 
     validateContent() {
-        console.log("validateContent", this.inputId)
         const validationState = this.coreElement.dataValidationFunction(this.fieldValue);
         var validated = FieldState.isValid(validationState);
         this.setValidationState(validationState);
@@ -421,7 +418,6 @@ export class FieldView extends ViewElement {
     }
 
     updateContent(newValue) {
-        console.log("updateContent", this.inputId)
         var oldValueValidated = false;
         try {
             oldValueValidated = FieldState.isValid(this.coreElement.dataValidationFunction(this.fieldValue));
@@ -434,29 +430,26 @@ export class FieldView extends ViewElement {
         }
         this.fieldValue = newValue;
         this.validateContent();
-        this.setViewValidationState()
+        this.changeViewValidationState()
     }
 
     render(): JQuery<HTMLElement> {
-        console.log("render", this.inputId)
-        console.log("state: ", this.validationState.state, this.inputId);
-        this.setViewValidationState();
+        this.changeViewValidationState();
         return super.render();
     }
 
     refresh(): void {
         console.log("refresh", this.inputId)
         this.setValidationState(this.validationState);
-        this.setViewValidationState();
+        this.changeViewValidationState();
         super.refresh();
     }
 
     generateJQueryContent(): JQuery<HTMLElement>[] {
-        console.log("generateJQueryContent", this.inputId)
         var result = []
         var lineRemoveButtonCol = $(`<div class="col-1">
             </div>`);
-        var lineRemoveButton = $(`<a id="${this.inputIdRemoveButton}" type="button text-truncate" class="btn btn-light" title="Remove this line" tabindex="0">
+        var lineRemoveButton = $(`<a id="${this.inputIdRemoveButton}" type="button text-truncate" class="btn btn-secondary" title="Remove this line" tabindex="0">
                 <i class="bi bi-file-minus fs-4"></i>
             </a>`)
         lineRemoveButtonCol.append(lineRemoveButton);
@@ -467,17 +460,17 @@ export class FieldView extends ViewElement {
         }
 
         // Validation button
-        var lineValidButton = $(`<a id="${this.inputIdButton}" type="button" class="btn btn-light text-truncate" title="Validate this line" tabindex="0">
+        var lineValidButton = $(`<a id="${this.inputIdButton}" type="button" class="btn btn-dark text-truncate" title="Validate this line" tabindex="0">
                 Validate
             </a>`)
         lineValidButton.attr("title", this.validationState.message);
         if (FieldState.isValid(this.validationState)) {
-            lineValidButton.removeClass("btn-light")
+            lineValidButton.removeClass("btn-dark")
             lineValidButton.removeClass("btn-warning")
             lineValidButton.removeClass("btn-danger")
             lineValidButton.addClass("btn-success")
         } else if (FieldState.isInvalid(this.validationState)) {
-            lineValidButton.removeClass("btn-light")
+            lineValidButton.removeClass("btn-dark")
             lineValidButton.removeClass("btn-warning")
             lineValidButton.removeClass("btn-success")
             lineValidButton.addClass("btn-danger")
@@ -485,7 +478,7 @@ export class FieldView extends ViewElement {
             lineValidButton.removeClass("btn-success")
             lineValidButton.removeClass("btn-warning")
             lineValidButton.removeClass("btn-danger")
-            lineValidButton.addClass("btn-light")
+            lineValidButton.addClass("btn-dark")
         } else {
             throw new Error("Unknown validation state: " + this.validationState);
         }
@@ -503,15 +496,15 @@ export class FieldView extends ViewElement {
             var textInput = $(`<input type="text" class="form-control" autocomplete="off" id="${this.inputIdFields[i]}" value="${this.fieldValue[i]}"></input>`);
 
             if (FieldState.isValid(this.validationState)) {
-                textInput.removeClass("border-light");
+                textInput.removeClass("border-dark");
                 textInput.removeClass("border-danger");
                 textInput.addClass("border-success");
             } else if (FieldState.isInvalid(this.validationState)) {
                 textInput.addClass("border-danger");
                 textInput.removeClass("border-success");
-                textInput.removeClass("border-light");
+                textInput.removeClass("border-dark");
             } else if (FieldState.isNone(this.validationState)) {
-                textInput.addClass("border-light");
+                textInput.addClass("border-dark");
                 textInput.removeClass("border-success");
                 textInput.removeClass("border-danger");
             }
@@ -563,7 +556,7 @@ export class FieldView extends ViewElement {
 
         lineValidButton.on("click", () => {
             this.updateContent(fields.map(field => field.val()));
-            this.setViewValidationState();
+            this.changeViewValidationState();
         });
 
         lineRemoveButton.on("click", () => {
