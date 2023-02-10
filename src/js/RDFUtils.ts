@@ -55,6 +55,7 @@ export function createStore() {
     store.setPrefixForURI("mod", "https://w3id.org/mod#");
     store.setPrefixForURI("dcmitype", "http://purl.org/dc/dcmitype/");
     store.setPrefixForURI("schema", "http://schema.org/");
+    store.setPrefixForURI("accessRight", "http://publications.europa.eu/resource/authority/access-right/");
     return store;
 }
 
