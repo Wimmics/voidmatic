@@ -409,6 +409,118 @@ export const inputMetadata = [
     }),
     new CategoryCore({
         recommended: false,
+        categoryTitle: "Rights",
+        legend: "Metadata related to the rights of the dataset",
+        idPrefix: "rights",
+        minArity: 0,
+        maxArity: 0,
+        computable: false,
+        fields: [],
+        subCategories: [
+            new CategoryCore({
+                recommended: false,
+                categoryTitle: "Rights holder",
+                legend: "A person or organization owning or managing rights over the dataset",
+                idPrefix: "properties",
+                minArity: 1,
+                maxArity: Infinity,
+                computable: true,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Person or organization"],
+                        defaultValue: [""],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.sym(inputVal))];
+                            } else {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.literal(inputVal))];
+                            }
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The rights holder must be represented as an URI or a literal.");
+                            }
+                        },
+                        dataSuggestionFunction: () => {
+                            let creatorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("creator"), null);
+                            let contributorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("contributor"), null);
+                            let result = [
+                                creatorArray.map(rightsHolderNode => {
+                                    return {
+                                        value: rightsHolderNode.value,
+                                        label: ""
+                                    }
+                                }).concat(contributorArray.map(rightsHolderNode => {
+                                    return {
+                                        value: rightsHolderNode.value,
+                                        label: ""
+                                    }
+                                }))
+                            ];
+                            return result;
+                        }
+                    })
+                ]
+            }),
+            new CategoryCore({
+                recommended: false,
+                categoryTitle: "Access rights",
+                legend: "Access rights of the dataset",
+                idPrefix: "access_rights",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Access rights"],
+                        defaultValue: [""],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.sym(inputVal))];
+                            } else {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.literal(inputVal))];
+                            }
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The access rights must be represented as an URI or a literal.");
+                            }
+                        },
+                        dataSuggestionFunction: () => {
+                            return [
+                                [
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/PUBLIC",
+                                        label: "Public"
+                                    },
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/RESTRICTED",
+                                        label: "Restricted"
+                                    },
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/NON_PUBLIC",
+                                        label: "Non-public"
+                                    }
+                                ]
+                            ]
+                        }
+                    })
+                ]
+            }),
+        ]
+    }),
+    new CategoryCore({
+        recommended: false,
         categoryTitle: "URIs",
         legend: "Charateristics of the URIs from the dataset",
         idPrefix: "uris",
@@ -806,118 +918,6 @@ export const inputMetadata = [
                         })
                 }
             })
-        ]
-    }),
-    new CategoryCore({
-        recommended: false,
-        categoryTitle: "Rights",
-        legend: "Metadata related to the rights of the dataset",
-        idPrefix: "rights",
-        minArity: 0,
-        maxArity: 0,
-        computable: false,
-        fields: [],
-        subCategories: [
-            new CategoryCore({
-                recommended: false,
-                categoryTitle: "Rights holder",
-                legend: "A person or organization owning or managing rights over the dataset",
-                idPrefix: "properties",
-                minArity: 1,
-                maxArity: Infinity,
-                computable: true,
-                fields: [
-                    new FieldCore({
-                        placeholder: ["Person or organization"],
-                        defaultValue: [""],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
-                            let inputVal = valuesArray[0];
-                            if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.sym(inputVal))];
-                            } else {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.literal(inputVal))];
-                            }
-                        },
-                        dataValidationFunction(valuesArray: string[]): FieldState {
-                            let inputVal = valuesArray[0];
-                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
-                            if (result) {
-                                return FieldState.valid();
-                            } else {
-                                return FieldState.invalid("The rights holder must be represented as an URI or a literal.");
-                            }
-                        },
-                        dataSuggestionFunction: () => {
-                            let creatorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("creator"), null);
-                            let contributorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("contributor"), null);
-                            let result = [
-                                creatorArray.map(rightsHolderNode => {
-                                    return {
-                                        value: rightsHolderNode.value,
-                                        label: ""
-                                    }
-                                }).concat(contributorArray.map(rightsHolderNode => {
-                                    return {
-                                        value: rightsHolderNode.value,
-                                        label: ""
-                                    }
-                                }))
-                            ];
-                            return result;
-                        }
-                    })
-                ]
-            }),
-            new CategoryCore({
-                recommended: false,
-                categoryTitle: "Access rights",
-                legend: "Access rights of the dataset",
-                idPrefix: "access_rights",
-                minArity: 1,
-                maxArity: 1,
-                computable: false,
-                fields: [
-                    new FieldCore({
-                        placeholder: ["Access rights"],
-                        defaultValue: [""],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
-                            let inputVal = valuesArray[0];
-                            if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.sym(inputVal))];
-                            } else {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.literal(inputVal))];
-                            }
-                        },
-                        dataValidationFunction(valuesArray: string[]): FieldState {
-                            let inputVal = valuesArray[0];
-                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
-                            if (result) {
-                                return FieldState.valid();
-                            } else {
-                                return FieldState.invalid("The access rights must be represented as an URI or a literal.");
-                            }
-                        },
-                        dataSuggestionFunction: () => {
-                            return [
-                                [
-                                    {
-                                        value: "http://publications.europa.eu/resource/authority/access-right/PUBLIC",
-                                        label: "Public"
-                                    },
-                                    {
-                                        value: "http://publications.europa.eu/resource/authority/access-right/RESTRICTED",
-                                        label: "Restricted"
-                                    },
-                                    {
-                                        value: "http://publications.europa.eu/resource/authority/access-right/NON_PUBLIC",
-                                        label: "Non-public"
-                                    }
-                                ]
-                            ]
-                        }
-                    })
-                ]
-            }),
         ]
     }),
 ];
