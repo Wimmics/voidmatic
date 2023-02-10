@@ -12,12 +12,12 @@ import { controlInstance } from "./Control.ts";
 import dayjs from 'dayjs';
 
 const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
-    var result = {
+    let result = {
         value: vocabularyObject.nsp,
         label: ""
     }
     if (vocabularyObject.titles.length > 0) {
-        var foundVocabularyTitle = vocabularyObject.titles.find(titleObject => titleObject.lang == "en");
+        let foundVocabularyTitle = vocabularyObject.titles.find(titleObject => titleObject.lang == "en");
         if (foundVocabularyTitle !== undefined) {
             result.label = foundVocabularyTitle.value;
         } else {
@@ -43,8 +43,8 @@ export const inputMetadata = [
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
                 dataCreationFunction: valuesArray => {
-                    var inputVal = valuesArray[0];
-                    var inputTag = valuesArray[1];
+                    let inputVal = valuesArray[0];
+                    let inputTag = valuesArray[1];
                     if (inputTag.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
                     } else {
@@ -52,9 +52,9 @@ export const inputMetadata = [
                     }
                 },
                 dataValidationFunction: valuesArray => {
-                    var inputVal = valuesArray[0];
-                    var inputTag = valuesArray[1];
-                    var testResult = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
+                    let inputVal = valuesArray[0];
+                    let inputTag = valuesArray[1];
+                    let testResult = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
                     if (testResult) {
                         return FieldState.valid();
                     } else {
@@ -78,8 +78,8 @@ export const inputMetadata = [
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    var inputLang = valuesArray[1];
+                    let inputVal = valuesArray[0];
+                    let inputLang = valuesArray[1];
                     if (inputLang.length > 0) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal, inputLang))];
                     } else {
@@ -87,9 +87,9 @@ export const inputMetadata = [
                     }
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    var inputTag = valuesArray[1];
-                    var result = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
+                    let inputVal = valuesArray[0];
+                    let inputTag = valuesArray[1];
+                    let result = Validation.isLiteral(inputVal) && (Validation.isLiteral(inputTag) || inputTag.length == 0);
                     if (result) {
                         return FieldState.valid();
                     } else {
@@ -112,8 +112,8 @@ export const inputMetadata = [
                 placeholder: ["Endpoint's URL"],
                 defaultValue: [""],
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    var result = Validation.isURI(inputVal);
+                    let inputVal = valuesArray[0];
+                    let result = Validation.isURI(inputVal);
                     if (result) {
                         return FieldState.valid();
                     } else {
@@ -121,7 +121,7 @@ export const inputMetadata = [
                     }
                 },
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [
                         new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal))
                     ];
@@ -131,38 +131,48 @@ export const inputMetadata = [
     }),
     new CategoryCore({
         recommended: true,
-        categoryTitle: "Creator",
-        legend: "Represents the different actors involved in the creation of the dataset.",
-        idPrefix: "creator",
-        minArity: 1,
-        maxArity: Infinity,
+        categoryTitle: "Actors",
+        legend: "Represents the different actors involved in the life cycle of the dataset.",
+        idPrefix: "actor",
+        minArity: 0,
+        maxArity: 0,
         computable: false,
-        fields: [
-            new FieldCore({
-                placeholder: ["Creator's name or URI"],
-                defaultValue: [""],
-                dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
-                    if (result) {
-                        return FieldState.valid();
-                    } else {
-                        return FieldState.invalid("The creator must be non-empty");
-                    }
-                },
-                dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    if (Validation.isURI(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
-                    }
-                    if (Validation.isLiteral(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
-                    }
-                    return null;
-                }
-            })
-        ],
+        fields: [],
         subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Creator",
+                legend: "Represents the different actors involved in the creation of the dataset.",
+                idPrefix: "creator",
+                minArity: 1,
+                maxArity: Infinity,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Creator's name or URI"],
+                        defaultValue: [""],
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            let result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The creator must be non-empty");
+                            }
+                        },
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
+                            }
+                            if (Validation.isLiteral(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
+                            }
+                            return null;
+                        }
+                    })
+                ],
+            }),
             new CategoryCore({
                 recommended: false,
                 categoryTitle: "Contributor",
@@ -176,8 +186,8 @@ export const inputMetadata = [
                         placeholder: ["Contributor's name or URI"],
                         defaultValue: [""],
                         dataValidationFunction(valuesArray: string[]): FieldState {
-                            var inputVal = valuesArray[0];
-                            var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                            let inputVal = valuesArray[0];
+                            let result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                             if (result) {
                                 return FieldState.valid();
                             } else {
@@ -185,7 +195,7 @@ export const inputMetadata = [
                             }
                         },
                         dataCreationFunction(valuesArray: string[]): Statement[] {
-                            var inputVal = valuesArray[0];
+                            let inputVal = valuesArray[0];
                             if (Validation.isURI(inputVal)) {
                                 return [new Statement(exampleDataset, RDFUtils.DCT('contributor'), $rdf.sym(inputVal))];
                             }
@@ -201,32 +211,42 @@ export const inputMetadata = [
     }),
     new CategoryCore({
         recommended: true,
-        categoryTitle: "Publication date",
-        legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
-        idPrefix: "publication",
-        minArity: 1,
-        maxArity: 1,
+        categoryTitle: "Dates",
+        legend: "Dates relative to the life cycle of the knowledge base. ",
+        idPrefix: "date",
+        minArity: 0,
+        maxArity: 0,
         computable: false,
-        fields: [
-            new FieldCore({
-                placeholder: ["Publication date of the knowledge base."],
-                defaultValue: [dayjs().format("YYYY-MM-DD")],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
-                },
-                dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
-                    if (result) {
-                        return FieldState.valid();
-                    } else {
-                        return FieldState.invalid("The date must be non-empty and in the correct format");
-                    }
-                }
-            })
-        ],
+        fields: [],
         subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Publication date",
+                legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
+                idPrefix: "publication",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Publication date of the knowledge base."],
+                        defaultValue: [dayjs().format("YYYY-MM-DD")],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The date must be non-empty and in the correct format");
+                            }
+                        }
+                    })
+                ]
+            }),
             new CategoryCore({
                 recommended: false,
                 categoryTitle: "Modification date",
@@ -240,11 +260,11 @@ export const inputMetadata = [
                         placeholder: ["Last modification date of the knowledge base."],
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): Statement[] {
-                            var inputVal = valuesArray[0];
+                            let inputVal = valuesArray[0];
                             return [new Statement(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
-                            var inputVal = valuesArray[0];
+                            let inputVal = valuesArray[0];
                             const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
                             if (result) {
                                 return FieldState.valid();
@@ -268,11 +288,11 @@ export const inputMetadata = [
                         placeholder: ["creation date of the knowledge base."],
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): Statement[] {
-                            var inputVal = valuesArray[0];
+                            let inputVal = valuesArray[0];
                             return [new Statement(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
-                            var inputVal = valuesArray[0];
+                            let inputVal = valuesArray[0];
                             const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
                             if (result) {
                                 return FieldState.valid();
@@ -298,7 +318,7 @@ export const inputMetadata = [
                 placeholder: ["Keywords used to describe the knowledge base"],
                 defaultValue: ["keyword"],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
                     }
@@ -308,7 +328,7 @@ export const inputMetadata = [
                     return null;
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -332,11 +352,11 @@ export const inputMetadata = [
                 placeholder: ["Current version of the knowledge base"],
                 defaultValue: ["1.0"],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -360,9 +380,12 @@ export const inputMetadata = [
                 placeholder: ["Reference to the license of the knowledge base"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal))];
+                        return [
+                            new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal)),
+                            new Statement($rdf.sym(inputVal), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument')),
+                        ];
                     }
                     if (Validation.isLiteral(inputVal)) {
                         return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.lit(inputVal))];
@@ -370,7 +393,7 @@ export const inputMetadata = [
                     return null;
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -382,6 +405,61 @@ export const inputMetadata = [
                     return [suggestions.license];
                 }
             })
+        ]
+    }),
+    new CategoryCore({
+        recommended: false,
+        categoryTitle: "URIs",
+        legend: "Charateristics of the URIs from the dataset",
+        idPrefix: "uris",
+        minArity: 0,
+        maxArity: 0,
+        computable: false,
+        fields: [
+        ],
+        subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Namespace",
+                legend: "Namespace of the URIs created for this dataset.",
+                idPrefix: "title",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Namespace of the URIS", "Preferred prefix for this namespace (optional)"],
+                        defaultValue: ["", ""],
+                        bootstrapFieldColWidth: [7, 3],
+                        dataCreationFunction: valuesArray => {
+                            let inputNs = valuesArray[0];
+                            let inputPrefix = valuesArray[1];
+                            if (inputPrefix.length > 0) {
+                                return [
+                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespacePrefix'), $rdf.sym(inputNs))
+                                ];
+                            } else {
+                                return [
+                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs))
+                                ];
+                            }
+                        },
+                        dataValidationFunction: valuesArray => {
+                            let inputNs = valuesArray[0];
+                            let inputPrefix = valuesArray[1];
+                            let testResult = Validation.isURI(inputNs) && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0);
+                            if (testResult) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The namespace must be a valid URI and the prefix must be a literal.");
+                            }
+                        }
+                    })
+                ]
+            }),
         ]
     }),
     new CategoryCore({
@@ -397,11 +475,11 @@ export const inputMetadata = [
                 placeholder: ["Vocabularies used in the knowledge base"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isURI(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -410,20 +488,20 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s ?elem ?o . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -454,11 +532,11 @@ export const inputMetadata = [
                 placeholder: ["Language tags used in the literals of the knowledge base."],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -467,19 +545,19 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -513,8 +591,8 @@ export const inputMetadata = [
                 placeholder: ["Uri of the graph"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    var graphNode = $rdf.sym(inputVal);
+                    let inputVal = valuesArray[0];
+                    let graphNode = $rdf.sym(inputVal);
                     return [
                         new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
                         new Statement(graphNode, RDFUtils.SD('name'), graphNode),
@@ -523,7 +601,7 @@ export const inputMetadata = [
                     ];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isURI(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -532,19 +610,19 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -575,11 +653,11 @@ export const inputMetadata = [
                 placeholder: ["Number of triples"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -588,19 +666,19 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -631,11 +709,11 @@ export const inputMetadata = [
                 placeholder: ["Number of classes"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -644,19 +722,19 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?c) AS ?count) WHERE { ?s a ?c . FILTER(isURI(?c)) }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -687,11 +765,11 @@ export const inputMetadata = [
                 placeholder: ["Number of properties"],
                 defaultValue: [""],
                 dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
+                    let inputVal = valuesArray[0];
                     const result = Validation.isLiteral(inputVal) && Validation.isPositiveInteger(inputVal);
                     if (result) {
                         return FieldState.valid();
@@ -700,19 +778,19 @@ export const inputMetadata = [
                     }
                 },
                 dataExtractionFunction: () => {
-                    var endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
+                    let endpointArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.VOID("sparqlEndpoint"), null);
                     if (endpointArray.length == 0) {
                         throw new Error("No endpoint found.")
                     }
-                    var promiseArray = [];
+                    let promiseArray = [];
                     endpointArray.forEach(endpointNode => {
-                        var endpointString = endpointNode.value;
+                        let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
                         promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?s ?p ?o . FILTER(isURI(?p)) }'));
                     });
                     return Promise.all(promiseArray)
                         .then(bindingsArray => {
-                            var unifiedBindings = [];
+                            let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
                                     unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
@@ -729,5 +807,117 @@ export const inputMetadata = [
                 }
             })
         ]
-    })
+    }),
+    new CategoryCore({
+        recommended: false,
+        categoryTitle: "Rights",
+        legend: "Metadata related to the rights of the dataset",
+        idPrefix: "rights",
+        minArity: 0,
+        maxArity: 0,
+        computable: false,
+        fields: [],
+        subCategories: [
+            new CategoryCore({
+                recommended: false,
+                categoryTitle: "Rights holder",
+                legend: "A person or organization owning or managing rights over the dataset",
+                idPrefix: "properties",
+                minArity: 1,
+                maxArity: Infinity,
+                computable: true,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Person or organization"],
+                        defaultValue: [""],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.sym(inputVal))];
+                            } else {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.literal(inputVal))];
+                            }
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The rights holder must be represented as an URI or a literal.");
+                            }
+                        },
+                        dataSuggestionFunction: () => {
+                            let creatorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("creator"), null);
+                            let contributorArray = controlInstance.listNodesStore(exampleDataset, RDFUtils.DCT("contributor"), null);
+                            let result = [
+                                creatorArray.map(rightsHolderNode => {
+                                    return {
+                                        value: rightsHolderNode.value,
+                                        label: ""
+                                    }
+                                }).concat(contributorArray.map(rightsHolderNode => {
+                                    return {
+                                        value: rightsHolderNode.value,
+                                        label: ""
+                                    }
+                                }))
+                            ];
+                            return result;
+                        }
+                    })
+                ]
+            }),
+            new CategoryCore({
+                recommended: false,
+                categoryTitle: "Access rights",
+                legend: "Access rights of the dataset",
+                idPrefix: "access_rights",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Access rights"],
+                        defaultValue: [""],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            let inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.sym(inputVal))];
+                            } else {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.literal(inputVal))];
+                            }
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            let inputVal = valuesArray[0];
+                            const result = Validation.isURI(inputVal) || Validation.isLiteral(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The access rights must be represented as an URI or a literal.");
+                            }
+                        },
+                        dataSuggestionFunction: () => {
+                            return [
+                                [
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/PUBLIC",
+                                        label: "Public"
+                                    },
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/RESTRICTED",
+                                        label: "Restricted"
+                                    },
+                                    {
+                                        value: "http://publications.europa.eu/resource/authority/access-right/NON_PUBLIC",
+                                        label: "Non-public"
+                                    }
+                                ]
+                            ]
+                        }
+                    })
+                ]
+            }),
+        ]
+    }),
 ];
