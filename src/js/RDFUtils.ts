@@ -16,6 +16,7 @@ export var SKOS = $rdf.Namespace("http://www.w3.org/2004/02/skos/core#");
 export var PAV = $rdf.Namespace("http://purl.org/pav/");
 export var MOD = $rdf.Namespace("https://w3id.org/mod#");
 export var DCMITYPE = $rdf.Namespace("http://purl.org/dc/dcmitype/");
+export var VANN = $rdf.Namespace("http://purl.org/vocab/vann/");
 
 export var EX = $rdf.Namespace("https://e.g/#");
 

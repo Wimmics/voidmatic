@@ -131,38 +131,48 @@ export const inputMetadata = [
     }),
     new CategoryCore({
         recommended: true,
-        categoryTitle: "Creator",
-        legend: "Represents the different actors involved in the creation of the dataset.",
-        idPrefix: "creator",
-        minArity: 1,
-        maxArity: Infinity,
+        categoryTitle: "Actors",
+        legend: "Represents the different actors involved in the life cycle of the dataset.",
+        idPrefix: "actor",
+        minArity: 0,
+        maxArity: 0,
         computable: false,
-        fields: [
-            new FieldCore({
-                placeholder: ["Creator's name or URI"],
-                defaultValue: [""],
-                dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
-                    if (result) {
-                        return FieldState.valid();
-                    } else {
-                        return FieldState.invalid("The creator must be non-empty");
-                    }
-                },
-                dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    if (Validation.isURI(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
-                    }
-                    if (Validation.isLiteral(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
-                    }
-                    return null;
-                }
-            })
-        ],
+        fields: [],
         subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Creator",
+                legend: "Represents the different actors involved in the creation of the dataset.",
+                idPrefix: "creator",
+                minArity: 1,
+                maxArity: Infinity,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Creator's name or URI"],
+                        defaultValue: [""],
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            var inputVal = valuesArray[0];
+                            var result = Validation.isLiteral(inputVal) || Validation.isURI(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The creator must be non-empty");
+                            }
+                        },
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            var inputVal = valuesArray[0];
+                            if (Validation.isURI(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
+                            }
+                            if (Validation.isLiteral(inputVal)) {
+                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
+                            }
+                            return null;
+                        }
+                    })
+                ],
+            }),
             new CategoryCore({
                 recommended: false,
                 categoryTitle: "Contributor",
@@ -201,32 +211,42 @@ export const inputMetadata = [
     }),
     new CategoryCore({
         recommended: true,
-        categoryTitle: "Publication date",
-        legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
-        idPrefix: "publication",
-        minArity: 1,
-        maxArity: 1,
+        categoryTitle: "Dates",
+        legend: "Dates relative to the life cycle of the knowledge base. ",
+        idPrefix: "date",
+        minArity: 0,
+        maxArity: 0,
         computable: false,
-        fields: [
-            new FieldCore({
-                placeholder: ["Publication date of the knowledge base."],
-                defaultValue: [dayjs().format("YYYY-MM-DD")],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
-                    var inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
-                },
-                dataValidationFunction(valuesArray: string[]): FieldState {
-                    var inputVal = valuesArray[0];
-                    const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
-                    if (result) {
-                        return FieldState.valid();
-                    } else {
-                        return FieldState.invalid("The date must be non-empty and in the correct format");
-                    }
-                }
-            })
-        ],
+        fields: [],
         subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Publication date",
+                legend: "Publication date of the knowledge base. A standard <a href='https://en.wikipedia.org/wiki/ISO_8601'>ISO 8601</a> date is expected, e.g YYYY-MM, YYYY-MM-DD, YYYY-MM-DDThh:mm:ss, etc. ",
+                idPrefix: "publication",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Publication date of the knowledge base."],
+                        defaultValue: [dayjs().format("YYYY-MM-DD")],
+                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                            var inputVal = valuesArray[0];
+                            return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
+                        },
+                        dataValidationFunction(valuesArray: string[]): FieldState {
+                            var inputVal = valuesArray[0];
+                            const result = Validation.isLiteral(inputVal) && Validation.isDatetime(inputVal);
+                            if (result) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The date must be non-empty and in the correct format");
+                            }
+                        }
+                    })
+                ]
+            }),
             new CategoryCore({
                 recommended: false,
                 categoryTitle: "Modification date",
@@ -382,6 +402,61 @@ export const inputMetadata = [
                     return [suggestions.license];
                 }
             })
+        ]
+    }),
+    new CategoryCore({
+        recommended: false,
+        categoryTitle: "URIs",
+        legend: "Charateristics of the URIs from the dataset",
+        idPrefix: "uris",
+        minArity: 0,
+        maxArity: 0,
+        computable: false,
+        fields: [
+        ],
+        subCategories: [
+            new CategoryCore({
+                recommended: true,
+                categoryTitle: "Namespace",
+                legend: "Namespace of the URIs created for this dataset.",
+                idPrefix: "title",
+                minArity: 1,
+                maxArity: 1,
+                computable: false,
+                fields: [
+                    new FieldCore({
+                        placeholder: ["Namespace of the URIS", "Preferred prefix for this namespace (optional)"],
+                        defaultValue: ["", ""],
+                        bootstrapFieldColWidth: [7, 3],
+                        dataCreationFunction: valuesArray => {
+                            var inputNs = valuesArray[0];
+                            var inputPrefix = valuesArray[1];
+                            if (inputPrefix.length > 0) {
+                                return [
+                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespacePrefix'), $rdf.sym(inputNs))
+                                ];
+                            } else {
+                                return [
+                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs))
+                                ];
+                            }
+                        },
+                        dataValidationFunction: valuesArray => {
+                            var inputNs = valuesArray[0];
+                            var inputPrefix = valuesArray[1];
+                            var testResult = Validation.isURI(inputNs) && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0);
+                            if (testResult) {
+                                return FieldState.valid();
+                            } else {
+                                return FieldState.invalid("The namespace must be a valid URI and the prefix must be a literal.");
+                            }
+                        }
+                    })
+                ]
+            }),
         ]
     }),
     new CategoryCore({
@@ -730,4 +805,6 @@ export const inputMetadata = [
             })
         ]
     })
+    // access rights, permissions, right holders etc.  
+	// - Right holders: proposer en valeur par défaut le créateur
 ];
