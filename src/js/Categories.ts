@@ -808,11 +808,6 @@ export const inputMetadata = [
             })
         ]
     }),
-    // access rights, permissions, right holders etc.  
-    // - dct:accessRights
-    //      http://publications.europa.eu/resource/authority/access-right/PUBLIC: public, http://publications.europa.eu/resource/authority/access-right/RESTRICTED :restricted, http://publications.europa.eu/resource/authority/access-right/NON_PUBLIC :non-public
-    // - Right holders: proposer en valeur par défaut le créateur
-    // http://purl.org/dc/terms/rightsHolder suggérer créateur/contributeur
     new CategoryCore({
         recommended: false,
         categoryTitle: "Rights",
@@ -880,7 +875,7 @@ export const inputMetadata = [
                 idPrefix: "access_rights",
                 minArity: 1,
                 maxArity: 1,
-                computable: true,
+                computable: false,
                 fields: [
                     new FieldCore({
                         placeholder: ["Access rights"],
