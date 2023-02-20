@@ -8,6 +8,8 @@ import $ from 'jquery';
 import * as $rdf from 'rdflib';
 import { saveAs } from 'file-saver';
 import { v4 as uuid } from 'uuid';
+import * as bootstrap from 'bootstrap'
+
 
 export let controlInstance;
 
@@ -53,6 +55,66 @@ export class Control {
             var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
             this.forceHTTPSFlag = checkboxValue;
         })
+
+        let loadModelInput = $('#loadTextarea');
+        const loadModal = new bootstrap.Modal('#loadModalDiv', {})
+        $("#loadButton").on("click", () => {
+            loadModal.show();
+        })
+
+        $('#clearLoadButton').on("click", () => {
+            loadModelInput.val("");
+        });
+
+        $('#closeLoadButton').on("click", () => {
+            loadModal.hide();
+        });
+
+        $('#saveLoadButton').on("click", () => {
+            let parsingfunction = undefined;
+            switch ($('#loadFileFormatSelect').val()) {
+                case "jsonld":
+                    parsingfunction = RDFUtils.parseJSONLDToStore;
+                    break;
+                case "nquads":
+                    parsingfunction = RDFUtils.parseNQuadsToStore;
+                    break;
+                case "rdf":
+                    parsingfunction = RDFUtils.parseRDFXMLToStore;
+                    break;
+                case "ntriples":
+                    parsingfunction = RDFUtils.parseNTriplesToStore;
+                    break;
+                case "n3":
+                    parsingfunction = RDFUtils.parseN3ToStore;
+                    break;
+                case "turtle":
+                default:
+                    parsingfunction = RDFUtils.parseTurtleToStore;
+                    break;
+            };
+            parsingfunction(loadModelInput.val(), this.store).then(store => {
+                this.refreshStore();
+
+                function loadCategroyViewValues(catView, store) {
+                    let newLinesValues = [];
+                    catView.coreElement.fields.forEach(line => {
+                        newLinesValues = newLinesValues.concat( line.dataLoadFunction(store));
+                    })
+                    newLinesValues.forEach(newValue => {
+                        catView.addLine(newValue);
+                    })
+                    catView.subCategoryViews.forEach(subCatView => {
+                        loadCategroyViewValues(subCatView, store);
+                    })
+                }
+
+                this.categoryViews.forEach(catView => {
+                    loadCategroyViewValues(catView, store);
+                })
+                loadModal.hide();
+            });
+        });
 
         this.addStatement(new $rdf.Statement(RDFUtils.exampleDataset, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")));
 

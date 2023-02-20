@@ -46,6 +46,44 @@
 </head>
 
 <body>
+    <div class="modal fade" id="loadModalDiv">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <p class="modal-title">Load</p>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-8">
+                            <p>Copy/paste the content of an RDF file to pre-fill the fields of the form</p>
+                        </div>
+                        <div class="col-4">
+                            <label for="loadSelect">File format</label>
+                            <select class="form-select" id="loadFileFormatSelect" name="loadSelect">
+                                <option value="turtle">Turtle</option>
+                                <option value="ntriples">NTriples</option>
+                                <option value="rdf">RDF</option>
+                                <option value="n3">N3</option>
+                                <option value="nquads">NQuads</option>
+                                <option value="jsonld">JSON-LD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <textarea class="form-control" id="loadTextarea" name="loadTextarea">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="clearLoadButton">Clear</button>
+                    <button type="button" class="btn btn-secondary" id="closeLoadButton">Close</button>
+                    <button type="button" class="btn btn-dark" id="saveLoadButton">Save</button>
+                </div>
+            
+            </div>
+        </div>
+    </div>
     <div class='row row-cols-10 border border-gray bg-light sticky-top' id="title-row">
         <div class='col-1'>
         </div>
@@ -86,6 +124,7 @@
 
                     <!-- We could expand giving some info such as: To start, you should firs... As a minimum you'll need to supply ...  -->
                 </p>
+                <button type="button" class="btn btn-dark" id="loadButton">Load content from existing description</button>
                 <div class='row'>
                     <div class='col-12 p-4' id='dataCol'>
                     </div>

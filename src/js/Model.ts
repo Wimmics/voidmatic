@@ -1,4 +1,5 @@
 import { Statement } from "rdflib";
+import * as $rdf from 'rdflib';
 
 
 export class FieldState {
@@ -79,8 +80,15 @@ export interface FieldConfig {
     placeholder: string;
     dataValidationFunction: (inputVal: string[]) => FieldState;
     dataCreationFunction: (inputVal: string[]) => Statement[];
+    /**
+     * This function extract the field value from the endpoint if it is not explicitly given in the dataset.
+     */
     dataExtractionFunction: () => string[];
     dataSuggestionFunction: () => string[];
+    /**
+     * This function load the values of the field that are explicitly given in the store.
+     */
+    dataLoadFunction: (store: $rdf.Store) => string[][];
     parentCategory: CategoryCore | null;
     defaultValue: any;
     advice: string;
@@ -94,6 +102,7 @@ export class FieldCore implements CoreElement {
     dataCreationFunction: (inputVal: string[]) => Statement[];
     dataExtractionFunction: () => string[];
     dataSuggestionFunction: () => string[];
+    dataLoadFunction: (store: $rdf.Store) => string[][];
     parentCategory: CategoryCore | null;
     defaultValue: string[];
     advice: string;
@@ -128,6 +137,15 @@ export class FieldCore implements CoreElement {
             this.dataSuggestionFunction = () => {
                 try {
                     return config.dataSuggestionFunction();
+                } catch (e) {
+                    throw e;
+                }
+            }
+        }
+        if (config.dataLoadFunction != undefined) {
+            this.dataLoadFunction = (store) => {
+                try {
+                    return config.dataLoadFunction(store);
                 } catch (e) {
                     throw e;
                 }
