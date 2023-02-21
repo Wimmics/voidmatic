@@ -842,7 +842,22 @@ export const inputMetadata = [
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.SD('namedGraph'), null).map(statement => [statement.object.value]);
+                    let inputVals = []
+                    let graphNodes = store.statementsMatching(null, RDFUtils.SD('namedGraph'), null).map(statement => statement.object)
+                    let graphBlankNodes = [];
+                    graphNodes.forEach(graphNode => {
+                        if( $rdf.isBlankNode( graphNode)) {
+                            graphBlankNodes.push(graphNode) 
+                        } else if($rdf.isNamedNode(graphNode)) {
+                            inputVals.push([graphNode.value])
+                        }
+                    });
+                    graphBlankNodes.forEach(graphBlankNode => {
+                        let graphName = store.any(graphBlankNode, RDFUtils.SD('name'), null);
+                        if(graphName != undefined) {
+                            inputVals.push([graphName.value])
+                        }
+                    });
                     return inputVals;
                 }
             })
