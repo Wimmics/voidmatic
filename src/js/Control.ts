@@ -1,7 +1,7 @@
 import * as RDFUtils from "./RDFUtils.ts";
 import * as Query from "./QueryUtils.ts";
 import { inputMetadata } from './Categories.ts';
-import { CategoryCore } from './Model.ts';
+import { CategoryCore, FieldState } from './Model.ts';
 import { CategoryView, generateNavItem } from "./View.ts";
 
 import $ from 'jquery';
@@ -71,48 +71,67 @@ export class Control {
         });
 
         $('#saveLoadButton').on("click", () => {
-            let parsingfunction = undefined;
-            switch ($('#loadFileFormatSelect').val()) {
-                case "jsonld":
-                    parsingfunction = RDFUtils.parseJSONLDToStore;
-                    break;
-                case "nquads":
-                    parsingfunction = RDFUtils.parseNQuadsToStore;
-                    break;
-                case "rdf":
-                    parsingfunction = RDFUtils.parseRDFXMLToStore;
-                    break;
-                case "ntriples":
-                    parsingfunction = RDFUtils.parseNTriplesToStore;
-                    break;
-                case "n3":
-                    parsingfunction = RDFUtils.parseN3ToStore;
-                    break;
-                case "turtle":
-                default:
-                    parsingfunction = RDFUtils.parseTurtleToStore;
-                    break;
-            };
-            let parsedStore = RDFUtils.createStore();
-            parsingfunction(loadModelInput.val(), parsedStore).then(store => {
-                function loadCategroyViewValues(catView, store) {
-                    let newLinesValues = [];
-                    catView.coreElement.fields.forEach(line => {
-                        newLinesValues = newLinesValues.concat( line.dataLoadFunction(store));
+            try {
+                let parsingfunction = undefined;
+                switch ($('#loadFileFormatSelect').val()) {
+                    case "jsonld":
+                        parsingfunction = RDFUtils.parseJSONLDToStore;
+                        break;
+                    case "nquads":
+                        parsingfunction = RDFUtils.parseNQuadsToStore;
+                        break;
+                    case "rdf":
+                        parsingfunction = RDFUtils.parseRDFXMLToStore;
+                        break;
+                    case "ntriples":
+                        parsingfunction = RDFUtils.parseNTriplesToStore;
+                        break;
+                    case "n3":
+                        parsingfunction = RDFUtils.parseN3ToStore;
+                        break;
+                    case "turtle":
+                    default:
+                        parsingfunction = RDFUtils.parseTurtleToStore;
+                        break;
+                };
+                let parsedStore = RDFUtils.createStore();
+                parsingfunction(loadModelInput.val(), parsedStore).then(store => {
+                    function loadCategroyViewValues(catView, store) {
+                        let newLinesValues = [];
+                        catView.coreElement.fields.forEach(line => {
+                            newLinesValues = newLinesValues.concat(line.dataLoadFunction(store));
+                        })
+                        newLinesValues.forEach(newValue => {
+                            catView.addLine(newValue);
+                        })
+                        catView.subCategoryViews.forEach(subCatView => {
+                            loadCategroyViewValues(subCatView, store);
+                        })
+                    }
+                    function cleanCategory(catView) {
+                        let lineToBeRemoved = [];
+                        catView.lines.forEach((line, lineId) => {
+                            if (!FieldState.isValid(line.validationState)) {
+                                lineToBeRemoved.push(lineId);
+                            }
+                        })
+                        lineToBeRemoved.forEach(lineId => {
+                            catView.removeLine(lineId);
+                        })
+                        catView.subCategoryViews.forEach(subCatView => {
+                            cleanCategory(subCatView);
+                        })
+                    }
+                    this.categoryViews.forEach(catView => {
+                        cleanCategory(catView);
+                        loadCategroyViewValues(catView, store);
                     })
-                    newLinesValues.forEach(newValue => {
-                        catView.addLine(newValue);
-                    })
-                    catView.subCategoryViews.forEach(subCatView => {
-                        loadCategroyViewValues(subCatView, store);
-                    })
-                }
-
-                this.categoryViews.forEach(catView => {
-                    loadCategroyViewValues(catView, store);
-                })
-                loadModal.hide();
-            });
+                    loadModal.hide();
+                });
+            } catch (e) {
+                console.error(e);
+                $("#loadErrorDiv").text(e.message);
+            }
         });
 
         this.addStatement(new $rdf.Statement(RDFUtils.exampleDataset, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")));

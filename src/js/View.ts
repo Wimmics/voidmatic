@@ -81,7 +81,7 @@ export class CategoryView extends ViewElement {
         this.coreElement.fields.forEach(field => {
             if (this.coreElement.minArity > 0) {
                 for (var nbLine = 0; nbLine < this.coreElement.minArity; nbLine++) {
-                    this.addLine()
+                    this.addLine();
                 }
             }
         });
