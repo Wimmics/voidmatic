@@ -22,7 +22,14 @@ export var EX = $rdf.Namespace("https://e.g/#");
 
 export const exampleDataset = EX('dataset');
 
-
+function unicodeToUrlendcode(text) {
+    return text.replace(/\\u[\dA-F]{4}/gi,
+        function (match) {
+            let unicodeMatch = String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+            let urlEncodedMatch = encodeURIComponent(unicodeMatch);
+            return urlEncodedMatch;
+        });
+}
 
 export function createStore() {
     var store = $rdf.graph();
@@ -79,4 +86,100 @@ export function serializeStoreToNTriplesPromise(store) {
             accept(str)
         }, { namespaces: store.namespaces });
     })
+}
+
+export function parseNTriplesToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "application/n-triples", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function parseN3ToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "text/n3", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function parseTurtleToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "text/turtle", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function parseJSONLDToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "application/ld+json", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function parseNQuadsToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "application/nquads", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+export function parseRDFXMLToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+    return new Promise((accept, reject) => {
+        try {
+            content = unicodeToUrlendcode(content)
+            $rdf.parse(content, store, EX("").value, "application/rdf+xml", (err, kb) => {
+                if (err != null) {
+                    reject(err);
+                }
+                accept(kb);
+            })
+        } catch (error) {
+            reject(error);
+        }
+    });
 }

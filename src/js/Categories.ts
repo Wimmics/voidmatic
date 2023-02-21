@@ -60,6 +60,20 @@ export const inputMetadata = [
                     } else {
                         return FieldState.invalid("The short title must be non-empty");
                     }
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('title'), null).map(statement => statement.object).map(object => {
+                        if($rdf.isLiteral(object)) {
+                            if(object.language !== undefined) {
+                                return [object.value, object.language];
+                            } else {
+                                return [object.value, ""];
+                            }
+                        } 
+                        else {
+                            return [object.value, ""]; // Should never happen
+                        }});
+                    return inputVals;
                 }
             })
         ]
@@ -95,6 +109,20 @@ export const inputMetadata = [
                     } else {
                         return FieldState.invalid("The description must be non-empty");
                     }
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('description'), null).map(statement => statement.object).map(object => {
+                        if($rdf.isLiteral(object)) {
+                            if(object.language !== undefined) {
+                                return [object.value, object.language];
+                            } else {
+                                return [object.value, ""];
+                            }
+                        } 
+                        else {
+                            return [object.value, ""]; // Should never happen
+                        }});
+                    return inputVals;
                 }
             })
         ]
@@ -125,6 +153,10 @@ export const inputMetadata = [
                     return [
                         new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal))
                     ];
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('sparqlEndpoint'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -169,6 +201,10 @@ export const inputMetadata = [
                                 return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
                             }
                             return null;
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('creator'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ],
@@ -203,6 +239,10 @@ export const inputMetadata = [
                                 return [new Statement(exampleDataset, RDFUtils.DCT('contributor'), $rdf.lit(inputVal))];
                             }
                             return null;
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('contributor'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -243,6 +283,10 @@ export const inputMetadata = [
                             } else {
                                 return FieldState.invalid("The date must be non-empty and in the correct format");
                             }
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('issued'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -271,6 +315,10 @@ export const inputMetadata = [
                             } else {
                                 return FieldState.invalid("The date must be non-empty and in the correct format");
                             }
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('modified'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -299,6 +347,10 @@ export const inputMetadata = [
                             } else {
                                 return FieldState.invalid("The date must be non-empty and in the correct format");
                             }
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('created'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -335,6 +387,10 @@ export const inputMetadata = [
                     } else {
                         return FieldState.invalid("The keyword must be non empty");
                     }
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCAT('keyword'), null).concat(store.statementsMatching(null, RDFUtils.DCAT('theme'), null)).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -361,8 +417,12 @@ export const inputMetadata = [
                     if (result) {
                         return FieldState.valid();
                     } else {
-                        return FieldState.invalid("The keyword must be non empty");
+                        return FieldState.invalid("The version must be non empty");
                     }
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCAT('version'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -403,6 +463,10 @@ export const inputMetadata = [
                 },
                 dataSuggestionFunction: (inputVal) => {
                     return [suggestions.license];
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('license'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -463,6 +527,10 @@ export const inputMetadata = [
                                 }))
                             ];
                             return result;
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('rightsHolder'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -513,6 +581,10 @@ export const inputMetadata = [
                                     }
                                 ]
                             ]
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('accessRights'), null).map(statement => [statement.object.value]);
+                            return inputVals;
                         }
                     })
                 ]
@@ -568,6 +640,18 @@ export const inputMetadata = [
                             } else {
                                 return FieldState.invalid("The namespace must be a valid URI and the prefix must be a literal.");
                             }
+                        },
+                        dataLoadFunction(store: $rdf.Store): string[][] {
+                            let inputNs = store.statementsMatching(null, RDFUtils.VOID('uriSpace'), null).map(statement => statement.object.value);
+                            let result = inputNs.map(ns => {
+                                let prefixes = store.statementsMatching($rdf.sym(ns), RDFUtils.VANN('preferredNamespacePrefix'), null).map(statement => statement.object.value);
+                                if (prefixes.length > 0) {
+                                    return [ns,""];
+                                } else {
+                                    return [ns, prefixes[0]];
+                                }
+                            })
+                            return result;
                         }
                     })
                 ]
@@ -627,6 +711,10 @@ export const inputMetadata = [
                 },
                 dataSuggestionFunction: () => {
                     return [vocabularySuggestions];
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -686,6 +774,10 @@ export const inputMetadata = [
                 },
                 dataSuggestionFunction: (inputVal) => {
                     return [suggestions.lang];
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -748,6 +840,10 @@ export const inputMetadata = [
                         .catch(error => {
                             throw error;
                         })
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.SD('namedGraph'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -804,6 +900,10 @@ export const inputMetadata = [
                         .catch(error => {
                             console.error(error);
                         })
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('triples'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -860,6 +960,10 @@ export const inputMetadata = [
                         .catch(error => {
                             console.error(error);
                         })
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('classes'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]
@@ -916,6 +1020,10 @@ export const inputMetadata = [
                         .catch(error => {
                             console.error(error);
                         })
+                },
+                dataLoadFunction(store: $rdf.Store): string[][] {
+                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('properties'), null).map(statement => [statement.object.value]);
+                    return inputVals;
                 }
             })
         ]

@@ -102,41 +102,58 @@ export class CategoryView extends ViewElement {
     }
 
     addLine(value?: string[]): void {
-        if (this.underMaximumNumberOfLine()) {
-            this.coreElement.fields.forEach(field => {
-                var fieldLine = new FieldView({ core: field, parentCategoryView: this });
-                if (value !== undefined) {
-                    fieldLine.updateContent(value);
-                }
-                this.lines.set(fieldLine.inputId, fieldLine);
+
+        function innerAddLine(categoryView, value?: string[]) {
+            categoryView.coreElement.fields.forEach(field => {
+                var fieldLine = new FieldView({ core: field, parentCategoryView: categoryView });
+                categoryView.lines.set(fieldLine.inputId, fieldLine);
 
                 fieldLine.on("add", (statements, source) => {
-                    this.emit("add", statements, source);
+                    categoryView.emit("add", statements, source);
                 });
 
                 fieldLine.on("remove", (statements, source) => {
-                    this.emit("remove", statements, source);
+                    categoryView.emit("remove", statements, source);
                 });
 
                 fieldLine.on("suggestion", (statements, source) => {
-                    this.emit("suggestion", statements, source);
+                    categoryView.emit("suggestion", statements, source);
                 });
 
                 fieldLine.on("error", (message, source) => {
-                    this.showError(message);
+                    categoryView.showError(message);
                 })
 
                 fieldLine.on("validation", (source) => {
-                    this.hideError();
+                    categoryView.hideError();
                 })
+                if (value !== undefined) {
+                    fieldLine.updateContent(value);
+                }
             })
-            this.refresh();
-            this.refreshDisplay();
         }
+
+        // If adding a line put us above the maximum, then we remove the non valid lines
+        if(! this.underOrEqualToMaximumNumberOfLine(1)) {
+            let lineToBeRemoved = [];
+            this.lines.forEach((line, lineId) => {
+                if (!FieldState.isValid(line.validationState)) {
+                    lineToBeRemoved.push(lineId);
+                }
+            })
+            lineToBeRemoved.forEach(lineId => {
+                this.removeLine(lineId);
+            })
+        }
+        if (this.underOrEqualToMaximumNumberOfLine(1) ) {
+            innerAddLine(this, value );
+        }
+        this.refresh();
+        this.refreshDisplay();
     }
 
     removeLine(lineId) {
-        if (this.aboveMinimumNumberOfLines()) {
+        if (this.aboveOrEqualToMinimumNumberOfLines()) {
             if (this.lines.get(lineId) != undefined && this.lines.get(lineId).getRDFData() != undefined) {
                 this.emit("remove", this.lines.get(lineId).getRDFData(), this.lines.get(lineId));
             }
@@ -144,12 +161,12 @@ export class CategoryView extends ViewElement {
         }
     }
 
-    aboveMinimumNumberOfLines() {
-        return this.coreElement.minArity < this.lines.size
+    aboveOrEqualToMinimumNumberOfLines(removedLine = 0) {
+        return this.coreElement.minArity <= (this.lines.size - removedLine)
     }
 
-    underMaximumNumberOfLine() {
-        return this.lines.size < this.coreElement.maxArity;
+    underOrEqualToMaximumNumberOfLine(additionnalLine = 0) {
+        return (this.lines.size + additionnalLine) <= this.coreElement.maxArity;
     }
 
     generateNavItem() {
@@ -501,10 +518,12 @@ export class FieldView extends ViewElement {
 
     updateContent(newValue) {
         var oldValueValidated = false;
-        try {
-            oldValueValidated = FieldState.isValid(this.coreElement.dataValidationFunction(this.fieldValue));
-        } catch (e) {
-            this.emit("error", e, this);
+        if (this.fieldValue !== undefined) {
+            try {
+                oldValueValidated = FieldState.isValid(this.coreElement.dataValidationFunction(this.fieldValue));
+            } catch (e) {
+                this.emit("error", e, this);
+            }
         }
         if (oldValueValidated) {
             var statement = this.coreElement.dataCreationFunction(this.fieldValue);
