@@ -93,9 +93,8 @@ export class Control {
                     parsingfunction = RDFUtils.parseTurtleToStore;
                     break;
             };
-            parsingfunction(loadModelInput.val(), this.store).then(store => {
-                this.refreshStore();
-
+            let parsedStore = RDFUtils.createStore();
+            parsingfunction(loadModelInput.val(), parsedStore).then(store => {
                 function loadCategroyViewValues(catView, store) {
                     let newLinesValues = [];
                     catView.coreElement.fields.forEach(line => {

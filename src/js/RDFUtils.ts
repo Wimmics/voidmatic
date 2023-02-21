@@ -68,7 +68,7 @@ export function createStore() {
 
 export function serializeStoreToTurtlePromise(store) {
     return new Promise((accept, reject) => {
-        $rdf.serialize(null, store, EX("").value, 'text/turtle', function (err, str) {
+        $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {
             if (err != null) {
                 reject(err);
             }
@@ -79,7 +79,7 @@ export function serializeStoreToTurtlePromise(store) {
 
 export function serializeStoreToNTriplesPromise(store) {
     return new Promise((accept, reject) => {
-        $rdf.serialize(null, store, EX("").value, 'application/n-triples', function (err, str) {
+        $rdf.serialize(null, store, undefined, 'application/n-triples', function (err, str) {
             if (err != null) {
                 reject(err);
             }
