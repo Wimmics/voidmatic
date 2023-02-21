@@ -145,7 +145,7 @@ export class FieldCore implements CoreElement {
         if (config.dataLoadFunction != undefined) {
             this.dataLoadFunction = (store) => {
                 try {
-                    return config.dataLoadFunction(store);
+                    return  [ ...new Set( config.dataLoadFunction(store))];
                 } catch (e) {
                     throw e;
                 }
