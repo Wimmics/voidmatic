@@ -776,7 +776,7 @@ export const inputMetadata = [
                     return [suggestions.lang];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
+                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('language'), null).map(statement => [statement.object.value]);
                     return inputVals;
                 }
             })
