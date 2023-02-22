@@ -618,7 +618,7 @@ export const inputMetadata = [
                         dataCreationFunction: valuesArray => {
                             let inputNs = valuesArray[0];
                             let inputPrefix = valuesArray[1];
-                            if (inputPrefix.length > 0) {
+                            if (inputPrefix !== undefined && inputPrefix.length > 0) {
                                 return [
                                     new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
                                     new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs)),
@@ -634,7 +634,7 @@ export const inputMetadata = [
                         dataValidationFunction: valuesArray => {
                             let inputNs = valuesArray[0];
                             let inputPrefix = valuesArray[1];
-                            let testResult = Validation.isURI(inputNs) && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0);
+                            let testResult = Validation.isURI(inputNs) && (inputPrefix !== undefined && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0));
                             if (testResult) {
                                 return FieldState.valid();
                             } else {
