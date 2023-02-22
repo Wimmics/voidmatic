@@ -64,7 +64,6 @@ export class Control {
                 let description = encodeURIComponent(fileContent);
                 let currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set("description", description);
-                console.log(currentUrl.href)
                 Query.fetchPromise("https://foops.linkeddata.es/assessOntology", new Map([["Content-Type", "application/json; charset=utf-8"]]), "POST", '{ "ontologyURI":' + currentUrl.href + '}').then(response => {
                     console.log(response);
                 })
@@ -127,10 +126,8 @@ export class Control {
             if(catView.coreElement.recommended) {
                 totalLines++;
                 if (catView.hasValidLines()) {
-                    console.log(catView.coreElement.categoryTitle, "valid")
                     totalValidLines++;
                 } else {
-                    console.log(catView.coreElement.categoryTitle, "invalid")
                     emptyRecommendedCategoryNames.push(catView.coreElement.categoryTitle);
                 }
             }
@@ -390,11 +387,11 @@ export class Control {
     }
 
     sendMetadatatoServer() {
-        // if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
-        //     RDFUtils.serializeStoreToNTriplesPromise(this.store).then(str => {
-        //         const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
-        //         return Query.fetchJSONPromise(finalUrl).catch(error => { })
-        //     }).catch(error => { })
-        // }
+        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
+            RDFUtils.serializeStoreToNTriplesPromise(this.store).then(str => {
+                const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+                return Query.fetchJSONPromise(finalUrl).catch(error => { })
+            }).catch(error => { })
+        }
     }
 }
