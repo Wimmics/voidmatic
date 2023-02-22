@@ -169,6 +169,19 @@ export class CategoryView extends ViewElement {
         return (this.lines.size + additionnalLine) <= this.coreElement.maxArity;
     }
 
+    hasValidLines() {
+        var valid = false;
+        this.lines.forEach(line => {
+            if (FieldState.isValid(line.validationState)) {
+                valid = true;
+            }
+        })
+        this.subCategoryViews.forEach(subCategory => {
+            valid = valid || subCategory.hasValidLines();
+        })
+        return valid;
+    }
+
     generateNavItem() {
         var navItem = $(`<div class="navbar-item"><a class="navbar-link btn" href="${"#" + this.categoryId}">${this.coreElement.categoryTitle}</a></div>`);
         return navItem;
