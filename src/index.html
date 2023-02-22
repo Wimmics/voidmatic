@@ -72,7 +72,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div id="loadErrorDiv"></div>
-                            <textarea class="form-control" id="loadTextarea" name="loadTextarea">
+                            <textarea class="form-control" id="loadTextarea" name="loadTextarea"></textarea>
                         </div>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
         </div>
         <nav class='navbar navbar-expand-lg col-10 position-static'>
             <div class='row'>
-                <h1 class='text-center my-3 display-1' id="headerTitle">Metadatamatic</h1>
+                <h1 class='text-center my-3 display-1' id="headerTitle"><a class="text-muted text-decoration-none" href=".">Metadatamatic</a></h1>
             </div>
             <div class="navbar-nav row row-cols-auto" id='navCol'>
             </div>
@@ -132,22 +132,30 @@
                 </div>
                 <div class='row'>
                     <div class='col-12 my-3' id='displayCol'>
-                        <div class="row">
-                            <div class="col-6">
+                        <div class="fluid-contained">
                                 <a class="btn btn-dark" id="downloadButton">Download</a>
-                            </div>
-                            <div class="col-6">
                                 <a class="btn btn-dark" id="saturationButton"
                                     title="This will add equivalent classes and properties to the one already given">Apply
                                     equivalences</a>
-                            </div>
+                                <!-- <a class="btn btn-dark" id="fairButton"
+                                    title="This will trigger the evaluation of the FAIRness of your dataset">FAIRness evaluation
+                                </a> -->
+                        </div>
+                        <div class="row my-3" >
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" aria-label="Filled recommended features" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="recommendedProgressBar"></div>
+                              </div>
+                              <p id="recommendedRemark" class="text-center">0% of the recommended features are filled</p>
                         </div>
                         <div class="row">
                             <pre class="language-turtle">
-    <code id="displayTextArea" title="Created RDF content" class="language-turtle" >
-    </code>
+<code id="displayTextArea" title="Created RDF content" class="language-turtle" ></code>
                         </pre>
                         </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class='col-12 my-3' id='fairCol'>
                     </div>
                 </div>
                 <div class="row" vocab="https://schema.org/">

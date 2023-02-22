@@ -210,7 +210,7 @@ export const inputMetadata = [
                 ],
             }),
             new CategoryCore({
-                recommended: false,
+                recommended: true,
                 categoryTitle: "Contributor",
                 legend: "Represents the different actors involved in the modification of the dataset.",
                 idPrefix: "contributor",
@@ -358,7 +358,7 @@ export const inputMetadata = [
         ]
     }),
     new CategoryCore({
-        recommended: true,
+        recommended: false,
         categoryTitle: "Keywords",
         legend: "Keywords describing the content of the knowledge base.",
         idPrefix: "keyword",
