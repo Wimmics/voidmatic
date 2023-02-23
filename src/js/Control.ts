@@ -141,10 +141,10 @@ export class Control {
         if (emptyRecommendedCategoryNames.length > 0) {
             remark = "It is recommended to fill at least the following features: " + emptyRecommendedCategoryNames.join(", ");
         } else if(progress == 100) {
-            remark = "The recommended features are all filled";
+            remark = `The recommended features are all filled.<br/> Do not hesitate to evaluate the FAIRness of your dataset using one of the tools listed at <a target="_blank" rel="noopener noreferrer" href='https://fairassist.org/#!/'>FAIRassist</a>.`;
         }
 
-        $("#recommendedRemark").text(remark);
+        $("#recommendedRemark").html(remark);
     }
 
     importData(data: string, dataFormat?: string) {
