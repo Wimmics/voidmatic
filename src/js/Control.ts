@@ -9,6 +9,7 @@ import * as $rdf from 'rdflib';
 import { saveAs } from 'file-saver';
 import { v4 as uuid } from 'uuid';
 import * as bootstrap from 'bootstrap'
+import { zipurl, unzipurl } from 'zipurl'
 
 
 export let controlInstance;
@@ -47,7 +48,8 @@ export class Control {
 
         // Import a turtle description present in the URL as value of the "description" parameter
         let currentUrl = new URL(window.location.href);
-        let description = currentUrl.searchParams.get("description");
+        let zippedDescription = currentUrl.searchParams.get("description");
+        let description = unzipurl(zippedDescription);
         if (description != null) {
             let decodedDescription = decodeURIComponent(description);
             let parsedStore = RDFUtils.createStore();
@@ -112,7 +114,7 @@ export class Control {
     changeUrlDescriptionParameter() {
         let currentUrl = new URL(window.location.href);
         RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
-            let description = encodeURIComponent(fileContent);
+            let description = zipurl(encodeURIComponent(fileContent));
             currentUrl.searchParams.set("description", description);
             window.history.pushState({}, "", currentUrl.href);
         })
