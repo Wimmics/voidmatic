@@ -1,6 +1,6 @@
-import * as RDFUtils from "./RDFUtils.ts";
-import { FieldState, CoreElement } from './Model.ts';
-import { controlInstance } from "./Control.ts";
+import * as RDFUtils from "./RDFUtils";
+import { FieldState, CoreElement } from './Model';
+import { controlInstance } from "./Control";
 import { Store } from "rdflib";
 
 const EventEmitter = require('events');
