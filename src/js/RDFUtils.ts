@@ -21,6 +21,7 @@ export var VANN = $rdf.Namespace("http://purl.org/vocab/vann/");
 export var EX = $rdf.Namespace("https://e.g/#");
 
 export const exampleDataset = EX('dataset');
+export const exampleDatasetService = EX('dataset-service');
 
 function unicodeToUrlendcode(text) {
     return text.replace(/\\u[\dA-F]{4}/gi,

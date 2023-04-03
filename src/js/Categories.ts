@@ -7,9 +7,10 @@ import * as Validation from "./Validation.ts";
 import * as RDFUtils from "./RDFUtils.ts";
 import * as Query from "./QueryUtils.ts";
 import { FieldCore, CategoryCore, FieldState } from './Model.ts';
-import { exampleDataset } from './RDFUtils.ts';
+import { exampleDataset, exampleDatasetService } from './RDFUtils.ts';
 import { controlInstance } from "./Control.ts";
 import dayjs from 'dayjs';
+import { DCAT } from './RDFUtils';
 
 const vocabularySuggestions = suggestions.vocabulary.map(vocabularyObject => {
     let result = {
@@ -151,7 +152,10 @@ export const inputMetadata = [
                 dataCreationFunction(valuesArray: string[]): Statement[] {
                     let inputVal = valuesArray[0];
                     return [
-                        new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal))
+                        new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal)),
+                        new Statement(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
+                        new Statement(exampleDatasetService, RDFUtils.DCAT('endpointURL'), $rdf.sym(inputVal)),
+                        new Statement(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
                     ];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
@@ -801,7 +805,11 @@ export const inputMetadata = [
                         new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
                         new Statement(graphNode, RDFUtils.SD('name'), graphNode),
                         new Statement(exampleDataset, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
-                        new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph"))
+                        new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph")),
+                        new Statement(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
+                        new Statement(exampleDatasetService, RDFUtils.RDF("type"), RDFUtils.SD("Service")),
+                        new Statement(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
+                        new Statement(exampleDatasetService, RDFUtils.SD("availableGraphs"), exampleDataset),
                     ];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
