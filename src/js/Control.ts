@@ -230,7 +230,7 @@ export class Control {
             result.push(new $rdf.Statement(subject, RDFUtils.RDF("type"), RDFUtils.VOID("Dataset")))
             result.push(new $rdf.Statement(subject, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")))
             result.push(new $rdf.Statement(subject, RDFUtils.RDF("type"), RDFUtils.PROV("Entity")))
-            result.push(new $rdf.Statement(subject, RDFUtils.RDF("type"), RDFUtils.SKOS("Concept")))
+            // result.push(new $rdf.Statement(subject, RDFUtils.RDF("type"), RDFUtils.SKOS("Concept")))
         }
 
         const dctTitleStatement = this.store.anyStatementMatching(null, RDFUtils.DCT("title"), null);
@@ -246,8 +246,8 @@ export class Control {
             const subject = dctDescriptionStatement.subject;
             const object = dctDescriptionStatement.object;
             result.push(new $rdf.Statement(subject, RDFUtils.SCHEMA("description"), object))
-            result.push(new $rdf.Statement(subject, RDFUtils.OWL("comment"), object))
-            result.push(new $rdf.Statement(subject, RDFUtils.SKOS("note"), object))
+            // result.push(new $rdf.Statement(subject, RDFUtils.OWL("comment"), object))
+            // result.push(new $rdf.Statement(subject, RDFUtils.SKOS("note"), object))
         }
 
         const dctCreatorStatement = this.store.anyStatementMatching(null, RDFUtils.DCT("creator"), null);
@@ -279,7 +279,6 @@ export class Control {
             const subject = voidSparqlEndpointStatement.subject;
             const object = voidSparqlEndpointStatement.object;
             result.push(new $rdf.Statement(subject, RDFUtils.SCHEMA("contentURL"), object))
-            result.push(new $rdf.Statement(subject, RDFUtils.DCAT("endpointURL"), object))
         }
 
         const dcatVersionStatement = this.store.anyStatementMatching(null, RDFUtils.DCAT("version"), null);
