@@ -1,0 +1,41 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Metadatamatic
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Pierre
+    family-names: Maillot
+    email: pierre.maillot@inria.fr
+    orcid: 'https://orcid.org/0000-0002-9814-439X'
+  - orcid: 'https://orcid.org/0000-0001-6610-0969'
+    given-names: Olivier
+    family-names: Corby
+  - orcid: 'https://orcid.org/0000-0001-5959-5561'
+    given-names: Catherine
+    family-names: Faron
+  - given-names: Fabien
+    family-names: Gandon
+    orcid: 'https://orcid.org/0000-0003-0543-1232'
+  - given-names: Franck
+    family-names: Michel
+    orcid: 'https://orcid.org/0000-0001-9064-0463'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.7787915
+    description: Zenodo DOI
+repository-code: 'https://github.com/Wimmics/voidmatic'
+url: 'https://wimmics.github.io/voidmatic/'
+abstract: ' Metadatamatic is a simple Web application that allows you to create the description of a dataset. It is being provided as a quick and easy way for you to create your own dataset description. Simply work through the forms on this page and complete whichever details you''d like to add to your description. If you enter the URL of an endpoint, you will be able to extract some of the details of the dataset automatically. The final dataset description is displayed at the bottom of the page. It can be downloaded as a file or copied and pasted into an RDF file. '
+keywords:
+  - metadata
+  - RDF
+  - linked data
+  - provenance
+  - datasets
+  - semantic web
+license: Apache-2.0

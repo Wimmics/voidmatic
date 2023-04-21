@@ -67,7 +67,7 @@ export function createStore() {
     return store;
 }
 
-export function serializeStoreToTurtlePromise(store) {
+export function serializeStoreToTurtlePromise(store): Promise<string> {
     return new Promise((accept, reject) => {
         $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {
             if (err != null) {
@@ -78,7 +78,7 @@ export function serializeStoreToTurtlePromise(store) {
     })
 }
 
-export function serializeStoreToNTriplesPromise(store) {
+export function serializeStoreToNTriplesPromise(store): Promise<string> {
     return new Promise((accept, reject) => {
         $rdf.serialize(null, store, undefined, 'application/n-triples', function (err, str) {
             if (err != null) {

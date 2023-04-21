@@ -1,5 +1,5 @@
 import * as RDFUtils from "./RDFUtils";
-import { FieldState, CoreElement } from './Model';
+import { FieldState, CoreElement, CategoryCore, FieldCore } from './Model';
 import { controlInstance } from "./Control";
 import { Store } from "rdflib";
 
@@ -37,6 +37,11 @@ export class ViewElement extends EventEmitter {
     }
 }
 
+type CategoryViewConfig = {
+    category: CategoryCore,
+    parent?: CategoryView | null
+}
+
 export class CategoryView extends ViewElement {
     parent: CategoryView | null;
     lines: Map<string, FieldView>;
@@ -46,11 +51,12 @@ export class CategoryView extends ViewElement {
     navItem: JQuery<HTMLElement>;
     catDisplayContent: JQuery<HTMLElement>;
     subCategoryViews: CategoryView[];
+    coreElement: CategoryCore;
     collapsed: boolean;
     showError: (message: string | Error) => void;
     hideError: () => void;
 
-    constructor(config = { category: null, parent: null }) {
+    constructor(config: CategoryViewConfig = { category: null, parent: null }) {
         super();
         this.parent = config.parent;
         this.coreElement = config.category;
@@ -134,7 +140,7 @@ export class CategoryView extends ViewElement {
         }
 
         // If adding a line put us above the maximum, then we remove the non valid lines
-        if(! this.underOrEqualToMaximumNumberOfLine(1)) {
+        if (!this.underOrEqualToMaximumNumberOfLine(1)) {
             let lineToBeRemoved = [];
             this.lines.forEach((line, lineId) => {
                 if (!FieldState.isValid(line.validationState)) {
@@ -145,8 +151,8 @@ export class CategoryView extends ViewElement {
                 this.removeLine(lineId);
             })
         }
-        if (this.underOrEqualToMaximumNumberOfLine(1) ) {
-            innerAddLine(this, value );
+        if (this.underOrEqualToMaximumNumberOfLine(1)) {
+            innerAddLine(this, value);
         }
         this.refresh();
         this.refreshDisplay();
@@ -241,34 +247,25 @@ export class CategoryView extends ViewElement {
             this.coreElement.fields.forEach(field => {
                 if (field.dataExtractionFunction != undefined) {
                     try {
-                        var extractedValuesPromise = field.dataExtractionFunction();
+                        var extractedValues = field.dataExtractionFunction();
                         catExtractButton.removeClass("btn-dark");
                         catExtractButton.addClass("btn-warning");
                         catExtractButton.addClass("disabled");
-                        extractedValuesPromise.then(extractedValues => {
-                            console.log("extractedValues: ", extractedValues)
-                            extractedValues.forEach(value => {
-                                try {
-                                    var statement = field.dataCreationFunction([value]);
-                                    controlInstance.addAllStatements(statement);
-                                    this.displayStore.addAll(statement);
-                                    this.addLine([value])
-                                } catch (e) {
-                                    console.error(e);
-                                    this.showError(new Error("Error during data creation: " + e.message));
-                                }
-                            })
-                            catExtractButton.removeClass("btn-warning");
-                            catExtractButton.addClass("btn-success");
-                            catExtractButton.removeClass("disabled");
-                        }).catch(e => {
-                            catExtractButton.removeClass("btn-warning");
-                            catExtractButton.addClass("btn-danger");
-                            catExtractButton.removeClass("disabled");
-
-                            this.showError(new Error("Could not retrieve the data. Have you tried to force the endpoint url into HTTPS ?"));
-                            console.error(e);
-                        });
+                        console.log("extractedValues: ", extractedValues)
+                        extractedValues.forEach(value => {
+                            try {
+                                var statement = field.dataCreationFunction([value]);
+                                controlInstance.addAllStatements(statement);
+                                this.displayStore.addAll(statement);
+                                this.addLine([value])
+                            } catch (e) {
+                                console.error(e);
+                                this.showError(new Error("Error during data creation: " + e.message));
+                            }
+                        })
+                        catExtractButton.removeClass("btn-warning");
+                        catExtractButton.addClass("btn-success");
+                        catExtractButton.removeClass("disabled");
                     } catch (e) {
                         console.error(e);
                         this.showError(new Error("Error during data retrieval: " + e.message));
@@ -406,6 +403,7 @@ export class FieldView extends ViewElement {
     fieldValue: string[];
     validationState: FieldState;
     inputIdButton: string;
+    coreElement: FieldCore;
 
     constructor(config = { core: null, parentCategoryView: null }) {
         super();
