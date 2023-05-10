@@ -49,17 +49,19 @@ export class Control {
         // Import a turtle description present in the URL as value of the "description" parameter
         let currentUrl = new URL(window.location.href);
         let zippedDescription = currentUrl.searchParams.get("description");
-        let description = unzipurl(zippedDescription);
-        if (description != null) {
-            let decodedDescription = decodeURIComponent(description);
-            let parsedStore = RDFUtils.createStore();
-            RDFUtils.parseTurtleToStore(decodedDescription, parsedStore).then(store => {
-                if (parsedStore.length > 0) {
-                    return this.importData(decodedDescription)
-                }
-            }).catch(error => {
-                console.log(error);
-            })
+        if(zippedDescription != null){
+            let description = unzipurl(zippedDescription);
+            if (description != null) {
+                let decodedDescription = decodeURIComponent(description);
+                let parsedStore = RDFUtils.createStore();
+                RDFUtils.parseTurtleToStore(decodedDescription, parsedStore).then(store => {
+                    if (parsedStore.length > 0) {
+                        return this.importData(decodedDescription)
+                    }
+                }).catch(error => {
+                    console.log(error);
+                })
+            }
         }
         $("#fairButton").on("click", () => {
             RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
