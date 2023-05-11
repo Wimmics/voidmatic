@@ -280,7 +280,36 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            if(dayjs(inputVal, [
+                                'YYYY-MM-DD', 
+                                "DD-MM-YYYY", 
+                                'YYYY MM DD', 
+                                "DD MM YYYY", 
+                                'YYYY/MM/DD', 
+                                "DD/MM/YYYY"], true).isValid()) { // This is a date
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
+                            } else if(dayjs(inputVal, [
+                                "YYYY-MM-DD'T'HH:mm:ss", 
+                                "DD-MM-YYYY'T'HH:mm:ss", 
+                                "YYYY-MM-DD HH:mm:ss", 
+                                "DD-MM-YYYY HH:mm:ss", 
+                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
+                                "YYYY-MM-DD HH:mm:ssXXX", 
+                                "DD-MM-YYYY HH:mm:ssXXX", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY HH:mm:ss.SSSXXX"
+                            ]).isValid()) { // This is a date and time
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            } else {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal))];
+                            }
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];
@@ -313,7 +342,36 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            if(dayjs(inputVal, [
+                                'YYYY-MM-DD', 
+                                "DD-MM-YYYY", 
+                                'YYYY MM DD', 
+                                "DD MM YYYY", 
+                                'YYYY/MM/DD', 
+                                "DD/MM/YYYY"], true).isValid()) { // This is a date
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
+                            } else if(dayjs(inputVal, [
+                                "YYYY-MM-DD'T'HH:mm:ss", 
+                                "DD-MM-YYYY'T'HH:mm:ss", 
+                                "YYYY-MM-DD HH:mm:ss", 
+                                "DD-MM-YYYY HH:mm:ss", 
+                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
+                                "YYYY-MM-DD HH:mm:ssXXX", 
+                                "DD-MM-YYYY HH:mm:ssXXX", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY HH:mm:ss.SSSXXX"
+                            ]).isValid()) {  // This is a date and time
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            } else {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal))];
+                            }
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];
@@ -346,7 +404,36 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            if(dayjs(inputVal, [
+                                'YYYY-MM-DD', 
+                                "DD-MM-YYYY", 
+                                'YYYY MM DD', 
+                                "DD MM YYYY", 
+                                'YYYY/MM/DD', 
+                                "DD/MM/YYYY"], true).isValid()) { // This is a date
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
+                            } else if(dayjs(inputVal, [ 
+                                "YYYY-MM-DD'T'HH:mm:ss", 
+                                "DD-MM-YYYY'T'HH:mm:ss", 
+                                "YYYY-MM-DD HH:mm:ss", 
+                                "DD-MM-YYYY HH:mm:ss", 
+                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
+                                "YYYY-MM-DD HH:mm:ssXXX", 
+                                "DD-MM-YYYY HH:mm:ssXXX", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "DD-MM-YYYY HH:mm:ss.SSSXXX"
+                            ]).isValid()) { // This is a date and time
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
+                            } else {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal))];
+                            }
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];

@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { Control } from './Control.ts';
+import { Control } from './Control';
 
 
 $(() => {   
