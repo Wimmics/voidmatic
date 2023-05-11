@@ -247,25 +247,22 @@ export class CategoryView extends ViewElement {
             this.coreElement.fields.forEach(field => {
                 if (field.dataExtractionFunction != undefined) {
                     try {
-                        var extractedValues = field.dataExtractionFunction();
                         catExtractButton.removeClass("btn-dark");
                         catExtractButton.addClass("btn-warning");
                         catExtractButton.addClass("disabled");
-                        console.log("extractedValues: ", extractedValues)
-                        extractedValues.forEach(value => {
-                            try {
-                                var statement = field.dataCreationFunction([value]);
-                                controlInstance.addAllStatements(statement);
-                                this.displayStore.addAll(statement);
-                                this.addLine([value])
-                            } catch (e) {
-                                console.error(e);
-                                this.showError(new Error("Error during data creation: " + e.message));
-                            }
-                        })
-                        catExtractButton.removeClass("btn-warning");
-                        catExtractButton.addClass("btn-success");
-                        catExtractButton.removeClass("disabled");
+                        field.dataExtractionFunction().then(extractedValues => {
+                            extractedValues.forEach(value => {
+                                try {
+                                    this.addLine([value])
+                                } catch (e) {
+                                    console.error(e);
+                                    this.showError(new Error("Error during data creation: " + e.message));
+                                }
+                            })
+                            catExtractButton.removeClass("btn-warning");
+                            catExtractButton.addClass("btn-success");
+                            catExtractButton.removeClass("disabled");
+                        });
                     } catch (e) {
                         console.error(e);
                         this.showError(new Error("Error during data retrieval: " + e.message));
@@ -628,7 +625,7 @@ export class FieldView extends ViewElement {
             result.push(lineFieldCol);
 
             if (this.coreElement.dataSuggestionFunction != undefined) {
-                var items = this.coreElement.dataSuggestionFunction()[i];
+                var items = this.coreElement.dataSuggestionFunction(this.fieldValue)[i];
                 if (items !== undefined && items.length > 0) {
                     new Autocomplete(textInput.get(0), {
                         items: items,
@@ -650,7 +647,7 @@ export class FieldView extends ViewElement {
                 } else {
                     if (items === undefined) {
                         console.error("Undefined items for dataSuggestionFunction of ", i, "th field");
-                        console.error(this.coreElement.dataSuggestionFunction())
+                        console.error(this.coreElement.dataSuggestionFunction(this.fieldValue))
                     }
                 }
             }

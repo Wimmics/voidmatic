@@ -1,14 +1,12 @@
-
-import { Statement } from 'rdflib';
 import * as $rdf from 'rdflib';
 
 import * as suggestions from "./suggestions.json";
-import * as Validation from "./Validation.ts";
-import * as RDFUtils from "./RDFUtils.ts";
-import * as Query from "./QueryUtils.ts";
-import { FieldCore, CategoryCore, FieldState } from './Model.ts';
-import { exampleDataset, exampleDatasetService } from './RDFUtils.ts';
-import { controlInstance } from "./Control.ts";
+import * as Validation from "./Validation";
+import * as RDFUtils from "./RDFUtils";
+import * as Query from "./QueryUtils";
+import { FieldCore, CategoryCore, FieldState, SPARQLJSONResult, JSONValue } from './Model';
+import { exampleDataset, exampleDatasetService } from './RDFUtils';
+import { controlInstance } from "./Control";
 import dayjs from 'dayjs';
 import { DCAT } from './RDFUtils';
 
@@ -47,9 +45,9 @@ export const inputMetadata = [
                     let inputVal = valuesArray[0];
                     let inputTag = valuesArray[1];
                     if (inputTag.length > 0) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
+                        return [ $rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
                     } else {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal))];
+                        return [ $rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal))];
                     }
                 },
                 dataValidationFunction: valuesArray => {
@@ -75,7 +73,8 @@ export const inputMetadata = [
                             return [object.value, ""]; // Should never happen
                         }});
                     return inputVals;
-                }
+                },
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCT('title'), null)]]
             })
         ]
     }),
@@ -92,13 +91,13 @@ export const inputMetadata = [
                 placeholder: ["Long description of the knowledge base", "Language tag (optional)"],
                 defaultValue: ["", "en"],
                 bootstrapFieldColWidth: [8, 2],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
                     let inputLang = valuesArray[1];
                     if (inputLang.length > 0) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal, inputLang))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal, inputLang))];
                     } else {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCT('description'), $rdf.lit(inputVal))];
                     }
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
@@ -124,7 +123,8 @@ export const inputMetadata = [
                             return [object.value, ""]; // Should never happen
                         }});
                     return inputVals;
-                }
+                },
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCT('description'), null)]]
             })
         ]
     }),
@@ -149,19 +149,20 @@ export const inputMetadata = [
                         return FieldState.invalid("The URL must direct to a working SPARQL endpoint for the extraction functions to work.");
                     }
                 },
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
                     return [
-                        new Statement(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal)),
-                        new Statement(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
-                        new Statement(exampleDatasetService, RDFUtils.DCAT('endpointURL'), $rdf.sym(inputVal)),
-                        new Statement(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
+                        $rdf.st(exampleDataset, RDFUtils.VOID('sparqlEndpoint'), $rdf.sym(inputVal)),
+                        $rdf.st(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
+                        $rdf.st(exampleDatasetService, RDFUtils.DCAT('endpointURL'), $rdf.sym(inputVal)),
+                        $rdf.st(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
                     ];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('sparqlEndpoint'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCAT('endpointURL'), null)]]
             })
         ]
     }),
@@ -196,20 +197,21 @@ export const inputMetadata = [
                                 return FieldState.invalid("The creator must be non-empty");
                             }
                         },
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
                             if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('creator'), $rdf.sym(inputVal))];
                             }
                             if (Validation.isLiteral(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('creator'), $rdf.lit(inputVal))];
                             }
                             return null;
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('creator'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('creator'), null)]]
                     })
                 ],
             }),
@@ -234,20 +236,21 @@ export const inputMetadata = [
                                 return FieldState.invalid("The contributor must be non-empty");
                             }
                         },
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
                             if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('contributor'), $rdf.sym(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('contributor'), $rdf.sym(inputVal))];
                             }
                             if (Validation.isLiteral(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('contributor'), $rdf.lit(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('contributor'), $rdf.lit(inputVal))];
                             }
                             return null;
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('contributor'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('contributor'), null)]]
                     })
                 ]
             })
@@ -275,9 +278,9 @@ export const inputMetadata = [
                     new FieldCore({
                         placeholder: ["Publication date of the knowledge base."],
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [new Statement(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
+                            return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];
@@ -291,7 +294,8 @@ export const inputMetadata = [
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('issued'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('issued'), null)]]
                     })
                 ]
             }),
@@ -307,9 +311,9 @@ export const inputMetadata = [
                     new FieldCore({
                         placeholder: ["Last modification date of the knowledge base."],
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [new Statement(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
+                            return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];
@@ -323,7 +327,8 @@ export const inputMetadata = [
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('modified'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('modified'), null)]]
                     })
                 ]
             }),
@@ -339,9 +344,9 @@ export const inputMetadata = [
                     new FieldCore({
                         placeholder: ["creation date of the knowledge base."],
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            return [new Statement(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, RDFUtils.XSD("dateTime")))];
+                            return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
                             let inputVal = valuesArray[0];
@@ -355,7 +360,8 @@ export const inputMetadata = [
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('created'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('created'), null)]]
                     })
                 ]
             })
@@ -373,13 +379,13 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Keywords used to describe the knowledge base"],
                 defaultValue: ["keyword"],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCAT('theme'), $rdf.sym(inputVal))];
                     }
                     if (Validation.isLiteral(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCAT('keyword'), $rdf.lit(inputVal))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCAT('keyword'), $rdf.lit(inputVal))];
                     }
                     return null;
                 },
@@ -395,7 +401,8 @@ export const inputMetadata = [
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.DCAT('keyword'), null).concat(store.statementsMatching(null, RDFUtils.DCAT('theme'), null)).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('theme'), null)] , [$rdf.st(null, RDFUtils.DCAT('keyword'), null)]]
             })
         ]
     }),
@@ -411,9 +418,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Current version of the knowledge base"],
                 defaultValue: ["1.0"],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
+                    return [$rdf.st(exampleDataset, RDFUtils.DCAT('version'), $rdf.lit(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -427,7 +434,8 @@ export const inputMetadata = [
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.DCAT('version'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('version'), null)]]
             })
         ]
     }),
@@ -443,16 +451,16 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Reference to the license of the knowledge base"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
                     if (Validation.isURI(inputVal)) {
                         return [
-                            new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal)),
-                            new Statement($rdf.sym(inputVal), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument')),
+                            $rdf.st(exampleDataset, RDFUtils.DCT('license'), $rdf.sym(inputVal)),
+                            $rdf.st($rdf.sym(inputVal), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument')),
                         ];
                     }
                     if (Validation.isLiteral(inputVal)) {
-                        return [new Statement(exampleDataset, RDFUtils.DCT('license'), $rdf.lit(inputVal))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCT('license'), $rdf.lit(inputVal))];
                     }
                     return null;
                 },
@@ -471,7 +479,8 @@ export const inputMetadata = [
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.DCT('license'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('license'), $rdf.variable("license") ), $rdf.st($rdf.variable("license"), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument'))]]
             })
         ]
     }),
@@ -497,12 +506,12 @@ export const inputMetadata = [
                     new FieldCore({
                         placeholder: ["Person or organization"],
                         defaultValue: [""],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
                             if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.sym(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.sym(inputVal))];
                             } else {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.literal(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('rightsHolder'), $rdf.literal(inputVal))];
                             }
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
@@ -535,7 +544,8 @@ export const inputMetadata = [
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('rightsHolder'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('rightsHolder'), null)]]
                     })
                 ]
             }),
@@ -551,12 +561,12 @@ export const inputMetadata = [
                     new FieldCore({
                         placeholder: ["Access rights"],
                         defaultValue: [""],
-                        dataCreationFunction(valuesArray: string[]): Statement[] {
+                        dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
                             if (Validation.isURI(inputVal)) {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.sym(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.sym(inputVal))];
                             } else {
-                                return [new Statement(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.literal(inputVal))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('accessRights'), $rdf.literal(inputVal))];
                             }
                         },
                         dataValidationFunction(valuesArray: string[]): FieldState {
@@ -568,7 +578,7 @@ export const inputMetadata = [
                                 return FieldState.invalid("The access rights must be represented as an URI or a literal.");
                             }
                         },
-                        dataSuggestionFunction: () => {
+                        dataSuggestionFunction: (inputVal) => {
                             return [
                                 [
                                     {
@@ -589,7 +599,8 @@ export const inputMetadata = [
                         dataLoadFunction(store: $rdf.Store): string[][] {
                             let inputVals = store.statementsMatching(null, RDFUtils.DCT('accessRights'), null).map(statement => [statement.object.value]);
                             return inputVals;
-                        }
+                        },
+                        fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('accessRights'), null)]]
                     })
                 ]
             }),
@@ -624,14 +635,14 @@ export const inputMetadata = [
                             let inputPrefix = valuesArray[1];
                             if (inputPrefix !== undefined && inputPrefix.length > 0) {
                                 return [
-                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
-                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs)),
-                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespacePrefix'), $rdf.sym(inputNs))
+                                    $rdf.st(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    $rdf.st($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs)),
+                                    $rdf.st($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespacePrefix'), $rdf.sym(inputNs))
                                 ];
                             } else {
                                 return [
-                                    new Statement(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
-                                    new Statement($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs))
+                                    $rdf.st(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.sym(inputNs)),
+                                    $rdf.st($rdf.sym(inputNs), RDFUtils.VANN('preferredNamespaceUri'), $rdf.sym(inputNs))
                                 ];
                             }
                         },
@@ -656,7 +667,17 @@ export const inputMetadata = [
                                 }
                             })
                             return result;
-                        }
+                        },
+                        fieldPattern: [ 
+                            [
+                                $rdf.st(null, RDFUtils.VOID('uriSpace'), $rdf.variable("ns")),
+                                $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespaceUri'), null),
+                                $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespacePrefix'), null)
+                            ],[
+                                $rdf.st(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.variable("ns")),
+                                $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespaceUri'), null)
+                            ]
+                        ]
                     })
                 ]
             }),
@@ -674,9 +695,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Vocabularies used in the knowledge base"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
+                    return [$rdf.st(exampleDataset, RDFUtils.VOID('vocabulary'), $rdf.sym(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -696,15 +717,16 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s ?elem ?o . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
+                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s ?elem ?o . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
+                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT ?ns WHERE { { SELECT DISTINCT ?elem { ?s a ?elem . } } BIND(IRI(REPLACE( str(?elem), "(#|/)[^#/]*$", "$1")) AS ?ns) . }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: JSONValue[][] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    unifiedBindings = unifiedBindings.concat(bindings);
                                 }
                             });
                             unifiedBindings = [...(new Set(unifiedBindings))];
@@ -719,7 +741,8 @@ export const inputMetadata = [
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [$rdf.st(null, RDFUtils.VOID('vocabulary'), null)]]
             })
         ]
     }),
@@ -735,9 +758,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Language tags used in the literals of the knowledge base."],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
+                    return [$rdf.st(exampleDataset, RDFUtils.DCT('language'), $rdf.lit(inputVal))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -757,14 +780,15 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT (lang(?o) AS ?tag) WHERE { ?s ?p ?o . FILTER(isLiteral(?o)) FILTER( lang(?o) != "" ) }'));
+                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT (LANG(?o) AS ?tag) WHERE { { SELECT DISTINCT ?o { ?s ?p ?o. FILTER(ISLITERAL(?o)) FILTER((LANG(?o)) != "") } } }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: JSONValue[][] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    unifiedBindings = unifiedBindings.concat(bindings);
                                 }
                             });
                             unifiedBindings = [...(new Set(unifiedBindings))];
@@ -774,6 +798,7 @@ export const inputMetadata = [
                         })
                         .catch(error => {
                             console.error(error);
+                            return [];
                         })
                 },
                 dataSuggestionFunction: (inputVal) => {
@@ -782,7 +807,8 @@ export const inputMetadata = [
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.DCT('language'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('language'), null)]]
             })
         ]
     }),
@@ -798,18 +824,18 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Uri of the graph"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
                     let graphNode = $rdf.sym(inputVal);
                     return [
-                        new Statement(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
-                        new Statement(graphNode, RDFUtils.SD('name'), graphNode),
-                        new Statement(exampleDataset, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
-                        new Statement(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph")),
-                        new Statement(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
-                        new Statement(exampleDatasetService, RDFUtils.RDF("type"), RDFUtils.SD("Service")),
-                        new Statement(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
-                        new Statement(exampleDatasetService, RDFUtils.SD("availableGraphs"), exampleDataset),
+                        $rdf.st(exampleDataset, RDFUtils.SD('namedGraph'), graphNode),
+                        $rdf.st(graphNode, RDFUtils.SD('name'), graphNode),
+                        $rdf.st(exampleDataset, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
+                        $rdf.st(graphNode, RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph")),
+                        $rdf.st(exampleDatasetService, RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
+                        $rdf.st(exampleDatasetService, RDFUtils.RDF("type"), RDFUtils.SD("Service")),
+                        $rdf.st(exampleDatasetService, RDFUtils.DCAT('servesDataset'), exampleDataset),
+                        $rdf.st(exampleDatasetService, RDFUtils.SD("availableGraphs"), exampleDataset),
                     ];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
@@ -830,14 +856,15 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
+                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT ?graph WHERE { GRAPH ?graph { ?s ?p ?o . } }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: JSONValue[][] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
-                                    unifiedBindings = unifiedBindings.concat(bindings.results.bindings);
+                                    unifiedBindings = unifiedBindings.concat(bindings);
                                 }
                             });
                             unifiedBindings = [...(new Set(unifiedBindings))];
@@ -867,7 +894,17 @@ export const inputMetadata = [
                         }
                     });
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [
+                    $rdf.st($rdf.variable('dataset'), RDFUtils.SD('namedGraph'), $rdf.variable('graphNode')),
+                    $rdf.st($rdf.variable('graphNode'), RDFUtils.SD('name'), $rdf.variable('graphNode')),
+                    $rdf.st($rdf.variable('dataset'), RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
+                    $rdf.st($rdf.variable('graphNode'), RDFUtils.RDF("type"), RDFUtils.SD("NamedGraph")),
+                    $rdf.st($rdf.variable('service'), RDFUtils.RDF('type'), RDFUtils.DCAT("DataService")),
+                    $rdf.st($rdf.variable('service'), RDFUtils.RDF("type"), RDFUtils.SD("Service")),
+                    $rdf.st($rdf.variable('service'), RDFUtils.DCAT('servesDataset'), $rdf.variable('dataset')),
+                    $rdf.st($rdf.variable('service'), RDFUtils.SD("availableGraphs"), $rdf.variable('dataset')),
+                ]]
             })
         ]
     }),
@@ -883,9 +920,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of triples"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
+                    return [$rdf.st(exampleDataset, RDFUtils.VOID('triples'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -905,10 +942,11 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } }'));
+                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } } }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: SPARQLJSONResult[] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
@@ -922,12 +960,16 @@ export const inputMetadata = [
                         })
                         .catch(error => {
                             console.error(error);
+                            return [];
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('triples'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [
+                    $rdf.st(null, RDFUtils.VOID('triples'), null)
+                ]]
             })
         ]
     }),
@@ -943,9 +985,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of classes"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
+                    return [$rdf.st(exampleDataset, RDFUtils.VOID('classes'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -965,10 +1007,11 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?c) AS ?count) WHERE { ?s a ?c . FILTER(isURI(?c)) }'));
+                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?c) AS ?count) WHERE { { SELECT DISTINCT ?c { ?s a ?c . FILTER(isURI(?c)) } } }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: SPARQLJSONResult[] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
@@ -982,12 +1025,16 @@ export const inputMetadata = [
                         })
                         .catch(error => {
                             console.error(error);
+                            return [];
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('classes'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [
+                    $rdf.st(null, RDFUtils.VOID('classes'), null)
+                ]]
             })
         ]
     }),
@@ -1003,9 +1050,9 @@ export const inputMetadata = [
             new FieldCore({
                 placeholder: ["Number of properties"],
                 defaultValue: [""],
-                dataCreationFunction(valuesArray: string[]): Statement[] {
+                dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                     let inputVal = valuesArray[0];
-                    return [new Statement(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
+                    return [$rdf.st(exampleDataset, RDFUtils.VOID('properties'), $rdf.literal(inputVal, RDFUtils.XSD("integer")))];
                 },
                 dataValidationFunction(valuesArray: string[]): FieldState {
                     let inputVal = valuesArray[0];
@@ -1025,10 +1072,11 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { ?s ?p ?o . FILTER(isURI(?p)) }'));
+                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (COUNT(DISTINCT ?p) AS ?count) WHERE { { SELECT DISTINCT ?p { ?s ?p ?o . FILTER(isURI(?p)) } } }'));
                     });
-                    return Promise.all(promiseArray)
-                        .then(bindingsArray => {
+                    return Promise.allSettled(promiseArray)
+                        .then(rawBindingsArray => {
+                            let bindingsArray: SPARQLJSONResult[] = Query.extractSettledPromiseValues(rawBindingsArray);
                             let unifiedBindings = [];
                             bindingsArray.forEach(bindings => {
                                 if (bindings != undefined) {
@@ -1042,12 +1090,16 @@ export const inputMetadata = [
                         })
                         .catch(error => {
                             console.error(error);
+                            return [];
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('properties'), null).map(statement => [statement.object.value]);
                     return inputVals;
-                }
+                },
+                fieldPattern: [ [
+                    $rdf.st(null, RDFUtils.VOID('properties'), null)
+                ]]
             })
         ]
     }),
