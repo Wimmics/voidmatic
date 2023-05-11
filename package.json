@@ -5,7 +5,7 @@
     "build": "npx tsc",
     "predeploy": "rm dist/* ./*.js ./*.js.map ./*.css.map ./*.css || true",
     "deploy": "npx parcel build",
-    "postdeploy": "sed 's/\\/index\\./\\.\\/index\\./g' dist/index.html > index.html && rm dist/index.html || true && mv dist/* .",
+    "postdeploy": "sed 's/src=\"\\//src=\"\\.\\//g' dist/index.html > index.html && rm dist/index.html || true && mv dist/* .",
     "dev": "npx parcel serve --https",
     "predev": "rm dist/* || true"
   },
