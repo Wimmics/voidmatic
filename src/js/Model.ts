@@ -1,6 +1,37 @@
 import { Statement } from "rdflib";
 import * as $rdf from 'rdflib';
 
+export type JSONValue =
+    | string
+    | number
+    | boolean
+    | JSONObject
+    | JSONArray;
+
+interface JSONObject {
+    [x: string]: JSONValue;
+}
+
+interface JSONArray extends Array<JSONValue> { }
+
+export type SPARQLJSONResult = {
+    head: {
+        vars: string[]
+    },
+    results: {
+        bindings: {
+            [x: string]: {
+                type: string,
+                value: string
+            }
+        }[]
+    }
+}
+
+export interface SuggestionItem {
+    value: string;
+    label: string;
+}
 
 export class FieldState {
     state: "Valid" | "Invalid" | "None";
@@ -40,19 +71,31 @@ export interface CoreElement {
 
 }
 
+export interface CategoryConfig {
+    recommended: boolean;
+    categoryTitle: string;
+    legend: string | string[];
+    idPrefix: string;
+    minArity: number;
+    maxArity: number;
+    computable: boolean;
+    fields: FieldConfig[];
+    subCategories?: CategoryCore[];
+}
+
 export class CategoryCore implements CoreElement {
 
     recommended: boolean;
     categoryTitle: string;
-    legend: string;
+    legend: string | string[];
     idPrefix: string;
     minArity: number;
     maxArity: number;
     computable: boolean;
     fields: FieldCore[];
-    subCategories: CategoryCore[];
+    subCategories?: CategoryCore[];
 
-    constructor(config = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, computable: false, fields: [], subCategories: [] }) {
+    constructor(config: CategoryConfig = { recommended: false, categoryTitle: "", legend: "", idPrefix: "id", minArity: 0, maxArity: Infinity, computable: false, fields: [], subCategories: [] }) {
         this.recommended = config.recommended;
         this.categoryTitle = config.categoryTitle;
         this.legend = config.legend;
@@ -77,36 +120,43 @@ export class CategoryCore implements CoreElement {
 }
 
 export interface FieldConfig {
-    placeholder: string;
+    placeholder: string[];
     dataValidationFunction: (inputVal: string[]) => FieldState;
     dataCreationFunction: (inputVal: string[]) => Statement[];
     /**
      * This function extract the field value from the endpoint if it is not explicitly given in the dataset.
      */
-    dataExtractionFunction: () => string[];
-    dataSuggestionFunction: () => string[];
+    dataExtractionFunction?: () => Promise<string[]>;
+    dataSuggestionFunction?: (string) => SuggestionItem[][];
     /**
      * This function load the values of the field that are explicitly given in the store.
      */
     dataLoadFunction: (store: $rdf.Store) => string[][];
-    parentCategory: CategoryCore | null;
+    parentCategory?: CategoryCore | null;
     defaultValue: any;
-    advice: string;
+    advice?: string;
     bootstrapFieldColWidth?: number[];
+    /**
+     * This property is used to check if the field is already in the store.
+     * It contains the pattern that is used to check if the field is already in the store.
+     * If several patterns are possible, they are stored in different arrays.
+     */
+    fieldPattern: Statement[][];
 }
 
 export class FieldCore implements CoreElement {
 
-    placeholder: string;
+    placeholder: string[];
     dataValidationFunction: (inputVal: string[]) => FieldState;
     dataCreationFunction: (inputVal: string[]) => Statement[];
-    dataExtractionFunction: () => string[];
-    dataSuggestionFunction: () => string[];
+    dataExtractionFunction?: () => Promise<string[]>;
+    dataSuggestionFunction?: (string) =>  SuggestionItem[][];
     dataLoadFunction: (store: $rdf.Store) => string[][];
-    parentCategory: CategoryCore | null;
+    parentCategory?: CategoryCore | null;
     defaultValue: string[];
-    advice: string;
+    advice?: string;
     bootstrapFieldColWidth: number[] | undefined;
+    fieldPattern: Statement[][];
 
     constructor(config: FieldConfig) {
         this.placeholder = config.placeholder;
@@ -134,9 +184,9 @@ export class FieldCore implements CoreElement {
             }
         }
         if (config.dataSuggestionFunction != undefined) {
-            this.dataSuggestionFunction = () => {
+            this.dataSuggestionFunction = (inputVal) => {
                 try {
-                    return config.dataSuggestionFunction();
+                    return config.dataSuggestionFunction(inputVal);
                 } catch (e) {
                     throw e;
                 }
@@ -159,5 +209,6 @@ export class FieldCore implements CoreElement {
         } else {
             config.bootstrapFieldColWidth = [12];
         }
+        this.fieldPattern = config.fieldPattern;
     }
 }

@@ -1,5 +1,12 @@
 import * as $rdf from 'rdflib';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration.js';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import relativeTime from 'dayjs/plugin/relativeTime.js';
+dayjs.extend(duration);
+dayjs.extend(relativeTime)
+dayjs.extend(customParseFormat)
+dayjs.extend(duration)
 
 export function isLiteral(value: string): boolean {
     try {

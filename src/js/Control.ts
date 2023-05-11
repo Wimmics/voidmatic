@@ -1,7 +1,7 @@
 import * as RDFUtils from "./RDFUtils";
 import * as Query from "./QueryUtils";
 import { inputMetadata } from './Categories';
-import { CategoryCore, FieldState } from './Model';
+import { CategoryCore, FieldCore, FieldState } from './Model';
 import { CategoryView } from "./View";
 
 import $ from 'jquery';
@@ -12,7 +12,7 @@ import * as bootstrap from 'bootstrap'
 import { zipurl, unzipurl } from 'zipurl'
 
 
-export let controlInstance;
+export let controlInstance: Control;
 
 export class Control {
 
@@ -59,20 +59,21 @@ export class Control {
                         return this.importData(decodedDescription)
                     }
                 }).catch(error => {
-                    console.log(error);
+                    console.error(error);
                 })
             }
         }
-        $("#fairButton").on("click", () => {
-            RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
-                let description = encodeURIComponent(fileContent);
-                let currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set("description", description);
-                Query.fetchPromise("https://foops.linkeddata.es/assessOntology", new Map([["Content-Type", "application/json; charset=utf-8"]]), "POST", '{ "ontologyURI":' + currentUrl.href + '}').then(response => {
-                    console.log(response);
-                })
-            })
-        })
+
+        // $("#fairButton").on("click", () => {
+        //     RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
+        //         let description = encodeURIComponent(fileContent);
+        //         let currentUrl = new URL(window.location.href);
+        //         currentUrl.searchParams.set("description", description);
+        //         Query.fetchPromise("https://foops.linkeddata.es/assessOntology", new Map([["Content-Type", "application/json; charset=utf-8"]]), "POST", '{ "ontologyURI":' + currentUrl.href + '}').then(response => {
+        //             console.log(response);
+        //         })
+        //     })
+        // })
 
         $("#saturationButton").on("click", () => {
             const equivalences = this.generateEquivalenceTriples();
@@ -336,17 +337,17 @@ export class Control {
         this.refreshStore();
     }
 
-    removeStatement(statement) {
+    removeStatement(statement: $rdf.Statement) {
         if (this.store.holdsStatement(statement)) {
             this.store.remove(statement);
             this.refreshStore();
         }
     }
 
-    removeAllStatements(statements) {
+    removeAllStatements(statements: $rdf.Statement[]) {
         statements.forEach(statement => {
             if (this.store.holdsStatement(statement)) {
-                this.store.remove(statement);
+                this.store.remove(statements);
             }
             this.refreshStore();
         })
@@ -354,6 +355,10 @@ export class Control {
 
     setDisplay(str) {
         this.contentDisplay.text(str);
+    }
+
+    containsStatement(statement) {
+        return this.store.holdsStatement(statement);
     }
 
     /**
