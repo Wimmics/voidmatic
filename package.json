@@ -2,7 +2,7 @@
   "name": "metadatamatic",
   "source": "src/index.html",
   "scripts": {
-    "build": "npx tsc",
+    "build": "npx parcel build",
     "predeploy": "rm dist/* ./*.js ./*.js.map ./*.css.map ./*.css || true",
     "deploy": "npx parcel build",
     "postdeploy": "sed -e 's/src=\"\\//src=\"\\.\\//g' -e 's/href=\"\\//href=\"\\.\\//g' dist/index.html > index.html && rm dist/index.html || true && mv dist/* .",
