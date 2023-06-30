@@ -1,4 +1,9 @@
 import * as $rdf from 'rdflib';
+import ttl_read from "@graphy/content.ttl.read";
+import nt_read from "@graphy/content.nt.read";
+import nq_read from "@graphy/content.nq.read";
+import trig_read from "@graphy/content.trig.read";
+import {resolve } from "url";
 
 export var RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 export var RDFS = $rdf.Namespace("http://www.w3.org/2000/01/rdf-schema#");
@@ -30,6 +35,30 @@ function unicodeToUrlendcode(text) {
             let urlEncodedMatch = encodeURIComponent(unicodeMatch);
             return urlEncodedMatch;
         });
+}
+
+export function urlIsAbsolute(url: string) {
+    var regex = new RegExp('^(?:[a-z+]+:)?//', 'i');
+    return regex.test(url);
+}
+
+export function sanitizeUrl(url: string, baseURI: string, filename?: string): string {
+    let result = url;
+    if(url.localeCompare("") == 0) {
+        result = filename;
+    }
+    if(! urlIsAbsolute(result)) { 
+        if(filename != null && filename != undefined && filename != "") {
+            result = resolve(filename, result);
+        } else {
+            result = resolve(baseURI, result);
+        }
+    }
+    if (!(result.startsWith("http://") || result.startsWith("https://") || result.startsWith("file://"))) {
+        result = "file://" + result;
+    }
+
+    return result;
 }
 
 export function createStore() {
@@ -132,17 +161,26 @@ export function parseN3ToStore(content: string, store: $rdf.Store): Promise<$rdf
     });
 }
 
-export function parseTurtleToStore(content: string, store: $rdf.Store): Promise<$rdf.Formula> {
+export function parseTurtleToStore(content: string, store: $rdf.Store, base = EX("").value): Promise<$rdf.Formula> {
     return new Promise((accept, reject) => {
         try {
-            content = unicodeToUrlendcode(content)
-            $rdf.parse(content, store, EX("").value, "text/turtle", (err, kb) => {
-                if (err != null) {
-                    reject(err);
+            content = fixCommonTurtleStringErrors(content)
+            ttl_read(content, {
+                baseIRI: base,
+                data(y_quad) {
+                    graphyQuadLoadingToStore(store, y_quad, base, "")
+                },
+                
+                eof(h_prefixes) {
+                    accept(store);
+                },
+                error(error) {
+                    console.error("Error while reading RDF Turtle content using graphy reading function, error", error);
+                    reject(error)
                 }
-                accept(kb);
-            })
+            });
         } catch (error) {
+            console.error("Error while parsing turtle content", content, "error", error);
             reject(error);
         }
     });
@@ -194,4 +232,78 @@ export function parseRDFXMLToStore(content: string, store: $rdf.Store): Promise<
             reject(error);
         }
     });
+}
+
+function graphyQuadLoadingToStore(store: $rdf.Store, y_quad: any, baseURI = EX("").value, filename = EX("").value) {
+    function createValidBlankNode(node, baseURI) {
+        if (node.termType === "BlankNode") {
+            return $rdf.sym(baseURI + "#" + node.value);
+        } else {
+            throw new Error("Invalid node" + node + " expecting blank node");
+        }
+    }
+
+    try {
+        let s = undefined;
+        if (y_quad.subject.termType === "NamedNode") {
+                s = $rdf.sym(sanitizeUrl(y_quad.subject.value, baseURI, filename));
+        } else if (y_quad.subject.termType === "Literal") {
+            if (y_quad.subject.language != null && y_quad.subject.language != undefined && y_quad.subject.language != "") {
+                s = $rdf.lit(y_quad.subject.value, y_quad.subject.language)
+            } else if (y_quad.subject.datatype != null && y_quad.subject.datatype != undefined && y_quad.subject.datatype != "") {
+                s = $rdf.lit(y_quad.subject.value, undefined, $rdf.sym(y_quad.subject.datatype))
+            } else {
+                s = $rdf.lit(y_quad.subject.value)
+            }
+        } else {
+            s = createValidBlankNode(y_quad.subject, baseURI);
+        };
+        const p = $rdf.sym(y_quad.predicate.value);
+        let o = undefined;
+        if (y_quad.object.termType === "NamedNode") {
+            o = $rdf.sym(sanitizeUrl(y_quad.object.value, baseURI, filename));
+        } else if (y_quad.object.termType === "Literal") {
+            if (y_quad.object.language != null && y_quad.object.language != undefined && y_quad.object.language != "") {
+                o = $rdf.lit(y_quad.object.value, y_quad.object.language)
+            } else if (y_quad.object.datatype != null && y_quad.object.datatype != undefined && y_quad.object.datatype != "") {
+                o = $rdf.lit(y_quad.object.value, undefined, $rdf.sym(y_quad.object.datatype))
+            } else {
+                o = $rdf.lit(y_quad.object.value)
+            }
+        } else {
+            o = createValidBlankNode(y_quad.object, baseURI);
+        };
+
+        if (!$rdf.isLiteral(s)) { // The application of RDF reasoning makes appear Literals as subjects, for some reason. We filter them out.
+            if (y_quad.graph.value === '') {
+                store.add(s, p, o);
+            } else {
+                const g = $rdf.sym(y_quad.graph);
+                store.add(s, p, o, g);
+            }
+        }
+    } catch (error) {
+        console.error("Error while loading quad", y_quad, "error", error);
+    }
+}
+
+export const NTriplesContentType = "application/n-triples" as const
+export const NQuadsContentType = "application/nquads" as const
+export const TurtleContentType = "text/turtle" as const
+export const TrigContentType = "application/trig" as const
+
+export type FileContentType = typeof TurtleContentType | typeof NTriplesContentType | typeof NQuadsContentType | typeof TrigContentType;
+
+function getGraphyReadingFunction(contentType: FileContentType) {
+    switch (contentType) {
+        case NQuadsContentType:
+            return nq_read;
+        case NTriplesContentType:
+            return nt_read;
+        case TrigContentType:
+            return trig_read;
+        default:
+        case TurtleContentType:
+            return ttl_read;
+    }
 }

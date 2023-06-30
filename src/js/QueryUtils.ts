@@ -34,8 +34,30 @@ export function fetchPromise(url: string, header: Record<string, string> = {}, m
         });
 }
 
-export function fetchGETPromise(url, header: Record<string, string> = {}): Promise<any> {
-    return fetchPromise(url, header);
+export function fetchGETPromise(url: string, header: Record<string, string> = {}): Promise<string> {
+    return new Promise((resolve, reject) => {
+        let request = new XMLHttpRequest();
+        request.open("GET", url);
+        let myHeaders = {};
+        // myHeaders["pragma"] = "no-cache";
+        // myHeaders["cache-control"] = "no-cache";
+        Object.keys(header).forEach(key => {
+            myHeaders[key] = header[key];
+        });
+        Object.keys(myHeaders).forEach(key => {
+            request.setRequestHeader(key, myHeaders[key]);
+        });
+        request.onreadystatechange = () => {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    resolve(request.responseText);
+                } else {
+                    reject(request.status);
+                }
+            }
+        };
+        request.send();
+    });
 }
 
 export function fetchPOSTPromise(url, query = "", header: Record<string, string> = {}): Promise<any> {
