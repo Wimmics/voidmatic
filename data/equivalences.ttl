@@ -16,6 +16,7 @@
 @prefix mod: <https://w3id.org/mod#> .
 @prefix fabio: <http://purl.org/spar/fabio/> .
 @prefix dcmitype: <http://purl.org/dc/dcmitype/> .
+@prefix dqv: <http://www.w3.org/ns/dqv#> .
 @prefix vann: <http://purl.org/vocab/vann/> .
 @prefix adms: <http://www.w3.org/ns/adms#> .
 @prefix doap: <http://usefulinc.com/ns/doap#> .
