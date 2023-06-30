@@ -67,6 +67,17 @@ export function createStore() {
     return store;
 }
 
+export function fixCommonTurtleStringErrors(ttlString: string): string {
+    const regexBnB = /([ \n])(b[0-9]+) /g;
+    const regexNodeB = /([ \n])(node[0-9]+) /g;
+    let result = ttlString;
+    result = result.replaceAll("nodeID://", "_:"); // Dirty hack to fix nodeID:// from Virtuoso servers for turtle
+    result = result.replaceAll("genid-", "_:"); // Dirty hack to fix blank nodes with genid- prefix
+    result = result.replaceAll(regexBnB, "$1_:$2 "); // Dirty hack to fix blank nodes with b prefix
+    result = result.replaceAll(regexNodeB, "$1_:$2 "); // Dirty hack to fix blank nodes with node prefix
+    return result;
+}
+
 export function serializeStoreToTurtlePromise(store): Promise<string> {
     return new Promise((accept, reject) => {
         $rdf.serialize(null, store, undefined, 'text/turtle', function (err, str) {

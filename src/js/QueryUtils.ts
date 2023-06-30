@@ -1,5 +1,4 @@
-
-import sparqljs from "sparqljs";
+import sparqljs, { AskQuery, ConstructQuery, DescribeQuery, Query, SelectQuery, SparqlQuery, Update } from "sparqljs";
 import * as $rdf from 'rdflib';
 import { JSONValue, SPARQLJSONResult } from "./Model";
 import * as RDFUtils from "./RDFUtils";
@@ -8,10 +7,12 @@ const defaultQueryPaginationSize = 250;
 
 export let defaultQueryTimeout = 60000;
 
-export function fetchPromise(url, header = new Map(), method = "GET", query = "") {
-    let myHeaders = new Headers();
-    header.forEach((value, key) => {
-        myHeaders.set(key, value);
+export function fetchPromise(url: string, header: Record<string, string> = {}, method = "GET", query = "", numTry = 0): Promise<any> {
+    let myHeaders = {};
+    myHeaders["pragma"] = "no-cache";
+    myHeaders["cache-control"] = "no-cache";
+    Object.keys(header).forEach(key => {
+        myHeaders[key] = header[key];
     });
     let myInit: RequestInit = {
         method: method,
@@ -29,56 +30,54 @@ export function fetchPromise(url, header = new Map(), method = "GET", query = ""
                 throw response;
             }
         }).catch(error => {
-            console.error("Fetch ", method, url, query, error.type, error.message)
-            throw error;
-        })
-
+            console.error("Error during fetch", error);
+        });
 }
 
-export function fetchGETPromise(url: string, header = new Map()): Promise<string> {
+export function fetchGETPromise(url, header: Record<string, string> = {}): Promise<any> {
     return fetchPromise(url, header);
 }
 
-export function fetchPOSTPromise(url: string, query = "", header = new Map()): Promise<string> {
+export function fetchPOSTPromise(url, query = "", header: Record<string, string> = {}): Promise<any> {
     return fetchPromise(url, header, "POST", query);
 }
 
-export function fetchJSONPromise(url: string, otherHeaders = new Map()): Promise<JSONValue> {
-    let header = new Map();
-    header.set('Content-Type', 'application/json');
-    otherHeaders.forEach((value, key) => {
-        header.set(key, value)
-    })
-    return fetchPromise(url, header).then(response => {
-        if (response !== null && response !== undefined && response !== "") {
+export function fetchJSONPromise(url, otherHeaders: Record<string, string> = {}): Promise<any> {
+    let header = {};
+    header['accept'] = 'application/json';
+    Object.keys(otherHeaders).forEach(key => {
+        header[key] = otherHeaders[key];
+    });
+    return fetchGETPromise(url, header).then(response => {
+        if (response == null || response == undefined || response == "") {
+            return {};
+        } else {
             try {
                 return JSON.parse(response);
             } catch (error) {
                 console.error(url, error, response)
                 throw error
             }
-        } else {
-            return {};
         }
     });
 }
 
-export function sparqlQueryPromise(endpoint, query, timeout: number = defaultQueryTimeout): Promise<$rdf.Formula | SPARQLJSONResult> {
-    let jsonHeaders = new Map();
-    jsonHeaders.set("Accept", "application/sparql-results+json")
+export function sparqlQueryPromise(endpoint, query, timeout: number = defaultQueryTimeout): Promise<any> {
+    let jsonHeaders = {};
+    jsonHeaders["Accept"] = "application/sparql-results+json";
     if (isSparqlSelect(query)) {
-        return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(error => { console.error(endpoint, query, error); throw error }) as Promise<SPARQLJSONResult>
+        return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(error => { console.error(endpoint, query, error); throw error })
     } else if (isSparqlAsk(query)) {
-        return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(() => { return { boolean: false } }) as Promise<SPARQLJSONResult>
+        return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(() => { return { boolean: false } })
     } else if (isSparqlConstruct(query)) {
-        return fetchGETPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=turtle&timeout=' + timeout)
-            .then(result => {
-                result = result.replaceAll("nodeID://", "_:") // Dirty hack to fix nodeID:// from Virtuoso servers for turtle
-                return RDFUtils.parseTurtleToStore(result, RDFUtils.createStore()).catch(error => {
-                    console.error(endpoint, query, error, result);
-                    throw error;
-                });
-            }).catch(error => { console.error(endpoint, query, error); throw error })
+        return fetchGETPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=turtle&timeout=' + timeout).then(result => {
+            let resultStore = RDFUtils.createStore();
+            result = RDFUtils.fixCommonTurtleStringErrors(result)
+            return RDFUtils.parseTurtleToStore(result, resultStore).catch(error => {
+                console.error(endpoint, query, error, result);
+                return;
+            });
+        }).catch(error => { console.error(endpoint, query, error); throw error })
     } else {
         console.error(new Error("Unexpected query type"))
     }
@@ -88,8 +87,8 @@ export function checkSparqlType(queryString: string, queryType: "CONSTRUCT" | "S
     let parser = new sparqljs.Parser();
     try {
         const parsedQuery = parser.parse(queryString);
-        if (parsedQuery.queryType != undefined) {
-            return (parsedQuery.queryType.localeCompare(queryType) == 0);
+        if ((parsedQuery as Query).queryType != undefined) {
+            return ((parsedQuery as Query).queryType.localeCompare(queryType) == 0);
         } else if (parsedQuery.type != undefined) {
             return (parsedQuery.type.localeCompare(queryType) == 0);
         } else {
@@ -120,6 +119,26 @@ export function isSparqlUpdate(queryString: string): boolean {
     return checkSparqlType(queryString, "update");
 }
 
+export function isSelect(query: SparqlQuery): query is SelectQuery {
+    return (query as SelectQuery).queryType !== undefined && (query as SelectQuery).queryType === 'SELECT';
+}
+
+export function isAsk(query: SparqlQuery): query is AskQuery {
+    return (query as AskQuery).queryType !== undefined && (query as AskQuery).queryType === 'ASK';
+}
+
+export function isConstruct(query: SparqlQuery): query is ConstructQuery {
+    return (query as ConstructQuery).queryType !== undefined && (query as ConstructQuery).queryType === 'CONSTRUCT';
+}
+
+export function isDescribe(query: SparqlQuery): query is DescribeQuery {
+    return (query as DescribeQuery).queryType !== undefined && (query as DescribeQuery).queryType === 'DESCRIBE';
+}
+
+export function isUpdate(query: SparqlQuery): query is Update {
+    return (query as Update).type !== undefined && (query as Update).type === 'update';
+}
+
 
 export function paginatedSparqlQueryPromise(endpointUrl: string, query: string, pageSize: number = defaultQueryPaginationSize, iteration?: number, timeout?: number, finalResult?: $rdf.Formula | Array<JSONValue>): Promise<$rdf.Formula | Array<JSONValue>> {
     let generator = new sparqljs.Generator();
@@ -141,9 +160,11 @@ export function paginatedSparqlQueryPromise(endpointUrl: string, query: string, 
         }
     }
 
-    // We add the OFFSET and LIMIT to the query
-    queryObject.offset = iteration * pageSize;
-    queryObject.limit = pageSize;
+    if (isSelect(queryObject)) {
+        // We add the OFFSET and LIMIT to the query
+        queryObject.offset = iteration * pageSize;
+        queryObject.limit = pageSize;
+    }
 
     let generatedQuery = generator.stringify(queryObject);
 
