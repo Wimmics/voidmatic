@@ -96,23 +96,23 @@ equiv:Constraint a owl:Class ;
     rdfs:label "Constraint" ;
     rdfs:comment "This class is used to describe a constraint of a pattern." .
 
-equiv:isLiteral a equiv:Constraint ;
+equiv:isLiteral a equiv:NodePattern ;
     rdfs:label "Literal constraint" ;
     rdfs:comment "This constraint says that the resource designated by this pattern must be a literal." .
 
-equiv:isIri a equiv:Constraint ;
+equiv:isIri a equiv:NodePattern ;
     rdfs:label "IRI constraint" ;
     rdfs:comment "This constraint says that the resource designated by this pattern must be an IRI." .
 
-equiv:isBlank a equiv:Constraint ;
+equiv:isBlank a equiv:NodePattern ;
     rdfs:label "Blank node constraint" ;
     rdfs:comment "This constraint says that the resource designated by this pattern must be a blank node." .
 
-equiv:targetSubject a equiv:Constraint ;
+equiv:targetSubject a equiv:NodePattern ;
     rdfs:label "Target subject constraint" ;
     rdfs:comment "This constraint says that the subject of the triple pattern must be the subject of any equivalent property." .
 
-equiv:targetObject a equiv:Constraint ;
+equiv:targetObject a equiv:NodePattern ;
     rdfs:label "Target object constraint" ;
     rdfs:comment "This constraint says that the object of the triple pattern must be the object of any equivalent property." .
 

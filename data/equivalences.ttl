@@ -77,7 +77,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Create
+                rdf:type  equiv:NodePattern ,
+                    prov:Create
             ] ;
             equiv:predicate prov:wasAssociatedWith ;
             equiv:object equiv:targetObject
@@ -94,7 +95,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Contribute ,
+                rdf:type equiv:NodePattern , 
+                    prov:Contribute ,
                     prov:Modify
             ] ;
             equiv:predicate prov:wasAssociatedWith ;
@@ -113,7 +115,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Publish
+                rdf:type equiv:NodePattern ,
+                    prov:Publish
             ] ;
             equiv:predicate prov:endedAtTime ;
             equiv:object equiv:targetObject
@@ -130,7 +133,7 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Publish
+                rdf:type equiv:NodePattern, prov:Publish
             ] ;
             equiv:predicate prov:wasAssociatedWith ;
             equiv:object equiv:targetObject
@@ -146,7 +149,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Create
+                rdf:type equiv:NodePattern , 
+                    prov:Create
             ] ;
             equiv:predicate prov:endedAtTime ;
             equiv:object equiv:targetObject
@@ -160,7 +164,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Create
+                rdf:type equiv:NodePattern , 
+                    prov:Create
             ] ;
             equiv:predicate prov:atLocation ;
             equiv:object equiv:targetObject
@@ -175,7 +180,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
             equiv:subject [
-                rdf:type prov:Create
+                rdf:type equiv:NodePattern , 
+                    prov:Create
             ] ;
             equiv:predicate prov:wasAssociatedWith ;
             equiv:object equiv:targetObject
@@ -191,7 +197,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
                 equiv:subject [
-                    rdf:type prov:Modify
+                    rdf:type equiv:NodePattern , 
+                        prov:Modify
                 ] ;
                 equiv:predicate prov:endedAtTime ;
                 equiv:object equiv:targetObject
@@ -202,7 +209,8 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:predicate schema:wasGeneratedBy ;
         equiv:object [ 
                 equiv:subject [
-                    rdf:type prov:Modify
+                    rdf:type  equiv:NodePattern ,
+                        prov:Modify
                 ] ;
                 equiv:predicate prov:startedAtTime ;
                 equiv:object equiv:targetObject
@@ -245,7 +253,7 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:subject equiv:targetSubject ;
         equiv:predicate dcat:distribution ;
         equiv:object [
-            equiv:subject [] ;
+            equiv:subject [ rdf:type equiv:NodePattern ] ;
             equiv:predicate dcat:downloadURL ;
             equiv:object equiv:targetObject
         ]
@@ -253,7 +261,7 @@ mod:URI equiv:impliedProperty :identifier .
         equiv:subject equiv:targetSubject ;
         equiv:predicate schema:distribution ;
         equiv:object [
-            equiv:subject [] ;
+            equiv:subject [ rdf:type equiv:NodePattern ] ;
             equiv:predicate schema:contentUrl ;
             equiv:object equiv:targetObject
         ]
