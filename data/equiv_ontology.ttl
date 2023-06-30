@@ -1,0 +1,135 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <http://schema.org/> .
+@prefix cc: <http://creativecommons.org/ns#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix sd: <http://www.w3.org/ns/sparql-service-description#> .
+@prefix dce: <http://purl.org/dc/elements/1.1/> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix mod: <https://w3id.org/mod#> .
+@prefix fabio: <http://purl.org/spar/fabio/> .
+@prefix dcmitype: <http://purl.org/dc/dcmitype/> .
+@prefix vann: <http://purl.org/vocab/vann/> .
+@prefix adms: <http://www.w3.org/ns/adms#> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix dbpo: <http://dbpedia.org/ontology/> .
+@prefix xhv: <http://www.w3.org/1999/xhtml/vocab#> .
+@prefix sto: <https://w3id.org/i40/sto#> .
+@prefix nie: <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#> .
+@prefix hydra: <http://www.w3.org/ns/hydra/core#> .
+@prefix equiv: <https://ns.inria.fr/equivalence/#> .
+
+
+###### Equivalences ontology ######
+
+equiv: rdf:type owl:Ontology ;
+    dct:title "Equivalences used in Metadatamatic" ;
+    dct:description "This ontology is used to describe the equivalences used in Metadatamatic. It is not intended to be used elsewhere." ;
+    vann:preferredNamespacePrefix "equiv" ;
+    vann:preferredNamespaceUri "https://ns.inria.fr/equivalence/#" ;
+    dct:relation <https://wimmics.github.io/voidmatic/> .
+
+equiv:class a owl:ObjectProperty ;
+    rdfs:label "Class equivalence" ;
+    rdfs:comment "This property is used to describe the equivalence with a class." ;
+    rdfs:domain equiv:Equivalence ;
+    rdfs:range owl:Class .
+
+equiv:property a rdfs:Property ;
+    rdfs:label "Property equivalence" ;
+    rdfs:comment "This property is used to describe the equivalence with a property." ;
+    rdfs:domain equiv:Equivalence ;
+    rdfs:range rdfs:Property .
+
+equiv:pattern a owl:ObjectProperty ;
+    rdfs:label "Pattern equivalence" ;
+    rdfs:comment "This property is used to describe the equivalence with a pattern." ;
+    rdfs:domain equiv:Equivalence ;
+    rdfs:range equiv:TriplePattern .
+
+equiv:subject a owl:ObjectProperty ;
+    rdfs:label "Subject" ;
+    rdfs:comment "This property is used to describe the subject of an equivalence pattern." ;
+    rdfs:domain equiv:TriplePattern ;
+    rdfs:range equiv:NodePattern .
+
+equiv:predicate a owl:ObjectProperty ;
+    rdfs:label "Predicate" ;
+    rdfs:comment "This property is used to describe the predicate of an equivalence pattern." ;
+    rdfs:domain equiv:TriplePattern ;
+    rdfs:range equiv:NodePattern .
+
+equiv:object a owl:ObjectProperty ;
+    rdfs:label "Object" ;
+    rdfs:comment "This property is used to describe the object of an equivalence pattern." ;
+    rdfs:domain equiv:TriplePattern ;
+    rdfs:range equiv:NodePattern .
+
+equiv:constraint a owl:ObjectProperty ;
+    rdfs:label "Constraint" ;
+    rdfs:comment "This property is used to describe the constraint of an equivalence pattern." ;
+    rdfs:domain equiv:TriplePattern ;
+    rdfs:range equiv:Constraint .
+
+equiv:Equivalence a owl:Class ;
+    rdfs:label "Equivalence" ;
+    rdfs:comment "This class is used to describe an equivalence between classes, properties or pattern." .
+
+equiv:TriplePattern a owl:Class ;
+    rdfs:subClassOf equiv:Equivalence ;
+    rdfs:label "Pattern" ;
+    rdfs:comment "This class is used to describe a pattern of equivalence." .
+
+equiv:NodePattern a owl:Class ;
+    rdfs:label "Node pattern" ;
+    rdfs:comment "This class is used to describe a pattern for a node." .
+
+equiv:Constraint a owl:Class ;
+    rdfs:subClassOf equiv:NodePattern ;
+    rdfs:label "Constraint" ;
+    rdfs:comment "This class is used to describe a constraint of a pattern." .
+
+equiv:isLiteral a equiv:NodePattern ;
+    rdfs:label "Literal constraint" ;
+    rdfs:comment "This constraint says that the resource designated by this pattern must be a literal." .
+
+equiv:isIri a equiv:NodePattern ;
+    rdfs:label "IRI constraint" ;
+    rdfs:comment "This constraint says that the resource designated by this pattern must be an IRI." .
+
+equiv:isBlank a equiv:NodePattern ;
+    rdfs:label "Blank node constraint" ;
+    rdfs:comment "This constraint says that the resource designated by this pattern must be a blank node." .
+
+equiv:targetSubject a equiv:NodePattern ;
+    rdfs:label "Target subject constraint" ;
+    rdfs:comment "This constraint says that the subject of the triple pattern must be the subject of any equivalent property." .
+
+equiv:targetObject a equiv:NodePattern ;
+    rdfs:label "Target object constraint" ;
+    rdfs:comment "This constraint says that the object of the triple pattern must be the object of any equivalent property." .
+
+equiv:or a owl:ObjectProperty ;
+    rdfs:label "Disjonction constraint" ;
+    rdfs:comment "This constraint says that it is satisfied if any of the constraint in object are satisfied." ;
+    rdfs:domain equiv:Equivalence ;
+    rdfs:range rdfs:List .
+
+equiv:impliedProperty a owl:ObjectProperty ;
+    rdfs:label "Implication of a property or a class" ;
+    rdfs:comment "This defines that the subject of a property must be the subject of the given property, but the properties are not equivalent. This is to be used for properties from different ontologies that do not have any direct of indirect  equivalence of hierarchical relation." ;
+    rdfs:domain rdfs:Property ;
+    rdfs:range equiv:Equivalence .
+
+equiv:impliedClass a owl:ObjectProperty ;
+    rdfs:label "Implication of a class" ;
+    rdfs:comment "This defines that the instance of a class must be instance of the given classes, but the classes are not equivalent. This is to be used for classes from different ontologies that do not have any direct of indirect equivalence of hierarchical relation." ;
+    rdfs:domain owl:Class ;
+    rdfs:range owl:Class .
