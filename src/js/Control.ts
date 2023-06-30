@@ -10,6 +10,7 @@ import { saveAs } from 'file-saver';
 import { v4 as uuid } from 'uuid';
 import * as bootstrap from 'bootstrap'
 import { zipurl, unzipurl } from 'zipurl'
+import * as equiv from "./Equivalences";
 
 
 export let controlInstance: Control;
@@ -76,9 +77,11 @@ export class Control {
         // })
 
         $("#saturationButton").on("click", () => {
-            const equivalences = this.generateEquivalenceTriples();
-            this.store.addAll(equivalences);
-            this.refreshStore()
+            this.generateEquivalenceTriples().then(equivalences => {
+                this.store.addAll(equivalences);
+                this.refreshStore();
+                return;
+            });
         });
 
         $('#forceHTTPScheckbox').on("change", () => {
@@ -222,106 +225,10 @@ export class Control {
      * Generates triples in known vocabularies according to IndeGx equivalences.
      * TODO: Make it using SPARQL or defined in each field.
      */
-    generateEquivalenceTriples() {
-        var result: $rdf.Statement[] = [];
-
-        const dcatDatasetInstanceStatements = this.store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset"));
-        dcatDatasetInstanceStatements.forEach(dcatDatasetInstanceStatement => {
-            if (dcatDatasetInstanceStatement != undefined) {
-                const subject = dcatDatasetInstanceStatement.subject;
-                result.push($rdf.st(subject, RDFUtils.RDF("type"), RDFUtils.SCHEMA("Dataset")))
-                result.push($rdf.st(subject, RDFUtils.RDF("type"), RDFUtils.DCMITYPE("Dataset")))
-                result.push($rdf.st(subject, RDFUtils.RDF("type"), RDFUtils.VOID("Dataset")))
-                result.push($rdf.st(subject, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")))
-                result.push($rdf.st(subject, RDFUtils.RDF("type"), RDFUtils.PROV("Entity")))
-            }
+    generateEquivalenceTriples(): Promise<$rdf.Statement[]> {
+        return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/equivalenceEngine/data/equivalences.ttl").then(equivalences => {
+            return equiv.applyEquivalences(equivalences, this.store);
         })
-
-        const dctTitleStatements = this.store.statementsMatching(null, RDFUtils.DCT("title"), null);
-        dctTitleStatements.forEach(dctTitleStatement => {
-            if (dctTitleStatement != undefined) {
-                const subject = dctTitleStatement.subject;
-                const object = dctTitleStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("name"), object))
-                result.push($rdf.st(subject, RDFUtils.RDFS("label"), object))
-            }
-        })
-
-        const dctDescriptionStatements = this.store.statementsMatching(null, RDFUtils.DCT("description"), null);
-        dctDescriptionStatements.forEach(dctDescriptionStatement => {
-            if (dctDescriptionStatement != undefined) {
-                const subject = dctDescriptionStatement.subject;
-                const object = dctDescriptionStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("description"), object))
-            }
-        })
-
-        const dctCreatorStatements = this.store.statementsMatching(null, RDFUtils.DCT("creator"), null);
-        dctCreatorStatements.forEach(dctCreatorStatement => {
-            if (dctCreatorStatement != undefined) {
-                const subject = dctCreatorStatement.subject;
-                const object = dctCreatorStatement.object;
-                if ($rdf.isLiteral(object)) {
-                    const creatorBN = $rdf.blankNode();
-                    result.push($rdf.st(subject, RDFUtils.SCHEMA("creator"), creatorBN));
-                    result.push($rdf.st(creatorBN, RDFUtils.SCHEMA("name"), object));
-                } else {
-                    result.push($rdf.st(subject, RDFUtils.SCHEMA("creator"), object))
-                }
-                result.push($rdf.st(subject, RDFUtils.PROV("wasAttributedTo"), object))
-                result.push($rdf.st(subject, RDFUtils.PAV("authoredBy"), object))
-                result.push($rdf.st(subject, RDFUtils.PAV("createdBy"), object))
-            }
-        });
-
-        const dctPublicationStatements = this.store.statementsMatching(null, RDFUtils.DCT("issued"), null);
-        dctPublicationStatements.forEach(dctPublicationStatement => {
-            if (dctPublicationStatement != undefined) {
-                const subject = dctPublicationStatement.subject;
-                const object = dctPublicationStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("datePublished"), object))
-            }
-        })
-
-        const voidVocabularyStatements = this.store.statementsMatching(null, RDFUtils.VOID("vocabulary"), null);
-        voidVocabularyStatements.forEach(voidVocabularyStatement => {
-            if (voidVocabularyStatement != undefined) {
-                const subject = voidVocabularyStatement.subject;
-                const object = voidVocabularyStatement.object;
-                result.push($rdf.st(subject, RDFUtils.DCT("conformsTo"), object))
-            }
-        })
-
-        const voidSparqlEndpointStatements = this.store.statementsMatching(null, RDFUtils.VOID("sparqlEndpoint"), null);
-        voidSparqlEndpointStatements.forEach(voidSparqlEndpointStatement => {
-            if (voidSparqlEndpointStatement != undefined) {
-                const subject = voidSparqlEndpointStatement.subject;
-                const object = voidSparqlEndpointStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("contentURL"), object))
-            }
-        })
-
-        const dcatVersionStatements = this.store.statementsMatching(null, RDFUtils.DCAT("version"), null);
-        dcatVersionStatements.forEach(dcatVersionStatement => {
-            if (dcatVersionStatement != undefined) {
-                const subject = dcatVersionStatement.subject;
-                const object = dcatVersionStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("version"), object))
-                result.push($rdf.st(subject, RDFUtils.DCT("hasVersion"), object))
-                result.push($rdf.st(subject, RDFUtils.PAV("version"), object))
-            }
-        })
-
-        const dctLanguageStatements = this.store.statementsMatching(null, RDFUtils.DCT("language"), null);
-        dctLanguageStatements.forEach(dctLanguageStatement => {
-            if (dctLanguageStatement != undefined) {
-                const subject = dctLanguageStatement.subject;
-                const object = dctLanguageStatement.object;
-                result.push($rdf.st(subject, RDFUtils.SCHEMA("inLanguage"), object))
-            }
-        })
-
-        return result;
     }
 
     listNodesStore(s, p, o) {
