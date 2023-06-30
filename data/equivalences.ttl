@@ -211,7 +211,7 @@ mod:URI equiv:impliedProperty :identifier .
 :endAvailability equiv:property schema:expires ,
         prov:invalidatedAtTime .
 
-:endValidity equiv:property dcterms:valid ,
+:endValidity equiv:property dct:valid ,
         schema:expires .
 
 :vocabulary equiv:property void:vocabulary ,
@@ -262,7 +262,7 @@ mod:URI equiv:impliedProperty :identifier .
         fabio:ApplicationProgrammingInterface .
 
 :format equiv:property dce:format ,
-        dcterms:format , 
+        dct:format , 
         schema:encodingFormat .
 
 :version equiv:property dcat:version ,
