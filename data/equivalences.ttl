@@ -147,7 +147,8 @@ mod:URI equiv:impliedProperty :identifier .
 :creationDate equiv:property schema:dateCreated , 
         dct:created ,
         pav:createdOn ,
-        prov:generatedAtTime #;
+        prov:generatedAtTime ,
+        dct:issued #;
 #     equiv:pattern [
 #         equiv:subject equiv:targetSubject ;
 #         equiv:predicate schema:wasGeneratedBy ;
