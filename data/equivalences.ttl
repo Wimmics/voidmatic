@@ -71,160 +71,43 @@ mod:URI equiv:impliedProperty :identifier .
         foaf:maker ,
         dce:creator ,
         pav:authoredBy ,
-        pav:createdBy #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type  equiv:NodePattern ,
-#                     prov:Create
-#             ] ;
-#             equiv:predicate prov:wasAssociatedWith ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:createdBy .
 
 :contributor equiv:property schema:editor ,
         schema:contributor ,
         dct:contributor ,
         dce:contributor ,
-        pav:contributedBy #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern , 
-#                     prov:Contribute ,
-#                     prov:Modify
-#             ] ;
-#             equiv:predicate prov:wasAssociatedWith ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:contributedBy .
 
 :publicationDate equiv:property dct:issued ,
         dct:available ,
         schema:datePublished ,
         schema:sdDatePublished ,
         pav:authoredOn ,
-        pav:createdOn #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern ,
-#                     prov:Publish
-#             ] ;
-#             equiv:predicate prov:endedAtTime ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:createdOn .
 
 :publisher equiv:property dct:publisher ,
         dce:publisher ,
         schema:publisher ,
         schema:sdPublisher ,
-        pav:providedBy #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern, prov:Publish
-#             ] ;
-#             equiv:predicate prov:wasAssociatedWith ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:providedBy .
 
 :creationDate equiv:property schema:dateCreated , 
         dct:created ,
         pav:createdOn ,
-        prov:generatedAtTime ,
-        dct:issued #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern , 
-#                     prov:Create
-#             ] ;
-#             equiv:predicate prov:endedAtTime ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        prov:generatedAtTime .
 
 :creationLocation equiv:property schema:locationCreated ,
-        pav:createdAt #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern , 
-#                     prov:Create
-#             ] ;
-#             equiv:predicate prov:atLocation ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:createdAt .
 
 :creationMethod equiv:property pav:createdWith ,
         pav:retrievedBy ,
-        pav:importedBy #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#             equiv:subject [
-#                 rdf:type equiv:NodePattern , 
-#                     prov:Create
-#             ] ;
-#             equiv:predicate prov:wasAssociatedWith ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+        pav:importedBy .
 
 :modificationDate equiv:property schema:dateModified ,
         dct:modified ,
         pav:lastUpdateOn ,
-        pav:contributedOn #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#                 equiv:subject [
-#                     rdf:type equiv:NodePattern , 
-#                         prov:Modify
-#                 ] ;
-#                 equiv:predicate prov:endedAtTime ;
-#                 equiv:object equiv:targetObject
-#             ]
-#         ] ,
-#         [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:wasGeneratedBy ;
-#         equiv:object [ 
-#                 equiv:subject [
-#                     rdf:type  equiv:NodePattern ,
-#                         prov:Modify
-#                 ] ;
-#                 equiv:predicate prov:startedAtTime ;
-#                 equiv:object equiv:targetObject
-#             ]
-#         ] 
-        .
+        pav:contributedOn .
 
 :endAvailability equiv:property schema:expires ,
         prov:invalidatedAtTime .
@@ -257,25 +140,7 @@ mod:URI equiv:impliedProperty :identifier .
 :distribution equiv:property dcat:distribution ,
         schema:distribution .
 
-:dump equiv:property void:dataDump #;
-#     equiv:pattern [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate dcat:distribution ;
-#         equiv:object [
-#             equiv:subject [ rdf:type equiv:NodePattern ] ;
-#             equiv:predicate dcat:downloadURL ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] , [
-#         equiv:subject equiv:targetSubject ;
-#         equiv:predicate schema:distribution ;
-#         equiv:object [
-#             equiv:subject [ rdf:type equiv:NodePattern ] ;
-#             equiv:predicate schema:contentUrl ;
-#             equiv:object equiv:targetObject
-#         ]
-#     ] 
-    .
+:dump equiv:property void:dataDump .
 
 :RESTAPI equiv:property schema:mainEntityOfPage ,
         fabio:ApplicationProgrammingInterface .
