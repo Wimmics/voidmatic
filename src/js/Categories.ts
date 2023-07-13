@@ -775,11 +775,11 @@ export const inputMetadata = [
                         dataValidationFunction: valuesArray => {
                             let inputNs = valuesArray[0];
                             let inputPrefix = valuesArray[1];
-                            let testResult = Validation.isURI(inputNs) && (inputPrefix !== undefined && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0));
+                            let testResult = Validation.isURI(inputNs) && (inputPrefix === undefined || (inputPrefix !== undefined && (Validation.isLiteral(inputPrefix) || inputPrefix.length == 0)));
                             if (testResult) {
                                 return FieldState.valid();
                             } else {
-                                return FieldState.invalid("The namespace must be a valid URI and the prefix must be a literal.");
+                                return FieldState.invalid("The namespace must be a valid URI and the prefix must be a literal. Given: " + inputNs + " and " + inputPrefix);
                             }
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
