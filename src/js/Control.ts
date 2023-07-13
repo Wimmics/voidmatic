@@ -50,7 +50,7 @@ export class Control {
         // Import a turtle description present in the URL as value of the "description" parameter
         let currentUrl = new URL(window.location.href);
         let zippedDescription = currentUrl.searchParams.get("description");
-        if(zippedDescription != null){
+        if (zippedDescription != null) {
             let description = unzipurl(zippedDescription);
             if (description != null) {
                 let decodedDescription = decodeURIComponent(description);
@@ -64,17 +64,6 @@ export class Control {
                 })
             }
         }
-
-        // $("#fairButton").on("click", () => {
-        //     RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
-        //         let description = encodeURIComponent(fileContent);
-        //         let currentUrl = new URL(window.location.href);
-        //         currentUrl.searchParams.set("description", description);
-        //         Query.fetchPromise("https://foops.linkeddata.es/assessOntology", new Map([["Content-Type", "application/json; charset=utf-8"]]), "POST", '{ "ontologyURI":' + currentUrl.href + '}').then(response => {
-        //             console.log(response);
-        //         })
-        //     })
-        // })
 
         $("#saturationButton").on("click", () => {
             this.generateEquivalenceTriples().then(equivalences => {
@@ -180,6 +169,14 @@ export class Control {
         };
         let parsedStore = RDFUtils.createStore();
         return parsingfunction(data, parsedStore).then(store => {
+            return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/master/data/equivalences.ttl")
+            .then(equivalences => {
+                return equiv.applyEquivalences(equivalences, store);
+            }).then(equivalences => {
+                store.addAll(equivalences);
+                return store;
+            })
+        }).then(store => {
             function loadCategroyViewValues(catView, store) {
                 let newLinesValues = [];
                 catView.coreElement.fields.forEach(line => {
@@ -220,14 +217,17 @@ export class Control {
             return endpointURL;
         }
     }
+    generateEquivalenceTriples(): Promise<$rdf.Statement[]> {
+        return this.generateEquivalenceTriplesFromStore(this.store);
+    }
 
     /**
      * Generates triples in known vocabularies according to IndeGx equivalences.
      * TODO: Make it using SPARQL or defined in each field.
      */
-    generateEquivalenceTriples(): Promise<$rdf.Statement[]> {
-        return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/equivalenceEngine/data/equivalences.ttl").then(equivalences => {
-            return equiv.applyEquivalences(equivalences, this.store);
+    generateEquivalenceTriplesFromStore(store: $rdf.Store): Promise<$rdf.Statement[]> {
+        return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/master/data/equivalences.ttl").then(equivalences => {
+            return equiv.applyEquivalences(equivalences, store);
         })
     }
 
@@ -323,11 +323,11 @@ export class Control {
     }
 
     sendMetadatatoServer() {
-        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
-            RDFUtils.serializeStoreToNTriplesPromise(this.store).then(str => {
-                const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
-                return Query.fetchJSONPromise(finalUrl).catch(error => { })
-            }).catch(error => { })
-        }
+        // if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
+        //     RDFUtils.serializeStoreToNTriplesPromise(this.store).then(str => {
+        //         const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+        //         return Query.fetchJSONPromise(finalUrl).catch(error => { })
+        //     }).catch(error => { })
+        // }
     }
 }

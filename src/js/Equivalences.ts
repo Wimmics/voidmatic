@@ -99,51 +99,80 @@ export function readEquivalenceFile(file: string): Promise<Equivalence[]> {
 function applyEquivalence(equivalence: Equivalence, store: $rdf.Store): $rdf.Statement[] {
     let result: $rdf.Statement[] = [];
 
-    if (equivalence.class != undefined) {
-        let applicableEquivalence = false;
-        equivalence.class.forEach(equivalenceClass => {
-            if(store.holds(null, null, equivalenceClass)){
-                applicableEquivalence = true;
-            }
-        })
-        if(applicableEquivalence){
+    // find dataset instances
+    let datasetInstances: Set<$rdf.NamedNode> = new Set();
+    store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.VOID("Dataset")).forEach(statement => {
+        if($rdf.isNamedNode(statement.subject)) {
+            datasetInstances.add(statement.subject);
+        }
+    });
+    store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")).forEach(statement => {
+        if($rdf.isNamedNode(statement.subject)) {
+            datasetInstances.add(statement.subject);
+        }
+    });
+    store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.SCHEMA("Dataset")).forEach(statement => {
+        if($rdf.isNamedNode(statement.subject)) {
+            datasetInstances.add(statement.subject);
+        }
+    });
+    store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.SD("Dataset")).forEach(statement => {
+        if($rdf.isNamedNode(statement.subject)) {
+            datasetInstances.add(statement.subject);
+        }
+    });
+    store.statementsMatching(null, RDFUtils.RDF("type"), RDFUtils.DCMITYPE("Dataset")).forEach(statement => {
+        if($rdf.isNamedNode(statement.subject)) {
+            datasetInstances.add(statement.subject);
+        }
+    });
+
+
+    datasetInstances.forEach(datasetInstance => {
+        if (equivalence.class != undefined) {
+            let applicableEquivalence = false;
             equivalence.class.forEach(equivalenceClass => {
-                store.statementsMatching(null, null, equivalenceClass).forEach(statement => {
-                    let subject = statement.subject;
-                    let predicate = statement.predicate;
-                    equivalence.class.forEach(otherEquivalenceClass => {
-                        let newStatement = $rdf.st(subject, predicate, otherEquivalenceClass);
-                        result.push(newStatement);
+                if(store.holds(datasetInstance, null, equivalenceClass)){
+                    applicableEquivalence = true;
+                }
+            })
+            if(applicableEquivalence){
+                equivalence.class.forEach(equivalenceClass => {
+                    store.statementsMatching(datasetInstance, null, equivalenceClass).forEach(statement => {
+                        let subject = statement.subject;
+                        let predicate = statement.predicate;
+                        equivalence.class.forEach(otherEquivalenceClass => {
+                            let newStatement = $rdf.st(subject, predicate, otherEquivalenceClass);
+                            result.push(newStatement);
+                        });
                     });
                 });
-            });
-        }
-    }
-
-    if (equivalence.property != undefined) {
-        let applicableEquivalence = false;
-
-        equivalence.property.forEach(equivalenceProperty => {
-            if(store.holds(null, equivalenceProperty, null)){
-                applicableEquivalence = true;
             }
-        })
+        }
 
-        if(applicableEquivalence){
+        if (equivalence.property != undefined) {
+            let applicableEquivalence = false;
+
             equivalence.property.forEach(equivalenceProperty => {
-                store.statementsMatching(null, equivalenceProperty, null).forEach(statement => {
-                    let subject = statement.subject;
-                    let object = statement.object;
-                    equivalence.property.forEach(otherEquivalenceProperty => {
-                        let newStatement = $rdf.st(subject, otherEquivalenceProperty, object);
-                        result.push(newStatement);
+                if(store.holds(datasetInstance, equivalenceProperty, null)){
+                    applicableEquivalence = true;
+                }
+            })
+
+            if(applicableEquivalence){
+                equivalence.property.forEach(equivalenceProperty => {
+                    store.statementsMatching(datasetInstance, equivalenceProperty, null).forEach(statement => {
+                        let subject = statement.subject;
+                        let object = statement.object;
+                        equivalence.property.forEach(otherEquivalenceProperty => {
+                            let newStatement = $rdf.st(subject, otherEquivalenceProperty, object);
+                            result.push(newStatement);
+                        });
                     });
                 });
-            });
+            }
         }
-    }
-
-    // TODO: pattern application
+    });
 
     return result;
 }
