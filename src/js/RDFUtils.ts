@@ -3,7 +3,7 @@ import ttl_read from "@graphy/content.ttl.read";
 import nt_read from "@graphy/content.nt.read";
 import nq_read from "@graphy/content.nq.read";
 import trig_read from "@graphy/content.trig.read";
-import {resolve } from "url";
+import { resolve } from "url";
 
 export var RDF = $rdf.Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 export var RDFS = $rdf.Namespace("http://www.w3.org/2000/01/rdf-schema#");
@@ -44,11 +44,11 @@ export function urlIsAbsolute(url: string) {
 
 export function sanitizeUrl(url: string, baseURI: string, filename?: string): string {
     let result = url;
-    if(url.localeCompare("") == 0) {
+    if (url.localeCompare("") == 0) {
         result = filename;
     }
-    if(! urlIsAbsolute(result)) { 
-        if(filename != null && filename != undefined && filename != "") {
+    if (!urlIsAbsolute(result)) {
+        if (filename != null && filename != undefined && filename != "") {
             result = resolve(filename, result);
         } else {
             result = resolve(baseURI, result);
@@ -170,7 +170,7 @@ export function parseTurtleToStore(content: string, store: $rdf.Store, base = EX
                 data(y_quad) {
                     graphyQuadLoadingToStore(store, y_quad, base, "")
                 },
-                
+
                 eof(h_prefixes) {
                     accept(store);
                 },
@@ -246,7 +246,7 @@ function graphyQuadLoadingToStore(store: $rdf.Store, y_quad: any, baseURI = EX("
     try {
         let s = undefined;
         if (y_quad.subject.termType === "NamedNode") {
-                s = $rdf.sym(sanitizeUrl(y_quad.subject.value, baseURI, filename));
+            s = $rdf.sym(sanitizeUrl(y_quad.subject.value, baseURI, filename));
         } else if (y_quad.subject.termType === "Literal") {
             if (y_quad.subject.language != null && y_quad.subject.language != undefined && y_quad.subject.language != "") {
                 s = $rdf.lit(y_quad.subject.value, y_quad.subject.language)
@@ -306,4 +306,33 @@ function getGraphyReadingFunction(contentType: FileContentType) {
         case TurtleContentType:
             return ttl_read;
     }
+}
+
+
+/**
+    Converts an RDF collection represented by the given named node, blank node, or variable into an array of nodes.
+    @param {$rdf.NamedNode | $rdf.BlankNode | $rdf.Variable} collection - The node representing the collection to convert.
+    @param {$rdf.Store} store - The RDF store containing the collection.
+    @returns {$rdf.Node[]} An array of nodes representing the collection.
+    */
+export function collectionToArray(collection: $rdf.NamedNode | $rdf.BlankNode | $rdf.Variable, store: $rdf.Formula): $rdf.Node[] {
+    let result = [];
+
+    store.statementsMatching(collection, RDF("first")).forEach(statement => {
+        if (!statement.object.equals(RDF("nil"))) {
+            result.push(statement.object);
+        }
+    });
+
+    store.statementsMatching(collection, RDF("rest")).forEach(statement => {
+        if (!statement.object.equals(RDF("nil"))) {
+            if ($rdf.isNamedNode(statement.object)) {
+                result = result.concat(collectionToArray(statement.object as $rdf.NamedNode, store));
+            } else if ($rdf.isBlankNode(statement.object)) {
+                result = result.concat(collectionToArray(statement.object as $rdf.BlankNode, store));
+            }
+        }
+    });
+
+    return [...new Set(result)];
 }

@@ -6,24 +6,9 @@ import * as QueryUtils from "./QueryUtils";
 
 
 const EQUIV = $rdf.Namespace("https://ns.inria.fr/equivalence/#");
-const equivEquivalenceClass = EQUIV("Equivalence");
-const equivTriplePattern = EQUIV("TriplePattern");
-const equivNodePatternClass = EQUIV("NodePattern");
-const equivConstraintClass = EQUIV("Constraint");
-const equivClass = EQUIV("class");
-const equivProperty = EQUIV("property");
-const equivPattern = EQUIV("pattern");
-const equivSubject = EQUIV("subject");
-const equivPredicate = EQUIV("predicate");
-const equivObject = EQUIV("object");
-const equivConstraint = EQUIV("constraint");
-const equivIsLiteral = EQUIV("isLiteral");
-const equivIsIRI = EQUIV("isIRI");
-const equivIsBlank = EQUIV("isBlank");
-const equivTargetSubject = EQUIV("targetSubject");
-const equivTargetObject = EQUIV("targetObject");
-const equivImpliedProperty = EQUIV("impliedProperty");
-const equivImpliedClass = EQUIV("impliedClass");
+const equivEquivalenceClasses = EQUIV("AllEquivalentClasses");
+const equivEquivalenceProperties = EQUIV("AllEquivalentProperties");
+
 
 export type Equivalence = {
     property?: $rdf.NamedNode[],
@@ -47,47 +32,42 @@ export function readEquivalenceFile(file: string): Promise<Equivalence[]> {
     let store = RDFUtils.createStore();
     return fileContent.then(fileContent => RDFUtils.parseTurtleToStore(fileContent, store))
         .then(equivalencesStore => {
-            let equivalenceNodes: Set<$rdf.NamedNode | $rdf.BlankNode> = new Set();
+            let equivalenceClassNodes: Set<$rdf.NamedNode | $rdf.BlankNode> = new Set();
+            let equivalencePropertiesNodes: Set<$rdf.NamedNode | $rdf.BlankNode> = new Set();
 
             // Extracting all the nodes representing equivalence sets
-            equivalencesStore.statementsMatching(null, equivClass, null).forEach(statement => {
+            equivalencesStore.statementsMatching(null, RDFUtils.RDF("type"), equivEquivalenceClasses).forEach(statement => {
                 if ($rdf.isBlankNode(statement.subject) || $rdf.isNamedNode(statement.subject)) {
-                    equivalenceNodes.add(statement.subject);
+                    equivalenceClassNodes.add(statement.subject);
                 }
             });
-            equivalencesStore.statementsMatching(null, equivProperty, null).forEach(statement => {
+            equivalencesStore.statementsMatching(null, RDFUtils.RDF("type"), equivEquivalenceProperties).forEach(statement => {
                 if ($rdf.isBlankNode(statement.subject) || $rdf.isNamedNode(statement.subject)) {
-                    equivalenceNodes.add(statement.subject);
+                    equivalencePropertiesNodes.add(statement.subject);
                 }
             });
-            equivalencesStore.statementsMatching(null, equivPattern, null).forEach(statement => {
-                if ($rdf.isBlankNode(statement.subject) || $rdf.isNamedNode(statement.subject)) {
-                    equivalenceNodes.add(statement.subject);
-                }
+
+            function getMembers(equivalenceNode: $rdf.NamedNode | $rdf.BlankNode, equivalencesStore: $rdf.Formula): $rdf.NamedNode[] {
+                let members: $rdf.NamedNode[] = [];
+                equivalencesStore.statementsMatching(equivalenceNode, RDFUtils.OWL("members"), null).forEach(statement => {
+                    let memberArray: $rdf.NamedNode[] = RDFUtils.collectionToArray(statement.object as $rdf.NamedNode | $rdf.BlankNode, equivalencesStore).filter(member => $rdf.isNamedNode(member)).map(member => member as $rdf.NamedNode);
+                    members = members.concat(memberArray);
+                });
+                return members;
+            }
+
+            // Creating the object for each equivalence set
+            equivalenceClassNodes.forEach(equivalenceNode => {
+                let equivalence: Equivalence = {};
+                equivalence.class = getMembers(equivalenceNode, equivalencesStore);
+
+                equivalences.push(equivalence);
             });
 
             // Creating the object for each equivalence set
-            equivalenceNodes.forEach(equivalenceNode => {
+            equivalencePropertiesNodes.forEach(equivalenceNode => {
                 let equivalence: Equivalence = {};
-                equivalencesStore.statementsMatching(equivalenceNode, equivClass, null).forEach(statement => {
-                    if ($rdf.isNamedNode(statement.object)) {
-                        if (equivalence.class == undefined) {
-                            equivalence.class = [];
-                        }
-                        equivalence.class.push(statement.object);
-                    }
-                });
-
-                equivalencesStore.statementsMatching(equivalenceNode, equivProperty, null).forEach(statement => {
-                    if ($rdf.isNamedNode(statement.object)) {
-                        if (equivalence.property == undefined) {
-                            equivalence.property = [];
-                        }
-                        equivalence.property.push(statement.object);
-                    }
-                });
-
-                // TODO: Pattern handling
+                equivalence.property = getMembers(equivalenceNode, equivalencesStore);
 
                 equivalences.push(equivalence);
             });
