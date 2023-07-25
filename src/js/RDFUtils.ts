@@ -104,7 +104,28 @@ export function fixCommonTurtleStringErrors(ttlString: string): string {
     result = result.replaceAll("genid-", "_:"); // Dirty hack to fix blank nodes with genid- prefix
     result = result.replaceAll(regexBnB, "$1_:$2 "); // Dirty hack to fix blank nodes with b prefix
     result = result.replaceAll(regexNodeB, "$1_:$2 "); // Dirty hack to fix blank nodes with node prefix
+    result = replaceUnicode(result);
     return result;
+}
+
+export function replaceUnicode(text: string): string {
+    return text.replace(/\\u[\dA-F]{4}/gi,
+    function (match) {
+        let unicodeMatch = String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+        let urlEncodedMatch = encodeURIComponent(unicodeMatch);
+        return urlEncodedMatch;
+    });
+}
+
+export function serializeStoreToJSONLDPromise(store): Promise<string> {
+    return new Promise((accept, reject) => {
+        $rdf.serialize(null, store, undefined, 'application/ld+json', function (err, str) {
+            if (err != null) {
+                reject(err);
+            }
+            accept(str)
+        }, { namespaces: store.namespaces });
+    })
 }
 
 export function serializeStoreToTurtlePromise(store): Promise<string> {
