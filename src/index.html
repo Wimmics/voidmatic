@@ -144,9 +144,9 @@
                                 <a class="btn btn-dark" id="saturationButton"
                                     title="This will add equivalent classes and properties to the one already given">Apply
                                     equivalences</a>
-                                <!-- <a class="btn btn-dark" id="fairButton"
+                                <a class="btn btn-dark" id="fairButton"
                                     title="This will trigger the evaluation of the FAIRness of your dataset">FAIRness evaluation
-                                </a> -->
+                                </a>
                         </div>
                         <script type="application/ld+json" id="fairJson"></script>
                         <div class="row my-3" >
@@ -154,6 +154,11 @@
                                 <div class="progress-bar" role="progressbar" aria-label="Filled recommended features" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="recommendedProgressBar"></div>
                               </div>
                               <p id="recommendedRemark" class="text-center">0% of the recommended features are filled</p>
+                        </div>
+                        <div class="row my-3 collapse" id="fairchecker">
+                            <p>This FAIRness evaluation is given by <a href="https://fair-checker.france-bioinformatique.fr/check">FAIR-Checker</a></p>
+                            <div id="fairError"></div>
+                            <div id="fairRadar" class="w-100"></div>
                         </div>
                         <div class="row">
                             <pre class="language-turtle">
