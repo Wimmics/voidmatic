@@ -3,6 +3,7 @@ import * as Query from "./QueryUtils";
 import { inputMetadata } from './Categories';
 import { CategoryCore, FieldCore, FieldState } from './Model';
 import { CategoryView } from "./View";
+import * as equiv from "./Equivalences";
 
 import $ from 'jquery';
 import * as $rdf from 'rdflib';
@@ -10,7 +11,7 @@ import { saveAs } from 'file-saver';
 import { v4 as uuid } from 'uuid';
 import * as bootstrap from 'bootstrap'
 import { zipurl, unzipurl } from 'zipurl'
-import * as equiv from "./Equivalences";
+import * as echarts from 'echarts';
 
 
 export let controlInstance: Control;
@@ -23,6 +24,7 @@ export class Control {
     metadataCategoryViewMap: Map<string, CategoryView>;
     forceHTTPSFlag: boolean;
     sessionId: string;
+    radarChart: echarts.ECharts;
 
     constructor() {
         if (controlInstance) {
@@ -39,13 +41,72 @@ export class Control {
         this.forceHTTPSFlag = true;
         this.sessionId = uuid();
 
-        this.initCategoryViews();
+        // window.onload = (event) => {
 
-        $("#downloadButton").on("click", () => {
-            RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
-                saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
+            this.initCategoryViews();
+
+            $("#downloadButton").on("click", () => {
+                RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
+                    saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
+                })
+            });
+
+            $("#saturationButton").on("click", () => {
+                this.generateEquivalenceTriples().then(equivalences => {
+                    this.store.addAll(equivalences);
+                    this.refreshStore();
+                    return;
+                });
+            });
+
+            $('#forceHTTPScheckbox').on("change", () => {
+                var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
+                this.forceHTTPSFlag = checkboxValue;
             })
-        });
+
+            let loadModelInput = $('#loadTextarea');
+            const loadModal = new bootstrap.Modal('#loadModalDiv', {})
+            $("#loadButton").on("click", () => {
+                loadModal.show();
+            })
+
+            $('#clearLoadButton').on("click", () => {
+                loadModelInput.val("");
+            });
+
+            $('#closeLoadButton').on("click", () => {
+                loadModal.hide();
+            });
+
+            $('#saveLoadButton').on("click", () => {
+                try {
+                    this.importData(loadModelInput.val().toLocaleString(), $('#loadFileFormatSelect').val().toLocaleString()).then(() => {
+                        loadModal.hide();
+                    });
+                } catch (e) {
+                    console.error(e);
+                    $("#loadErrorDiv").text(e.message);
+                }
+            });
+
+            $("#fairButton").on("click", () => {
+                $("#fairButton").prop("disabled", true);
+                this.setFAIRRadar().then(() => {
+                    $("#fairButton").prop("disabled", false);
+                    return;
+                })
+            })
+            // Dirty hack to fix echarts width and height bug
+            const baseWidth = window.innerWidth - 270;
+            const baseHeight = window.innerHeight * 0.45;
+
+            let radarDOM = document.getElementById('fairRadar');
+            // radarDOM.setAttribute('width', `${baseWidth}px`);
+            // radarDOM.setAttribute('height', `${baseHeight}px`);
+            // radarDOM.setAttribute('style', `width: ${baseWidth}px; height: ${baseHeight}px`);
+            this.radarChart = echarts.init(radarDOM);
+
+        // };
 
         // Import a turtle description present in the URL as value of the "description" parameter
         let currentUrl = new URL(window.location.href);
@@ -65,45 +126,204 @@ export class Control {
             }
         }
 
-        $("#saturationButton").on("click", () => {
-            this.generateEquivalenceTriples().then(equivalences => {
-                this.store.addAll(equivalences);
-                this.refreshStore();
-                return;
-            });
-        });
-
-        $('#forceHTTPScheckbox').on("change", () => {
-            var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
-            this.forceHTTPSFlag = checkboxValue;
-        })
-
-        let loadModelInput = $('#loadTextarea');
-        const loadModal = new bootstrap.Modal('#loadModalDiv', {})
-        $("#loadButton").on("click", () => {
-            loadModal.show();
-        })
-
-        $('#clearLoadButton').on("click", () => {
-            loadModelInput.val("");
-        });
-
-        $('#closeLoadButton').on("click", () => {
-            loadModal.hide();
-        });
-
-        $('#saveLoadButton').on("click", () => {
-            try {
-                this.importData(loadModelInput.val().toLocaleString(), $('#loadFileFormatSelect').val().toLocaleString()).then(() => {
-                    loadModal.hide();
-                });
-            } catch (e) {
-                console.error(e);
-                $("#loadErrorDiv").text(e.message);
-            }
-        });
-
         this.addStatement($rdf.st(RDFUtils.exampleDataset, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")));
+    }
+
+    setFAIRRadar(): Promise<void> {
+        
+        const mainContentColWidth = $("#mainContentCol").width();
+        controlInstance.radarChart.resize({
+            width: mainContentColWidth,
+            height: 500,
+        });
+
+        function setFAIRError(message) {
+            $("#fairError").text(message);
+            $("#fairError").addClass("alert-danger");
+        }
+
+        function resetFAIRError() {
+            $("#fairError").text("");
+            $("#fairError").removeClass("alert-danger");
+        }
+
+        return Query.fetchJSONPromise("https://fair-checker.france-bioinformatique.fr/api/check/metrics_all?url=" + encodeURIComponent(document.location.href)).then(result => {
+        // return Query.fetchJSONPromise("https://fair-checker.france-bioinformatique.fr/api/check/metrics_all?url=" + encodeURIComponent("https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX")).then(result => {
+
+            resetFAIRError();
+            $("#fairchecker").removeClass("collapse");
+            if (Array.isArray(result) && result.length > 0) {
+                let F1AScore = result.find(metric => metric.metric === "F1A")?.score;
+                let F1BScore = result.find(metric => metric.metric === "F1B")?.score;
+                let F2AScore = result.find(metric => metric.metric === "F2A")?.score;
+                let F2BScore = result.find(metric => metric.metric === "F2B")?.score;
+                let A11Score = result.find(metric => metric.metric === "A1.1")?.score;
+                let A12Score = result.find(metric => metric.metric === "A1.2")?.score;
+                let I1Score = result.find(metric => metric.metric === "I1")?.score;
+                let I2Score = result.find(metric => metric.metric === "I2")?.score;
+                let I3Score = result.find(metric => metric.metric === "I3")?.score;
+                let R11Score = result.find(metric => metric.metric === "R1.1")?.score;
+                let R12Score = result.find(metric => metric.metric === "R1.2")?.score;
+                let R13Score = result.find(metric => metric.metric === "R1.3")?.score;
+
+                if ([F1AScore, F1BScore, F2AScore, F2BScore, A11Score, A12Score, I1Score, I2Score, I3Score, R11Score, R12Score, R13Score].some(score => score == undefined)) {
+                    setFAIRError("One of the metrics could not be retrieved from FAIR-checker " + JSON.stringify(result, null, 2));
+                } else {
+
+                    F1AScore = Number.parseInt(F1AScore);
+                    F1BScore = 2 ;// Number.parseInt(F1BScore); // Stuck at 2 because we are generating URIs for the dataset and identifiers are a bioinformatics oriented metric
+                    F2AScore = Number.parseInt(F2AScore);
+                    F2BScore = Number.parseInt(F2BScore);
+                    A11Score = Number.parseInt(A11Score);
+                    A12Score = Number.parseInt(A12Score);
+                    I1Score = Number.parseInt(I1Score); 
+                    I2Score = Number.parseInt(I2Score);
+                    I3Score = Number.parseInt(I3Score);
+                    R11Score = Number.parseInt(R11Score);
+                    R12Score = Number.parseInt(R12Score);
+                    R13Score = Number.parseInt(R13Score);
+
+                    let option = {
+                        title: {
+                            text: 'FAIR-Checker evaluation',
+                            left: 'center'
+                        },
+                        legend: {
+                            show: false
+                        },
+                        radar: [
+                            {
+                                axisName: {
+                                    show: true,
+                                },
+                                indicator: [
+                                    { name: 'Findable', max: 8 },
+                                    { name: 'Accessible', max: 4 },
+                                    { name: 'Interoperable', max: 6 },
+                                    { name: 'Reusable', max: 6 }
+                                ],
+                                center: ['25%', '50%'],
+                                radius: "50%"
+                            },
+                            {
+                                axisName: {
+                                    show: true,
+                                },
+                                indicator: [
+                                    { name: 'F1A', max: 2 },
+                                    { name: 'F1B', max: 2 },
+                                    { name: 'F2A', max: 2 },
+                                    { name: 'F2B', max: 2 }
+                                ],
+                                center: ['62%', '25%'],
+                                radius: "20%"
+                            },
+                            {
+                                axisName: {
+                                    show: true,
+                                },
+                                indicator: [
+                                    { name: 'A1.1', max: 2 },
+                                    { name: '', max: 2 },
+                                    { name: 'A1.2', max: 2 },
+                                    { name: '', max: 2 }
+                                ],
+                                center: ['87%', '25%'],
+                                radius: "20%"
+                            },
+                            {
+                                axisName: {
+                                    show: true,
+                                },
+                                indicator: [
+                                    { name: 'I1', max: 2 },
+                                    { name: 'I2', max: 2 },
+                                    { name: 'I3', max: 2 }
+                                ],
+                                center: ['62%', '75%'],
+                                radius: "20%"
+                            },
+                            {
+                                axisName: {
+                                    show: true,
+                                },
+                                indicator: [
+                                    { name: 'R1.1', max: 2 },
+                                    { name: 'R1.2', max: 2 },
+                                    { name: 'R1.3', max: 2 }
+                                ],
+                                center: ['87%', '75%'],
+                                radius: "20%"
+                            },
+                        ],
+                        series: [
+                            {
+                                name: 'FAIRness evaluation',
+                                radarIndex: 0,
+                                type: 'radar',
+                                data: [
+                                    {
+                                        value: [F1AScore + F1BScore + F2AScore + F2BScore, A11Score + A12Score, I1Score + I2Score + I3Score, R11Score + R12Score + R13Score],
+                                        name: 'Dataset'
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'Findability',
+                                radarIndex: 1,
+                                type: 'radar',
+                                data: [
+                                    {
+                                        value: [F1AScore, F1BScore, F2AScore, F2BScore],
+                                        name: 'Dataset'
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'Accessibility',
+                                radarIndex: 2,
+                                type: 'radar',
+                                data: [
+                                    {
+                                        value: [A11Score, 0, A12Score, 0],
+                                        name: 'Dataset'
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'Interoperability',
+                                radarIndex: 3,
+                                type: 'radar',
+                                data: [
+                                    {
+                                        value: [I1Score, I2Score, I3Score],
+                                        name: 'Dataset'
+                                    }
+                                ]
+                            },
+                            {
+                                name: 'Reusability',
+                                radarIndex: 4,
+                                type: 'radar',
+                                data: [
+                                    {
+                                        value: [R11Score, R12Score, R13Score],
+                                        name: 'Dataset'
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+
+                    option && controlInstance.radarChart.setOption(option);
+                }
+            } else {
+                setFAIRError("No result returned by FAIR-checker");
+            }
+            $("#fairresult").text(JSON.stringify(result, null, 2));
+        }).catch(error => {
+            setFAIRError("Error while checking the FAIRness of the dataset: " + error);
+        })
     }
 
     changeUrlDescriptionParameter() {
@@ -170,12 +390,12 @@ export class Control {
         let parsedStore = RDFUtils.createStore();
         return parsingfunction(data, parsedStore).then(store => {
             return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/master/data/equivalences.ttl")
-            .then(equivalences => {
-                return equiv.applyEquivalences(equivalences, store);
-            }).then(equivalences => {
-                store.addAll(equivalences);
-                return store;
-            })
+                .then(equivalences => {
+                    return equiv.applyEquivalences(equivalences, store);
+                }).then(equivalences => {
+                    store.addAll(equivalences);
+                    return store;
+                })
         }).then(store => {
             function loadCategroyViewValues(catView, store) {
                 let newLinesValues = [];

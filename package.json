@@ -15,7 +15,7 @@
     "crypto-browserify": "^3.12.0",
     "d3": "latest",
     "dayjs": "^1.11.5",
-    "echarts": "latest",
+    "echarts": "^5.4.3",
     "events": "^3.3.0",
     "https-browserify": "^1.0.0",
     "jquery": "^3.6.0",
