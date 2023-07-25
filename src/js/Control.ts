@@ -320,6 +320,10 @@ export class Control {
             controlInstance.setDisplay(str);
             this.changeUrlDescriptionParameter();
         })
+        RDFUtils.serializeStoreToJSONLDPromise(this.store).then(str => {
+            console.log(str);
+            $("#fairJson").html(str);
+        })
     }
 
     sendMetadatatoServer() {
