@@ -505,12 +505,13 @@ export class Control {
 
             catMetadataView.on("add", (statements, source) => {
                 this.addAllStatements(statements);
-                this.sendMetadatatoServer();
+                if(catMetadataView.coreElement.idPrefix === "endpoint") {
+                    this.sendMetadatatoServer();
+                }
             });
 
             catMetadataView.on("remove", (statements, source) => {
                 this.removeAllStatements(statements);
-                this.sendMetadatatoServer();
             });
 
             catMetadataView.on("error", (message, source) => {
@@ -541,17 +542,18 @@ export class Control {
             this.changeUrlDescriptionParameter();
         })
         RDFUtils.serializeStoreToJSONLDPromise(this.store).then(str => {
-            console.log(str);
             $("#fairJson").html(str);
         })
     }
 
     sendMetadatatoServer() {
-        // if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
-        //     RDFUtils.serializeStoreToNTriplesPromise(this.store).then(str => {
-        //         const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
-        //         return Query.fetchJSONPromise(finalUrl).catch(error => { })
-        //     }).catch(error => { })
-        // }
+        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
+            let str = "";
+            this.store.statementsMatching(null, RDFUtils.VOID("sparqlEndpoint"), null).forEach(statement => {
+                str += statement.toNT() + " ";
+            })
+            const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+            return Query.fetchJSONPromise(finalUrl).catch(error => { })
+        }
     }
 }
