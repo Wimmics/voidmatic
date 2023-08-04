@@ -90,9 +90,13 @@ export class Control {
             });
 
             $("#fairButton").on("click", () => {
-                $("#fairButton").prop("disabled", true);
+                $("#fairButton").removeClass("btn-dark");
+                $("#fairButton").removeClass("btn-success");
+                $("#fairButton").addClass("btn-warning");
                 this.setFAIRRadar().then(() => {
-                    $("#fairButton").prop("disabled", false);
+                    $("#fairButton").removeClass("btn-dark");
+                    $("#fairButton").removeClass("btn-warning");
+                    $("#fairButton").addClass("btn-success");
                     return;
                 })
             })
@@ -101,9 +105,6 @@ export class Control {
             const baseHeight = window.innerHeight * 0.45;
 
             let radarDOM = document.getElementById('fairRadar');
-            // radarDOM.setAttribute('width', `${baseWidth}px`);
-            // radarDOM.setAttribute('height', `${baseHeight}px`);
-            // radarDOM.setAttribute('style', `width: ${baseWidth}px; height: ${baseHeight}px`);
             this.radarChart = echarts.init(radarDOM);
 
         // };
@@ -148,8 +149,7 @@ export class Control {
         }
 
         return Query.fetchJSONPromise("https://fair-checker.france-bioinformatique.fr/api/check/metrics_all?url=" + encodeURIComponent(document.location.href)).then(result => {
-        // return Query.fetchJSONPromise("https://fair-checker.france-bioinformatique.fr/api/check/metrics_all?url=" + encodeURIComponent("https://data.inrae.fr/dataset.xhtml?persistentId=doi:10.15454/P27LDX")).then(result => {
-
+        
             resetFAIRError();
             $("#fairchecker").removeClass("collapse");
             if (Array.isArray(result) && result.length > 0) {
@@ -171,7 +171,7 @@ export class Control {
                 } else {
 
                     F1AScore = Number.parseInt(F1AScore);
-                    F1BScore = 2 ;// Number.parseInt(F1BScore); // Stuck at 2 because we are generating URIs for the dataset and identifiers are a bioinformatics oriented metric
+                    F1BScore = 0 ;// Number.parseInt(F1BScore); // Stuck at 0 because we are generating URIs for the dataset and identifiers are a bioinformatics oriented metric
                     F2AScore = Number.parseInt(F2AScore);
                     F2BScore = Number.parseInt(F2BScore);
                     A11Score = Number.parseInt(A11Score);

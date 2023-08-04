@@ -54,9 +54,9 @@ export const inputMetadata = [
                     let inputVal = valuesArray[0];
                     let inputTag = valuesArray[1];
                     if (inputTag.length > 0) {
-                        return [ $rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal, inputTag))];
                     } else {
-                        return [ $rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal))];
+                        return [$rdf.st(exampleDataset, RDFUtils.DCT('title'), $rdf.lit(inputVal))];
                     }
                 },
                 dataValidationFunction: valuesArray => {
@@ -70,17 +70,23 @@ export const inputMetadata = [
                     }
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('title'), null).map(statement => statement.object).map(object => {
-                        if($rdf.isLiteral(object)) {
-                            if(object.language !== undefined) {
-                                return [object.value, object.language];
-                            } else {
-                                return [object.value, ""];
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('title'), null).map(statement => statement.object).map(object => {
+                            if ($rdf.isLiteral(object)) {
+                                if (object.language !== undefined) {
+                                    return [object.value, object.language];
+                                } else {
+                                    return [object.value, ""];
+                                }
                             }
-                        } 
-                        else {
-                            return [object.value, ""]; // Should never happen
-                        }});
+                            else {
+                                return [object.value, ""]; // Should never happen
+                            }
+                        });
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
                 fieldPattern: [[$rdf.st(null, RDFUtils.DCT('title'), null)]]
@@ -120,17 +126,23 @@ export const inputMetadata = [
                     }
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('description'), null).map(statement => statement.object).map(object => {
-                        if($rdf.isLiteral(object)) {
-                            if(object.language !== undefined) {
-                                return [object.value, object.language];
-                            } else {
-                                return [object.value, ""];
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('description'), null).map(statement => statement.object).map(object => {
+                            if ($rdf.isLiteral(object)) {
+                                if (object.language !== undefined) {
+                                    return [object.value, object.language];
+                                } else {
+                                    return [object.value, ""];
+                                }
                             }
-                        } 
-                        else {
-                            return [object.value, ""]; // Should never happen
-                        }});
+                            else {
+                                return [object.value, ""]; // Should never happen
+                            }
+                        });
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
                 fieldPattern: [[$rdf.st(null, RDFUtils.DCT('description'), null)]]
@@ -169,6 +181,7 @@ export const inputMetadata = [
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
                     let inputVals = store.statementsMatching(null, RDFUtils.VOID('sparqlEndpoint'), null).map(statement => [statement.object.value]);
+                    inputVals = inputVals.concat(store.statementsMatching(null, RDFUtils.DCAT('endpointURL'), null).map(statement => [statement.object.value]));
                     return inputVals;
                 },
                 fieldPattern: [[$rdf.st(null, RDFUtils.DCAT('endpointURL'), null)]]
@@ -217,7 +230,12 @@ export const inputMetadata = [
                             return null;
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('creator'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('creator'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
                         fieldPattern: [[$rdf.st(null, RDFUtils.DCT('creator'), null)]]
@@ -256,7 +274,12 @@ export const inputMetadata = [
                             return null;
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('contributor'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('contributor'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
                         fieldPattern: [[$rdf.st(null, RDFUtils.DCT('contributor'), null)]]
@@ -289,43 +312,43 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            if(dayjs(inputVal, [
-                                'YYYY-MM-DD', 
-                                "DD-MM-YYYY", 
-                                'YYYY MM DD', 
-                                "DD MM YYYY", 
-                                'YYYY/MM/DD', 
+                            if (dayjs(inputVal, [
+                                'YYYY-MM-DD',
+                                "DD-MM-YYYY",
+                                'YYYY MM DD',
+                                "DD MM YYYY",
+                                'YYYY/MM/DD',
                                 "DD/MM/YYYY"], true).isValid()) { // This is a date
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
-                            } else if(dayjs(inputVal, [
-                                "YYYY-MM-DD'T'HH:mm:ss", 
-                                "DD-MM-YYYY'T'HH:mm:ss", 
-                                "YYYY-MM-DD HH:mm:ss", 
-                                "DD-MM-YYYY HH:mm:ss", 
-                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
-                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
-                                "YYYY-MM-DD HH:mm:ssXXX", 
-                                "DD-MM-YYYY HH:mm:ssXXX", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                            } else if (dayjs(inputVal, [
+                                "YYYY-MM-DD'T'HH:mm:ss",
+                                "DD-MM-YYYY'T'HH:mm:ss",
+                                "YYYY-MM-DD HH:mm:ss",
+                                "DD-MM-YYYY HH:mm:ss",
+                                "YYYY-MM-DD'T'HH:mm:ssXXX",
+                                "DD-MM-YYYY'T'HH:mm:ssXXX",
+                                "YYYY-MM-DD HH:mm:ssXXX",
+                                "DD-MM-YYYY HH:mm:ssXXX",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
-                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY HH:mm:ss.SSSXXX"
                             ]).isValid()) { // This is a date and time
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
-                            } else if(dayjs(inputVal, [
-                                'YYYY-MM', 
-                                "MM-YYYY", 
-                                'YYYY MM', 
-                                "MM YYYY", 
-                                'YYYY/MM', 
+                            } else if (dayjs(inputVal, [
+                                'YYYY-MM',
+                                "MM-YYYY",
+                                'YYYY MM',
+                                "MM YYYY",
+                                'YYYY/MM',
                                 "MM/YYYY"], true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
-                            }else if(dayjs(inputVal, 'YYYY', true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
+                            } else if (dayjs(inputVal, 'YYYY', true).isValid()) {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
                             } else {
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('issued'), $rdf.lit(inputVal))];
                             }
@@ -340,7 +363,12 @@ export const inputMetadata = [
                             }
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('issued'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('issued'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
                         fieldPattern: [[$rdf.st(null, RDFUtils.DCT('issued'), null)]]
@@ -361,43 +389,43 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            if(dayjs(inputVal, [
-                                'YYYY-MM-DD', 
-                                "DD-MM-YYYY", 
-                                'YYYY MM DD', 
-                                "DD MM YYYY", 
-                                'YYYY/MM/DD', 
+                            if (dayjs(inputVal, [
+                                'YYYY-MM-DD',
+                                "DD-MM-YYYY",
+                                'YYYY MM DD',
+                                "DD MM YYYY",
+                                'YYYY/MM/DD',
                                 "DD/MM/YYYY"], true).isValid()) { // This is a date
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
-                            } else if(dayjs(inputVal, [
-                                "YYYY-MM-DD'T'HH:mm:ss", 
-                                "DD-MM-YYYY'T'HH:mm:ss", 
-                                "YYYY-MM-DD HH:mm:ss", 
-                                "DD-MM-YYYY HH:mm:ss", 
-                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
-                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
-                                "YYYY-MM-DD HH:mm:ssXXX", 
-                                "DD-MM-YYYY HH:mm:ssXXX", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                            } else if (dayjs(inputVal, [
+                                "YYYY-MM-DD'T'HH:mm:ss",
+                                "DD-MM-YYYY'T'HH:mm:ss",
+                                "YYYY-MM-DD HH:mm:ss",
+                                "DD-MM-YYYY HH:mm:ss",
+                                "YYYY-MM-DD'T'HH:mm:ssXXX",
+                                "DD-MM-YYYY'T'HH:mm:ssXXX",
+                                "YYYY-MM-DD HH:mm:ssXXX",
+                                "DD-MM-YYYY HH:mm:ssXXX",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
-                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY HH:mm:ss.SSSXXX"
                             ]).isValid()) {  // This is a date and time
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
-                            } else if(dayjs(inputVal, [
-                                'YYYY-MM', 
-                                "MM-YYYY", 
-                                'YYYY MM', 
-                                "MM YYYY", 
-                                'YYYY/MM', 
+                            } else if (dayjs(inputVal, [
+                                'YYYY-MM',
+                                "MM-YYYY",
+                                'YYYY MM',
+                                "MM YYYY",
+                                'YYYY/MM',
                                 "MM/YYYY"], true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
-                            }else if(dayjs(inputVal, 'YYYY', true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
+                            } else if (dayjs(inputVal, 'YYYY', true).isValid()) {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
                             } else {
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('modified'), $rdf.lit(inputVal))];
                             }
@@ -412,7 +440,12 @@ export const inputMetadata = [
                             }
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('modified'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('modified'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
                         fieldPattern: [[$rdf.st(null, RDFUtils.DCT('modified'), null)]]
@@ -433,43 +466,43 @@ export const inputMetadata = [
                         defaultValue: [dayjs().format("YYYY-MM-DD")],
                         dataCreationFunction(valuesArray: string[]): $rdf.Statement[] {
                             let inputVal = valuesArray[0];
-                            if(dayjs(inputVal, [
-                                'YYYY-MM-DD', 
-                                "DD-MM-YYYY", 
-                                'YYYY MM DD', 
-                                "DD MM YYYY", 
-                                'YYYY/MM/DD', 
+                            if (dayjs(inputVal, [
+                                'YYYY-MM-DD',
+                                "DD-MM-YYYY",
+                                'YYYY MM DD',
+                                "DD MM YYYY",
+                                'YYYY/MM/DD',
                                 "DD/MM/YYYY"], true).isValid()) { // This is a date
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("date")))];
-                            } else if(dayjs(inputVal, [ 
-                                "YYYY-MM-DD'T'HH:mm:ss", 
-                                "DD-MM-YYYY'T'HH:mm:ss", 
-                                "YYYY-MM-DD HH:mm:ss", 
-                                "DD-MM-YYYY HH:mm:ss", 
-                                "YYYY-MM-DD'T'HH:mm:ssXXX", 
-                                "DD-MM-YYYY'T'HH:mm:ssXXX", 
-                                "YYYY-MM-DD HH:mm:ssXXX", 
-                                "DD-MM-YYYY HH:mm:ssXXX", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD HH:mm:ss.SSS'Z'", 
-                                "DD-MM-YYYY HH:mm:ss.SSS'Z'", 
-                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX", 
+                            } else if (dayjs(inputVal, [
+                                "YYYY-MM-DD'T'HH:mm:ss",
+                                "DD-MM-YYYY'T'HH:mm:ss",
+                                "YYYY-MM-DD HH:mm:ss",
+                                "DD-MM-YYYY HH:mm:ss",
+                                "YYYY-MM-DD'T'HH:mm:ssXXX",
+                                "DD-MM-YYYY'T'HH:mm:ssXXX",
+                                "YYYY-MM-DD HH:mm:ssXXX",
+                                "DD-MM-YYYY HH:mm:ssXXX",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY'T'HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD HH:mm:ss.SSS'Z'",
+                                "DD-MM-YYYY HH:mm:ss.SSS'Z'",
+                                "YYYY-MM-DD'T'HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY'T'HH:mm:ss.SSSXXX",
-                                "YYYY-MM-DD HH:mm:ss.SSSXXX", 
+                                "YYYY-MM-DD HH:mm:ss.SSSXXX",
                                 "DD-MM-YYYY HH:mm:ss.SSSXXX"
                             ]).isValid()) { // This is a date and time
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("dateTime")))];
-                            } else if(dayjs(inputVal, [
-                                'YYYY-MM', 
-                                "MM-YYYY", 
-                                'YYYY MM', 
-                                "MM YYYY", 
-                                'YYYY/MM', 
+                            } else if (dayjs(inputVal, [
+                                'YYYY-MM',
+                                "MM-YYYY",
+                                'YYYY MM',
+                                "MM YYYY",
+                                'YYYY/MM',
                                 "MM/YYYY"], true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
-                            }else if(dayjs(inputVal, 'YYYY', true).isValid()) {
-                                    return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYearMonth")))];
+                            } else if (dayjs(inputVal, 'YYYY', true).isValid()) {
+                                return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal, undefined, RDFUtils.XSD("gYear")))];
                             } else {
                                 return [$rdf.st(exampleDataset, RDFUtils.DCT('created'), $rdf.lit(inputVal))];
                             }
@@ -484,7 +517,12 @@ export const inputMetadata = [
                             }
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('created'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('created'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
                         fieldPattern: [[$rdf.st(null, RDFUtils.DCT('created'), null)]]
@@ -525,10 +563,15 @@ export const inputMetadata = [
                     }
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCAT('keyword'), null).concat(store.statementsMatching(null, RDFUtils.DCAT('theme'), null)).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCAT('keyword'), null).concat(store.statementsMatching(dataset, RDFUtils.DCAT('theme'), null)).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('theme'), null)] , [$rdf.st(null, RDFUtils.DCAT('keyword'), null)]]
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCAT('theme'), null)], [$rdf.st(null, RDFUtils.DCAT('keyword'), null)]]
             })
         ]
     }),
@@ -558,10 +601,15 @@ export const inputMetadata = [
                     }
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCAT('version'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCAT('version'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('version'), null)]]
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCAT('version'), null)]]
             })
         ]
     }),
@@ -603,10 +651,15 @@ export const inputMetadata = [
                     return [suggestions.license];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('license'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('license'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [$rdf.st(null, RDFUtils.DCAT('license'), $rdf.variable("license") ), $rdf.st($rdf.variable("license"), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument'))]]
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCAT('license'), $rdf.variable("license")), $rdf.st($rdf.variable("license"), RDFUtils.RDF('type'), RDFUtils.DCT('LicenseDocument'))]]
             })
         ]
     }),
@@ -668,10 +721,15 @@ export const inputMetadata = [
                             return result;
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('rightsHolder'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('rightsHolder'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
-                        fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('rightsHolder'), null)]]
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('rightsHolder'), null)]]
                     })
                 ]
             }),
@@ -723,10 +781,15 @@ export const inputMetadata = [
                             ]
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputVals = store.statementsMatching(null, RDFUtils.DCT('accessRights'), null).map(statement => [statement.object.value]);
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('accessRights'), null).map(statement => [statement.object.value]);
+                                inputVals = inputVals.concat(datasetInputVals);
+                            });
                             return inputVals;
                         },
-                        fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('accessRights'), null)]]
+                        fieldPattern: [[$rdf.st(null, RDFUtils.DCT('accessRights'), null)]]
                     })
                 ]
             }),
@@ -783,23 +846,27 @@ export const inputMetadata = [
                             }
                         },
                         dataLoadFunction(store: $rdf.Store): string[][] {
-                            let inputNs = store.statementsMatching(null, RDFUtils.VOID('uriSpace'), null).map(statement => statement.object.value);
-                            let result = inputNs.map(ns => {
-                                let prefixes = store.statementsMatching($rdf.sym(ns), RDFUtils.VANN('preferredNamespacePrefix'), null).map(statement => statement.object.value);
-                                if (prefixes.length > 0) {
-                                    return [ns,""];
-                                } else {
-                                    return [ns, prefixes[0]];
-                                }
+                            let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                            let inputVals = [];
+                            datasets.forEach(dataset => {
+                                let inputNs = store.statementsMatching(dataset, RDFUtils.VOID('uriSpace'), null).map(statement => statement.object.value);
+                                inputVals = inputVals.concat(inputNs.map(ns => {
+                                    let prefixes = store.statementsMatching($rdf.sym(ns), RDFUtils.VANN('preferredNamespacePrefix'), null).map(statement => statement.object.value);
+                                    if (prefixes.length > 0) {
+                                        return [ns, ""];
+                                    } else {
+                                        return [ns, prefixes[0]];
+                                    }
+                                }))
                             })
-                            return result;
+                            return inputVals;
                         },
-                        fieldPattern: [ 
+                        fieldPattern: [
                             [
                                 $rdf.st(null, RDFUtils.VOID('uriSpace'), $rdf.variable("ns")),
                                 $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespaceUri'), null),
                                 $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespacePrefix'), null)
-                            ],[
+                            ], [
                                 $rdf.st(exampleDataset, RDFUtils.VOID('uriSpace'), $rdf.variable("ns")),
                                 $rdf.st($rdf.variable("ns"), RDFUtils.VANN('preferredNamespaceUri'), null)
                             ]
@@ -865,10 +932,15 @@ export const inputMetadata = [
                     return [vocabularySuggestions];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.VOID('vocabulary'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [$rdf.st(null, RDFUtils.VOID('vocabulary'), null)]]
+                fieldPattern: [[$rdf.st(null, RDFUtils.VOID('vocabulary'), null)]]
             })
         ]
     }),
@@ -931,10 +1003,15 @@ export const inputMetadata = [
                     return [suggestions.lang];
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.DCT('language'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.DCT('language'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [$rdf.st(null, RDFUtils.DCT('language'), null)]]
+                fieldPattern: [[$rdf.st(null, RDFUtils.DCT('language'), null)]]
             })
         ]
     }),
@@ -1003,25 +1080,28 @@ export const inputMetadata = [
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = []
-                    let graphNodes = store.statementsMatching(null, RDFUtils.SD('namedGraph'), null).map(statement => statement.object)
-                    let graphBlankNodes = [];
-                    graphNodes.forEach(graphNode => {
-                        if( $rdf.isBlankNode( graphNode)) {
-                            graphBlankNodes.push(graphNode) 
-                        } else if($rdf.isNamedNode(graphNode)) {
-                            inputVals.push([graphNode.value])
-                        }
-                    });
-                    graphBlankNodes.forEach(graphBlankNode => {
-                        let graphName = store.any(graphBlankNode, RDFUtils.SD('name'), null);
-                        if(graphName != undefined) {
-                            inputVals.push([graphName.value])
-                        }
-                    });
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let graphNodes = store.statementsMatching(dataset, RDFUtils.SD('namedGraph'), null).map(statement => statement.object)
+                        let graphBlankNodes = [];
+                        graphNodes.forEach(graphNode => {
+                            if ($rdf.isBlankNode(graphNode)) {
+                                graphBlankNodes.push(graphNode)
+                            } else if ($rdf.isNamedNode(graphNode)) {
+                                inputVals.push([graphNode.value])
+                            }
+                        });
+                        graphBlankNodes.forEach(graphBlankNode => {
+                            let graphName = store.any(graphBlankNode, RDFUtils.SD('name'), null);
+                            if (graphName != undefined) {
+                                inputVals.push([graphName.value])
+                            }
+                        });
+                    })
                     return inputVals;
                 },
-                fieldPattern: [ [
+                fieldPattern: [[
                     $rdf.st($rdf.variable('dataset'), RDFUtils.SD('namedGraph'), $rdf.variable('graphNode')),
                     $rdf.st($rdf.variable('graphNode'), RDFUtils.SD('name'), $rdf.variable('graphNode')),
                     $rdf.st($rdf.variable('dataset'), RDFUtils.RDF("type"), RDFUtils.SD("Dataset")),
@@ -1090,10 +1170,15 @@ export const inputMetadata = [
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('triples'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.VOID('triples'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [
+                fieldPattern: [[
                     $rdf.st(null, RDFUtils.VOID('triples'), null)
                 ]]
             })
@@ -1155,10 +1240,15 @@ export const inputMetadata = [
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('classes'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.VOID('classes'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [
+                fieldPattern: [[
                     $rdf.st(null, RDFUtils.VOID('classes'), null)
                 ]]
             })
@@ -1220,10 +1310,15 @@ export const inputMetadata = [
                         })
                 },
                 dataLoadFunction(store: $rdf.Store): string[][] {
-                    let inputVals = store.statementsMatching(null, RDFUtils.VOID('properties'), null).map(statement => [statement.object.value]);
+                    let datasets = store.statementsMatching(null, RDFUtils.RDF('type'), RDFUtils.DCAT('Dataset')).map(statement => statement.subject);
+                    let inputVals = [];
+                    datasets.forEach(dataset => {
+                        let datasetInputVals = store.statementsMatching(dataset, RDFUtils.VOID('properties'), null).map(statement => [statement.object.value]);
+                        inputVals = inputVals.concat(datasetInputVals);
+                    });
                     return inputVals;
                 },
-                fieldPattern: [ [
+                fieldPattern: [[
                     $rdf.st(null, RDFUtils.VOID('properties'), null)
                 ]]
             })
