@@ -798,7 +798,7 @@ export const inputMetadata = [
                                 let inputNs = store.statementsMatching(dataset, RDFUtils.VOID('uriSpace'), null).map(statement => statement.object.value);
                                 inputVals = inputVals.concat(inputNs.map(ns => {
                                     let prefixes = store.statementsMatching($rdf.sym(ns), RDFUtils.VANN('preferredNamespacePrefix'), null).map(statement => statement.object.value);
-                                    if (prefixes.length > 0) {
+                                    if (prefixes.length == 0) {
                                         return [ns, ""];
                                     } else {
                                         return [ns, prefixes[0]];
