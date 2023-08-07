@@ -482,7 +482,7 @@ export const inputMetadata = [
         categoryTitle: "Keywords",
         legend: "Keywords describing the content of the knowledge base.",
         idPrefix: "keyword",
-        minArity: 2,
+        minArity: 0,
         maxArity: Infinity,
         computable: false,
         fields: [
