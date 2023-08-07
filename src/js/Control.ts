@@ -43,69 +43,73 @@ export class Control {
 
         // window.onload = (event) => {
 
-            this.initCategoryViews();
+        this.initCategoryViews();
 
-            $("#downloadButton").on("click", () => {
-                RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
-                    saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
-                })
+        $("#downloadButton").on("click", () => {
+            RDFUtils.serializeStoreToTurtlePromise(this.store).then(fileContent => {
+                saveAs(new Blob([fileContent], { "type": "text/turtle" }), "description.ttl")
+            })
+        });
+
+        $("#saturationButton").on("click", () => {
+            this.generateEquivalenceTriples().then(equivalences => {
+                this.store.addAll(equivalences);
+                this.refreshStore();
+                return;
             });
+        });
 
-            $("#saturationButton").on("click", () => {
-                this.generateEquivalenceTriples().then(equivalences => {
-                    this.store.addAll(equivalences);
-                    this.refreshStore();
-                    return;
+        $('#forceHTTPScheckbox').on("change", () => {
+            var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
+            this.forceHTTPSFlag = checkboxValue;
+        })
+
+        let loadModelInput = $('#loadTextarea');
+        const loadModal = new bootstrap.Modal('#loadModalDiv', {})
+        $("#loadButton").on("click", () => {
+            loadModal.show();
+        })
+
+        $("#clearButton").on("click", () => {
+            this.clearAll();
+        });
+
+        $('#clearLoadButton').on("click", () => {
+            loadModelInput.val("");
+        });
+
+        $('#closeLoadButton').on("click", () => {
+            loadModal.hide();
+        });
+
+        $('#saveLoadButton').on("click", () => {
+            try {
+                this.importData(loadModelInput.val().toLocaleString(), $('#loadFileFormatSelect').val().toLocaleString()).then(() => {
+                    loadModal.hide();
                 });
-            });
+            } catch (e) {
+                console.error(e);
+                $("#loadErrorDiv").text(e.message);
+            }
+        });
 
-            $('#forceHTTPScheckbox').on("change", () => {
-                var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
-                this.forceHTTPSFlag = checkboxValue;
-            })
-
-            let loadModelInput = $('#loadTextarea');
-            const loadModal = new bootstrap.Modal('#loadModalDiv', {})
-            $("#loadButton").on("click", () => {
-                loadModal.show();
-            })
-
-            $('#clearLoadButton').on("click", () => {
-                loadModelInput.val("");
-            });
-
-            $('#closeLoadButton').on("click", () => {
-                loadModal.hide();
-            });
-
-            $('#saveLoadButton').on("click", () => {
-                try {
-                    this.importData(loadModelInput.val().toLocaleString(), $('#loadFileFormatSelect').val().toLocaleString()).then(() => {
-                        loadModal.hide();
-                    });
-                } catch (e) {
-                    console.error(e);
-                    $("#loadErrorDiv").text(e.message);
-                }
-            });
-
-            $("#fairButton").on("click", () => {
+        $("#fairButton").on("click", () => {
+            $("#fairButton").removeClass("btn-dark");
+            $("#fairButton").removeClass("btn-success");
+            $("#fairButton").addClass("btn-warning");
+            this.setFAIRRadar().then(() => {
                 $("#fairButton").removeClass("btn-dark");
-                $("#fairButton").removeClass("btn-success");
-                $("#fairButton").addClass("btn-warning");
-                this.setFAIRRadar().then(() => {
-                    $("#fairButton").removeClass("btn-dark");
-                    $("#fairButton").removeClass("btn-warning");
-                    $("#fairButton").addClass("btn-success");
-                    return;
-                })
+                $("#fairButton").removeClass("btn-warning");
+                $("#fairButton").addClass("btn-success");
+                return;
             })
-            // Dirty hack to fix echarts width and height bug
-            const baseWidth = window.innerWidth - 270;
-            const baseHeight = window.innerHeight * 0.45;
+        })
+        // Dirty hack to fix echarts width and height bug
+        const baseWidth = window.innerWidth - 270;
+        const baseHeight = window.innerHeight * 0.45;
 
-            let radarDOM = document.getElementById('fairRadar');
-            this.radarChart = echarts.init(radarDOM);
+        let radarDOM = document.getElementById('fairRadar');
+        this.radarChart = echarts.init(radarDOM);
 
         // };
 
@@ -131,7 +135,7 @@ export class Control {
     }
 
     setFAIRRadar(): Promise<void> {
-        
+
         const mainContentColWidth = $("#mainContentCol").width();
         controlInstance.radarChart.resize({
             width: mainContentColWidth,
@@ -149,7 +153,7 @@ export class Control {
         }
 
         return Query.fetchJSONPromise("https://fair-checker.france-bioinformatique.fr/api/check/metrics_all?url=" + encodeURIComponent(document.location.href)).then(result => {
-        
+
             resetFAIRError();
             $("#fairchecker").removeClass("collapse");
             if (Array.isArray(result) && result.length > 0) {
@@ -171,12 +175,12 @@ export class Control {
                 } else {
 
                     F1AScore = Number.parseInt(F1AScore);
-                    F1BScore = 0 ;// Number.parseInt(F1BScore); // Stuck at 0 because we are generating URIs for the dataset and identifiers are a bioinformatics oriented metric
+                    F1BScore = 0;// Number.parseInt(F1BScore); // Stuck at 0 because we are generating URIs for the dataset and identifiers are a bioinformatics oriented metric
                     F2AScore = Number.parseInt(F2AScore);
                     F2BScore = Number.parseInt(F2BScore);
                     A11Score = Number.parseInt(A11Score);
                     A12Score = Number.parseInt(A12Score);
-                    I1Score = Number.parseInt(I1Score); 
+                    I1Score = Number.parseInt(I1Score);
                     I2Score = Number.parseInt(I2Score);
                     I3Score = Number.parseInt(I3Score);
                     R11Score = Number.parseInt(R11Score);
@@ -387,47 +391,51 @@ export class Control {
                 parsingfunction = RDFUtils.parseTurtleToStore;
                 break;
         };
-        let parsedStore = RDFUtils.createStore();
-        return parsingfunction(data, parsedStore).then(store => {
-            return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/master/data/equivalences.ttl")
-                .then(equivalences => {
-                    return equiv.applyEquivalences(equivalences, store);
-                }).then(equivalences => {
-                    store.addAll(equivalences);
-                    return store;
+        if (data !== undefined && data !== null && data !== "") {
+            let parsedStore = RDFUtils.createStore();
+            return parsingfunction(data, parsedStore).then(store => {
+                return equiv.readEquivalenceFile("https://raw.githubusercontent.com/Wimmics/voidmatic/master/data/equivalences.ttl")
+                    .then(equivalences => {
+                        return equiv.applyEquivalences(equivalences, store);
+                    }).then(equivalences => {
+                        store.addAll(equivalences);
+                        return store;
+                    })
+            }).then(store => {
+                function loadCategroyViewValues(catView, store) {
+                    let newLinesValues = [];
+                    catView.coreElement.fields.forEach(line => {
+                        newLinesValues = newLinesValues.concat(line.dataLoadFunction(store));
+                    })
+                    newLinesValues.forEach(newValue => {
+                        catView.addLine(newValue);
+                    })
+                    catView.subCategoryViews.forEach(subCatView => {
+                        loadCategroyViewValues(subCatView, store);
+                    })
+                }
+                function cleanCategory(catView) {
+                    let lineToBeRemoved = [];
+                    catView.lines.forEach((line, lineId) => {
+                        if (!FieldState.isValid(line.validationState)) {
+                            lineToBeRemoved.push(lineId);
+                        }
+                    })
+                    lineToBeRemoved.forEach(lineId => {
+                        catView.removeLine(lineId);
+                    })
+                    catView.subCategoryViews.forEach(subCatView => {
+                        cleanCategory(subCatView);
+                    })
+                }
+                this.categoryViews.forEach(catView => {
+                    cleanCategory(catView);
+                    loadCategroyViewValues(catView, store);
                 })
-        }).then(store => {
-            function loadCategroyViewValues(catView, store) {
-                let newLinesValues = [];
-                catView.coreElement.fields.forEach(line => {
-                    newLinesValues = newLinesValues.concat(line.dataLoadFunction(store));
-                })
-                newLinesValues.forEach(newValue => {
-                    catView.addLine(newValue);
-                })
-                catView.subCategoryViews.forEach(subCatView => {
-                    loadCategroyViewValues(subCatView, store);
-                })
-            }
-            function cleanCategory(catView) {
-                let lineToBeRemoved = [];
-                catView.lines.forEach((line, lineId) => {
-                    if (!FieldState.isValid(line.validationState)) {
-                        lineToBeRemoved.push(lineId);
-                    }
-                })
-                lineToBeRemoved.forEach(lineId => {
-                    catView.removeLine(lineId);
-                })
-                catView.subCategoryViews.forEach(subCatView => {
-                    cleanCategory(subCatView);
-                })
-            }
-            this.categoryViews.forEach(catView => {
-                cleanCategory(catView);
-                loadCategroyViewValues(catView, store);
-            })
-        });
+            });
+        } else {
+            return Promise.resolve();
+        }
     }
 
     standardizeEndpointURL(endpointURL) {
@@ -474,7 +482,7 @@ export class Control {
     removeAllStatements(statements: $rdf.Statement[]) {
         statements.forEach(statement => {
             if (this.store.holdsStatement(statement)) {
-                this.store.remove(statements);
+                this.store.remove(statement);
             }
             this.refreshStore();
         })
@@ -505,7 +513,7 @@ export class Control {
 
             catMetadataView.on("add", (statements, source) => {
                 this.addAllStatements(statements);
-                if(catMetadataView.coreElement.idPrefix === "endpoint") {
+                if (catMetadataView.coreElement.idPrefix === "endpoint") {
                     this.sendMetadatatoServer();
                 }
             });
@@ -544,6 +552,15 @@ export class Control {
         RDFUtils.serializeStoreToJSONLDPromise(this.store).then(str => {
             $("#fairJson").html(str);
         })
+    }
+
+    clearAll() {
+        console.log("Clearing all");
+        this.removeAllStatements(this.store.statementsMatching(null, null, null));
+        this.categoryViews.forEach(categoryView => {
+            categoryView.clear();
+        })
+        this.refreshStore();
     }
 
     sendMetadatatoServer() {
