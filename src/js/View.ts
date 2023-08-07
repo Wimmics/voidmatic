@@ -106,6 +106,17 @@ export class CategoryView extends ViewElement {
     setDisplay(content: string) {
         this.catDisplayContent.text(content);
     }
+    
+    clear() {
+        this.subCategoryViews.forEach(subCategory => {
+            subCategory.clear();
+        })
+        this.lines.forEach((line, lineId) => {
+            this.removeLine(lineId);
+        })
+        this.refresh();
+        this.refreshDisplay();
+    }
 
     addLine(value?: string[]): void {
 
