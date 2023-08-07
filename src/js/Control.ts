@@ -74,6 +74,29 @@ export class Control {
             this.clearAll();
         });
 
+        $("#exampleDBpediaButton").attr("title", "DESCRIBE <http://dbpedia.org/void/Dataset>")
+        $("#exampleDBpediaButton").on("click", () => {
+            this.clearAll();
+            $("#exampleDBpediaButton").removeClass("btn-dark");
+            $("#exampleDBpediaButton").removeClass("btn-success");
+            $("#exampleDBpediaButton").removeClass("btn-danger");
+            $("#exampleDBpediaButton").addClass("btn-warning");
+            this.fetchExample("https://dbpedia.org/sparql", "http://dbpedia.org/void/Dataset").then(exampleDescription => {
+                return this.importData(exampleDescription).then(() => {
+                    $("#exampleDBpediaButton").removeClass("btn-dark");
+                    $("#exampleDBpediaButton").removeClass("btn-warning");
+                    $("#exampleDBpediaButton").removeClass("btn-danger");
+                    $("#exampleDBpediaButton").addClass("btn-success");
+                });
+            }).catch(error => {
+                console.error(error);
+                $("#exampleDBpediaButton").removeClass("btn-dark");
+                $("#exampleDBpediaButton").removeClass("btn-warning");
+                $("#exampleDBpediaButton").removeClass("btn-success");
+                $("#exampleDBpediaButton").addClass("btn-danger");
+            })
+        });
+
         $('#clearLoadButton').on("click", () => {
             loadModelInput.val("");
         });
@@ -132,6 +155,13 @@ export class Control {
         }
 
         this.addStatement($rdf.st(RDFUtils.exampleDataset, RDFUtils.RDF("type"), RDFUtils.DCAT("Dataset")));
+    }
+
+    fetchExample(endpointUrl: string, resourceURL: string): Promise<string> {
+        let query = `DESCRIBE <${resourceURL}>`;
+        return Query.sparqlQueryPromise(endpointUrl, query).then(storeResult => {
+            return RDFUtils.serializeStoreToTurtlePromise(storeResult);
+        }).catch(error => { console.error(endpointUrl, query, error); throw error })
     }
 
     setFAIRRadar(): Promise<void> {

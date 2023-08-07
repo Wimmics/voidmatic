@@ -136,8 +136,14 @@
                 <p>
                     The current state of the form is encoded in the page's URL. You can copy the URL and save it for later or bookmark it. When you want to continue, simply paste the URL in your browser's address bar and press enter. You can also share the URL with someone else, so that they can see the current state of the form.
                 </p>
-                <button type="button" class="btn btn-dark" id="loadButton">Import the content from an existing description</button>
-                <button type="button" class="btn btn-dark" id="clearButton">Clear all</button>
+                <div class="container my-3">
+                    <button type="button" class="btn btn-dark" id="loadButton" title="Will load the given content and add it to the existing form">Import the content from an existing description</button>
+                    <button type="button" class="btn btn-dark" id="clearButton" title="Will remove all existing content">Clear all</button>
+                </div>
+                <div class="container my-3">
+                    <button type="button" class="btn btn-dark" id="exampleDBpediaButton">Load DBpedia example</button>
+                </div>
+
                 <div class='row'>
                     <div class='col-12 p-4' id='dataCol'>
                     </div>

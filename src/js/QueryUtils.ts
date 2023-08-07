@@ -91,7 +91,7 @@ export function sparqlQueryPromise(endpoint, query, timeout: number = defaultQue
         return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(error => { console.error(endpoint, query, error); throw error })
     } else if (isSparqlAsk(query)) {
         return fetchJSONPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=json&timeout=' + timeout, jsonHeaders).catch(() => { return { boolean: false } })
-    } else if (isSparqlConstruct(query)) {
+    } else if (isSparqlConstruct(query) || isSparqlDescribe(query)) {
         return fetchGETPromise(endpoint + '?query=' + encodeURIComponent(query) + '&format=turtle&timeout=' + timeout).then(result => {
             let resultStore = RDFUtils.createStore();
             result = RDFUtils.fixCommonTurtleStringErrors(result)
