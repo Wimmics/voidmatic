@@ -25,6 +25,7 @@ export class Control {
     forceHTTPSFlag: boolean;
     sessionId: string;
     radarChart: echarts.ECharts;
+    shareEndpointURL: boolean;
 
     constructor() {
         if (controlInstance) {
@@ -39,6 +40,11 @@ export class Control {
         this.categoryViews = [];
         this.metadataCategoryViewMap = new Map();
         this.forceHTTPSFlag = true;
+        var forceHTTPSFlagValue = $('#forceHTTPSFlagCheckbox').prop("checked");
+        this.forceHTTPSFlag = forceHTTPSFlagValue;
+        this.shareEndpointURL = true;
+        var shareEndpointURLCheckboxValue = $('#shareEndpointURLCheckbox').prop("checked");
+        this.shareEndpointURL = shareEndpointURLCheckboxValue;
         this.sessionId = uuid();
 
         // window.onload = (event) => {
@@ -62,6 +68,11 @@ export class Control {
         $('#forceHTTPScheckbox').on("change", () => {
             var checkboxValue = $('#forceHTTPScheckbox').prop("checked");
             this.forceHTTPSFlag = checkboxValue;
+        })
+
+        $('#shareEndpointURLCheckbox').on("change", () => {
+            var checkboxValue = $('#shareEndpointURLCheckbox').prop("checked");
+            this.shareEndpointURL = checkboxValue;
         })
 
         let loadModelInput = $('#loadTextarea');
@@ -594,7 +605,9 @@ export class Control {
     }
 
     sendMetadatatoServer() {
-        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null)) {
+        console.log("shareEndpointURL: ", this.shareEndpointURL);
+        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null) && this.shareEndpointURL) {
+            console.log("Sending metadata to server");
             let str = "";
             this.store.statementsMatching(null, RDFUtils.VOID("sparqlEndpoint"), null).forEach(statement => {
                 str += statement.toNT() + " ";
