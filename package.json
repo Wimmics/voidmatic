@@ -47,5 +47,11 @@
     "uuid": "^9.0.0",
     "xmlhttprequest": "^1.8.0",
     "zipurl": "^0.2.15"
+  },
+
+  "overrides": {
+    "@parcel/optimizer-htmlnano": {
+      "htmlnano": "2.0.3"
+    }
   }
 }
