@@ -28,7 +28,7 @@ This project was started as an answer to the results of the [IndeGx framework ex
 ## Related Publication
 
 Pierre Maillot, Olivier Corby, Catherine Faron, Fabien Gandon, Franck Michel (2023). 
-**Metadatamatic: A Web application to Create a Dataset**. WWW '23: The ACM Web Conference 2023 - International World Wide Web Conference, Apr 2023, Austin TX USA, France. pp.123-126, DOI: [10.1145/3543873.3587328](https://dx.doi.org/10.1145/3543873.3587328), [HAL](https://hal.science/hal-04171196).
+**Metadatamatic: A Web application to Create a Dataset**. WWW '23 Companion: Companion Proceedings of the ACM Web Conference 2023, Austin TX, USA. pp.123-126, DOI: [10.1145/3543873.3587328](https://dx.doi.org/10.1145/3543873.3587328), [HAL](https://hal.science/hal-04171196).
 
 ```bibtex
 @inproceedings{maillot:hal-04171196,
