@@ -924,7 +924,7 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT (LANG(?o) AS ?tag) WHERE { { SELECT DISTINCT ?o { ?s ?p ?o. FILTER(ISLITERAL(?o)) FILTER((LANG(?o)) != "") } } }'));
+                        promiseArray.push(Query.paginatedSparqlQueryPromise(endpointString, 'SELECT DISTINCT (LANG(?o) AS ?tag) WHERE { { SELECT DISTINCT ?o { ?s ?p ?o. FILTER(ISLITERAL(?o)) FILTER((LANG(?o)) != "") } } } LIMIT 50'));
                     });
                     return Promise.allSettled(promiseArray)
                         .then(rawBindingsArray => {
