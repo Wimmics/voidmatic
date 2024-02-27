@@ -1094,7 +1094,7 @@ export const inputMetadata = [
                     endpointArray.forEach(endpointNode => {
                         let endpointString = endpointNode.value;
                         endpointString = controlInstance.standardizeEndpointURL(endpointString);
-                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { { SELECT DISTINCT ?s ?p ?o WHERE { ?s ?p ?o . } } }'));
+                        promiseArray.push(Query.sparqlQueryPromise(endpointString, 'SELECT (count(*) AS ?count) { ?s ?p ?o }'));
                     });
                     return Promise.allSettled(promiseArray)
                         .then(rawBindingsArray => {
