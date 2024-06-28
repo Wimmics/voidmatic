@@ -70,10 +70,10 @@ export class Control {
             this.forceHTTPSFlag = checkboxValue;
         })
 
-        $('#shareEndpointURLCheckbox').on("change", () => {
-            var checkboxValue = $('#shareEndpointURLCheckbox').prop("checked");
-            this.shareEndpointURL = checkboxValue;
-        })
+        // $('#shareEndpointURLCheckbox').on("change", () => {
+        //     var checkboxValue = $('#shareEndpointURLCheckbox').prop("checked");
+        //     this.shareEndpointURL = checkboxValue;
+        // })
 
         let loadModelInput = $('#loadTextarea');
         const loadModal = new bootstrap.Modal('#loadModalDiv', {})
@@ -605,15 +605,15 @@ export class Control {
     }
 
     sendMetadatatoServer() {
-        console.log("shareEndpointURL: ", this.shareEndpointURL);
-        if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null) && this.shareEndpointURL) {
-            console.log("Sending metadata to server");
-            let str = "";
-            this.store.statementsMatching(null, RDFUtils.VOID("sparqlEndpoint"), null).forEach(statement => {
-                str += statement.toNT() + " ";
-            })
-            const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
-            return Query.fetchJSONPromise(finalUrl).catch(error => { })
-        }
+        // console.log("shareEndpointURL: ", this.shareEndpointURL);
+        // if (this.store.holds(null, RDFUtils.VOID("sparqlEndpoint"), null) && this.shareEndpointURL) {
+        //     console.log("Sending metadata to server");
+        //     let str = "";
+        //     this.store.statementsMatching(null, RDFUtils.VOID("sparqlEndpoint"), null).forEach(statement => {
+        //         str += statement.toNT() + " ";
+        //     })
+        //     const finalUrl = "https://prod-dekalog.inria.fr/description?uuid=" + this.sessionId + "&description=" + encodeURIComponent(str.replaceAll("\n", " "));
+        //     return Query.fetchJSONPromise(finalUrl).catch(error => { })
+        // }
     }
 }
